@@ -1,0 +1,85 @@
+<div class="chat-container">
+  <mat-card class="cardWithShadow chat-card">
+    <mat-card-header>
+      <div mat-card-avatar class="chat-avatar">
+        <i-tabler name="robot" class="icon-32"></i-tabler>
+      </div>
+      <mat-card-title>HadeBot - Asistente Dental</mat-card-title>
+      <mat-card-subtitle>Asistente virtual para consultas odontológicas</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="chat-messages" #scrollMe>
+        <!-- Mensajes del chat -->
+        <div class="message-container" *ngFor="let message of messages">
+          <div [ngClass]="message.sender === 'user' ? 'user-message' : 'bot-message'">
+            <div class="message-content">
+              <div class="message-avatar" *ngIf="message.sender === 'bot'">
+                <i-tabler name="robot"></i-tabler>
+              </div>
+              <div class="message-text">
+                <div class="message-sender" *ngIf="message.sender === 'bot'">HadeBot</div>
+                <div [innerHTML]="message.text"></div>
+                <!-- Mostrar imagen si existe -->
+                <div *ngIf="message.imageUrl" class="message-image">
+                  <img [src]="message.imageUrl" alt="Imagen dental" class="chat-image">
+                </div>
+                <div class="message-time">{{message.time | date:'shortTime'}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Indicador de escritura -->
+        <div class="bot-message typing-indicator" *ngIf="isTyping">
+          <div class="message-content">
+            <div class="message-avatar">
+              <i-tabler name="robot"></i-tabler>
+            </div>
+            <div class="message-text">
+              <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+    
+    <!-- Previsualización de imagen seleccionada -->
+    <div *ngIf="selectedImageUrl" class="image-preview-container">
+      <div class="image-preview">
+        <img [src]="selectedImageUrl" alt="Vista previa" class="preview-image">
+        <button mat-icon-button color="warn" class="remove-image-btn" (click)="removeSelectedImage()">
+          <i-tabler name="x"></i-tabler>
+        </button>
+      </div>
+    </div>
+    
+    <div class="chat-input-container">
+      <!-- Botón para adjuntar imagen -->
+      <button mat-mini-fab color="primary" class="attach-button" type="button">
+        <i-tabler name="paperclip"></i-tabler>
+        <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input">
+      </button>
+      
+      <mat-form-field class="chat-input" appearance="outline">
+        <input matInput placeholder="Escribe tu pregunta..." [(ngModel)]="currentMessage" (keyup.enter)="sendMessage()">
+      </mat-form-field>
+      
+      <button mat-fab color="primary" (click)="sendMessage()">
+        <i-tabler name="send"></i-tabler>
+      </button>
+    </div>
+    
+    <div class="suggestion-chips">
+      <mat-chip-listbox aria-label="Sugerencias">
+        <mat-chip-option *ngFor="let suggestion of suggestions" (click)="selectSuggestion(suggestion)">
+          {{suggestion}}
+        </mat-chip-option>
+      </mat-chip-listbox>
+    </div>
+  </mat-card>
+</div>

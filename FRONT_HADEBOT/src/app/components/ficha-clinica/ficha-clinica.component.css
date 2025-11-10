@@ -1,0 +1,96 @@
+.cardWithShadow {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.text-error {
+  color: #f44336;
+}
+
+.text-success {
+  color: #4caf50;
+}
+
+.text-warning {
+  color: #ff9800;
+}
+
+.text-primary {
+  color: #2196f3;
+}
+
+.bg-light-success {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.bg-light-warning {
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.bg-light-error {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.bg-light-primary {
+  background-color: rgba(33, 150, 243, 0.1);
+}
+
+.p-6 {
+  padding: 6px;
+}
+
+.p-y-4 {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.f-w-600 {
+  font-weight: 600;
+}
+
+.f-s-12 {
+  font-size: 12px;
+}
+
+.f-s-14 {
+  font-size: 14px;
+}
+
+.icon-18 {
+  width: 18px;
+  height: 18px;
+}
+
+.icon-24 {
+  width: 24px;
+  height: 24px;
+}
+
+.icon-48 {
+  width: 48px;
+  height: 48px;
+}
+
+/* Estilos para la tabla */
+table {
+  width: 100%;
+}
+
+th.mat-header-cell {
+  color: rgba(0, 0, 0, 0.7);
+  font-weight: 600;
+}
+
+td.mat-cell {
+  padding: 16px 0;
+}
+
+/* Estilos para el formulario */
+mat-form-field {
+  width: 100%;
+}
+
+.mat-mdc-form-field {
+  margin-bottom: 16px;
+}

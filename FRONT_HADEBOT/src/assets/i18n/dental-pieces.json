@@ -1,0 +1,47 @@
+[
+    {
+      "label": "Dientes Superiores",
+      "options": [
+        {"value": "Arcada Superior", "label": "Arcada Superior"},
+        { "value": "18", "label": "18 - Tercer Molar Superior Derecho" },
+        { "value": "17", "label": "17 - Segundo Molar Superior Derecho" },
+        { "value": "16", "label": "16 - Primer Molar Superior Derecho" },
+        { "value": "15", "label": "15 - Segundo Premolar Superior Derecho" },
+        { "value": "14", "label": "14 - Primer Premolar Superior Derecho" },
+        { "value": "13", "label": "13 - Canino Superior Derecho" },
+        { "value": "12", "label": "12 - Incisivo Lateral Superior Derecho" },
+        { "value": "11", "label": "11 - Incisivo Central Superior Derecho" },
+        { "value": "21", "label": "21 - Incisivo Central Superior Izquierdo" },
+        { "value": "22", "label": "22 - Incisivo Lateral Superior Izquierdo" },
+        { "value": "23", "label": "23 - Canino Superior Izquierdo" },
+        { "value": "24", "label": "24 - Primer Premolar Superior Izquierdo" },
+        { "value": "25", "label": "25 - Segundo Premolar Superior Izquierdo" },
+        { "value": "26", "label": "26 - Primer Molar Superior Izquierdo" },
+        { "value": "27", "label": "27 - Segundo Molar Superior Izquierdo" },
+        { "value": "28", "label": "28 - Tercer Molar Superior Izquierdo" }
+      ]
+    },
+    {
+      "label": "Dientes Inferiores",
+      "options": [
+        {"value": "Arcada Inferior", "label": "Arcada Inferior"},
+        { "value": "48", "label": "48 - Tercer Molar Inferior Derecho" },
+        { "value": "47", "label": "47 - Segundo Molar Inferior Derecho" },
+        { "value": "46", "label": "46 - Primer Molar Inferior Derecho" },
+        { "value": "45", "label": "45 - Segundo Premolar Inferior Derecho" },
+        { "value": "44", "label": "44 - Primer Premolar Inferior Derecho" },
+        { "value": "43", "label": "43 - Canino Inferior Derecho" },
+        { "value": "42", "label": "42 - Incisivo Lateral Inferior Derecho" },
+        { "value": "41", "label": "41 - Incisivo Central Inferior Derecho" },
+        { "value": "31", "label": "31 - Incisivo Central Inferior Izquierdo" },
+        { "value": "32", "label": "32 - Incisivo Lateral Inferior Izquierdo" },
+        { "value": "33", "label": "33 - Canino Inferior Izquierdo" },
+        { "value": "34", "label": "34 - Primer Premolar Inferior Izquierdo" },
+        { "value": "35", "label": "35 - Segundo Premolar Inferior Izquierdo" },
+        { "value": "36", "label": "36 - Primer Molar Inferior Izquierdo" },
+        { "value": "37", "label": "37 - Segundo Molar Inferior Izquierdo" },
+        { "value": "38", "label": "38 - Tercer Molar Inferior Izquierdo" }
+      ]
+    }
+  ]
+  

@@ -1,0 +1,786 @@
+<!-- Tabla de Fichas Clínicas -->
+<div class="row mb-4">
+  <div class="col-lg-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h2 class="m-0">Lista de Fichas Clínicas</h2>
+            <hr>
+            <h5 class="text-muted fw-normal mb-0">Fichas clínicas registradas en el sistema</h5>
+            <br>
+          </div>
+          <!-- Filtros -->
+          <div class="d-flex gap-2">
+            <mat-form-field appearance="outline" class="me-2" style="width: 200px">
+              <mat-label>Filtrar por estado</mat-label>
+              <mat-select [(value)]="statusFilter" (selectionChange)="applyFilters()">
+                <mat-option value="">Todos</mat-option>
+                <mat-option value="Pendiente">Pendiente</mat-option>
+                <mat-option value="En proceso">En proceso</mat-option>
+                <mat-option value="Completado">Completado</mat-option>
+                <mat-option value="Cancelado">Cancelado</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <button mat-flat-button color="primary" (click)="loadFichasClinicas()">
+              <i-tabler name="refresh" class="icon-18 me-2"></i-tabler>
+              Actualizar
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table mat-table [dataSource]="dataSource" class="w-100" matSort>
+            <!-- Paciente Column -->
+            <ng-container matColumnDef="paciente">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 f-s-14">
+                Paciente
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <div class="d-flex align-items-center">
+                  <i-tabler name="user-circle" class="icon-24 me-2"></i-tabler>
+                  <div>
+                    <h6 class="f-s-14 f-w-600 mb-0">{{ element.patient.name }}</h6>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Diagnóstico Column -->
+            <ng-container matColumnDef="diagnosis">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 f-s-14">
+                Diagnóstico
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <h6 class="f-s-14 mb-0">{{ element.diagnosis }}</h6>
+                <span class="f-s-12 text-muted">Pieza: {{ element.toothNumber }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Tratamientos Column -->
+            <ng-container matColumnDef="treatments">
+              <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
+                Tratamientos
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <div class="d-flex align-items-center">
+                  <span class="badge bg-primary rounded-pill me-2">{{ element.treatments.length }}</span>
+                  <span>{{ getTreatmentsSummary(element.treatments) }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Precio Total Column -->
+            <ng-container matColumnDef="totalPrice">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 f-s-14">
+                Precio Total
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <h6 class="f-s-14 f-w-600 mb-0">{{ formatPrice(element.totalPrice) }}</h6>
+                <span class="f-s-12 text-muted">Abonado: {{ formatPrice(element.totalDeposit) }}</span><br>
+                <span class="f-s-12" [ngClass]="element.totalBalance > 0 ? 'text-danger' : 'text-success'">
+                  Saldo: {{ formatPrice(element.totalBalance) }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Próxima Cita Column -->
+            <ng-container matColumnDef="nextAppointment">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="f-w-600 f-s-14">
+                Próxima Cita
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <span *ngIf="element.nextAppointment" class="f-s-14">
+                  {{ formatDate(element.nextAppointment) }}
+                </span>
+                <span *ngIf="!element.nextAppointment" class="f-s-14 text-muted">
+                  Sin citas pendientes
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Estado General Column -->
+            <ng-container matColumnDef="generalStatus">
+              <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14">
+                Estado General
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <div>
+                  <div class="progress" style="height: 8px; width: 120px;">
+                    <div class="progress-bar bg-success" [style.width.%]="getCompletionPercentage(element.treatments)">
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between mt-1">
+                    <small>{{ getCompletionPercentage(element.treatments) }}%</small>
+                    <small>{{ getCompletedCount(element.treatments) }}/{{ element.treatments.length }}</small>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Acciones Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="f-w-600 f-s-14"></th>
+              <td mat-cell *matCellDef="let element">
+                <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Opciones">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu">
+                  <button mat-menu-item (click)="viewFichaDetail(element._id)">
+                    <i-tabler name="eye" class="icon-18 me-2"></i-tabler>
+                    <span>Ver detalle</span>
+                  </button>
+                  <button mat-menu-item (click)="editarFichaClinica(element)">
+                    <i-tabler name="edit" class="icon-18 me-2"></i-tabler>
+                    <span>Editar</span>
+                  </button>
+                  <button mat-menu-item (click)="eliminarFichaClinica(element._id)">
+                    <i-tabler name="trash" class="icon-18 me-2"></i-tabler>
+                    <span>Eliminar</span>
+                  </button>
+                  <mat-divider></mat-divider>
+                  <button mat-menu-item (click)="generateBudget(element)">
+                    <i-tabler name="file-invoice" class="icon-18 me-2"></i-tabler>
+                    <span>Generar Presupuesto</span>
+                  </button>
+                </mat-menu>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          </table>
+
+          <!-- Paginador -->
+          <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
+            aria-label="Seleccionar página de fichas clínicas">
+          </mat-paginator>
+
+          <!-- Mensaje cuando no hay datos -->
+          <div *ngIf="fichas.length === 0 && !isLoading" class="text-center py-5">
+            <i-tabler name="file-text" class="icon-48 text-muted mb-2"></i-tabler>
+            <h5>No hay fichas clínicas registradas</h5>
+          </div>
+
+          <!-- Indicador de carga -->
+          <div *ngIf="isLoading" class="text-center py-5">
+            <i-tabler name="loader" class="icon-48 text-primary mb-2 animate-spin"></i-tabler>
+            <h5>Cargando fichas clínicas...</h5>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Vista detallada de ficha clínica -->
+<div *ngIf="isDetailView && selectedFicha" class="row mb-4">
+  <div class="col-lg-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <!-- Cabecera con botón de regreso -->
+        <div class="d-flex align-items-center mb-4">
+          <button mat-icon-button color="primary" (click)="backToList()" class="me-2">
+            <i-tabler name="arrow-left" class="icon-24"></i-tabler>
+          </button>
+          <div>
+            <h2 class="m-0">Detalle de Ficha Clínica</h2>
+            <h5 class="text-muted fw-normal mb-0">Paciente: {{ selectedFicha.patient.name }}</h5>
+          </div>
+        </div>
+
+        <!-- Información general -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <mat-card class="mb-3">
+              <mat-card-content>
+                <h3 class="mb-3">Información del Paciente</h3>
+                <div class="d-flex align-items-center mb-2">
+                  <i-tabler name="user" class="icon-24 me-2 text-primary"></i-tabler>
+                  <span><strong>Nombre:</strong> {{ selectedFicha.patient.name }}</span>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                  <i-tabler name="mail" class="icon-24 me-2 text-primary"></i-tabler>
+                  <span><strong>Email:</strong> {{ selectedFicha.patient.email || 'No registrado' }}</span>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                  <i-tabler name="phone" class="icon-24 me-2 text-primary"></i-tabler>
+                  <span><strong>Teléfono:</strong> {{ selectedFicha.patient.phone || 'No registrado' }}</span>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <div class="col-md-6">
+            <mat-card>
+              <mat-card-content>
+                <h3 class="mb-3">Resumen Financiero</h3>
+                <div class="d-flex justify-content-between mb-2">
+                  <span><strong>Precio Total:</strong></span>
+                  <span>{{ formatPrice(selectedFicha.totalPrice || 0) }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span><strong>Total Abonado:</strong></span>
+                  <span>{{ formatPrice(selectedFicha.totalDeposit || 0) }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span><strong>Saldo Pendiente:</strong></span>
+                  <span [ngClass]="(selectedFicha.totalBalance || 0) > 0 ? 'text-danger' : 'text-success'">
+                    {{ formatPrice(selectedFicha.totalBalance || 0) }}
+                  </span>
+                </div>
+                <div class="progress mt-3" style="height: 10px;">
+                  <div class="progress-bar bg-success"
+                    [style.width.%]="getPaymentPercentage(selectedFicha.totalDeposit, selectedFicha.totalPrice)"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-1">
+                  <small>Pagado: {{ getPaymentPercentage(selectedFicha.totalDeposit, selectedFicha.totalPrice)
+                    }}%</small>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+
+        <!-- Lista de tratamientos -->
+        <h3 class="mb-3">Tratamientos</h3>
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead class="bg-light">
+              <tr>
+                <th>#</th>
+                <th>Diagnóstico</th>
+                <th>Pieza</th>
+                <th>Tratamiento</th>
+                <th>Precio</th>
+                <th>Abonado</th>
+                <th>Saldo</th>
+                <th>Fecha Cita</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let treatment of selectedFicha.treatments; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ treatment.diagnosis }}</td>
+                <td>{{ treatment.toothNumber }}</td>
+                <td>{{ treatment.treatment }}</td>
+                <td>{{ formatPrice(treatment.price) }}</td>
+                <td>{{ formatPrice(treatment.deposit) }}</td>
+                <td [ngClass]="calcularSaldo(treatment.price, treatment.deposit) > 0 ? 'text-danger' : 'text-success'">
+                  {{ formatPrice(calcularSaldo(treatment.price, treatment.deposit)) }}
+                </td>
+                <td *ngIf="treatment.appointmentDate">{{ formatDate(treatment.appointmentDate) }}</td>
+                <td *ngIf="!treatment.appointmentDate">Sin citas pendientes</td>
+                <td>
+                  <span *ngIf="treatment.status === 'Pendiente'"
+                    class="bg-light-warning text-warning rounded f-w-600 p-6 p-y-4 f-s-12">
+                    Pendiente
+                  </span>
+                  <span *ngIf="treatment.status === 'En proceso'"
+                    class="bg-light-primary text-primary rounded f-w-600 p-6 p-y-4 f-s-12">
+                    En proceso
+                  </span>
+                  <span *ngIf="treatment.status === 'Completado'"
+                    class="bg-light-success text-success rounded f-w-600 p-6 p-y-4 f-s-12">
+                    Completado
+                  </span>
+                  <span *ngIf="treatment.status === 'Cancelado'"
+                    class="bg-light-error text-error rounded f-w-600 p-6 p-y-4 f-s-12">
+                    Cancelado
+                  </span>
+                </td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <!-- Botón para cambiar estado -->
+                    <button mat-icon-button [matMenuTriggerFor]="statusMenu" color="primary"
+                      matTooltip="Cambiar estado">
+                      <i-tabler name="clipboard-check" class="icon-18"></i-tabler>
+                    </button>
+                    <mat-menu #statusMenu="matMenu">
+                      <button mat-menu-item (click)="updateTreatmentStatus(i, 'Pendiente')"
+                        [disabled]="treatment.status === 'Pendiente'">
+                        <span
+                          class="bg-light-warning text-warning rounded f-w-600 p-6 p-y-4 f-s-12 me-2">Pendiente</span>
+                      </button>
+                      <button mat-menu-item (click)="updateTreatmentStatus(i, 'En proceso')"
+                        [disabled]="treatment.status === 'En proceso'">
+                        <span class="bg-light-primary text-primary rounded f-w-600 p-6 p-y-4 f-s-12 me-2">En
+                          proceso</span>
+                      </button>
+                      <button mat-menu-item (click)="updateTreatmentStatus(i, 'Completado')"
+                        [disabled]="treatment.status === 'Completado'">
+                        <span
+                          class="bg-light-success text-success rounded f-w-600 p-6 p-y-4 f-s-12 me-2">Completado</span>
+                      </button>
+                      <button mat-menu-item (click)="updateTreatmentStatus(i, 'Cancelado')"
+                        [disabled]="treatment.status === 'Cancelado'">
+                        <span class="bg-light-error text-error rounded f-w-600 p-6 p-y-4 f-s-12 me-2">Cancelado</span>
+                      </button>
+                    </mat-menu>
+
+                    <!-- Botón para registrar abono -->
+                    <button mat-icon-button color="accent" (click)="addDeposit(i)" matTooltip="Registrar abono">
+                      <i-tabler name="cash" class="icon-18"></i-tabler>
+                    </button>
+
+                    <!-- Botón para reprogramar cita -->
+                    <button mat-icon-button color="warn" [matMenuTriggerFor]="dateMenu" matTooltip="Reprogramar cita">
+                      <i-tabler name="calendar" class="icon-18"></i-tabler>
+                    </button>
+                    <mat-menu #dateMenu="matMenu">
+                      <div (click)="$event.stopPropagation()" class="p-3">
+                        <div class="date-time-selector">
+                          <mat-calendar [selected]="selectedDateTemp || treatment.appointmentDate"
+                            (selectedChange)="selectDate(i, $event)">
+                          </mat-calendar>
+                          <div class="time-selector mt-2">
+                            <h4>Seleccionar hora:</h4>
+                            <div class="d-flex align-items-center">
+                              <mat-form-field appearance="outline" class="me-2">
+                                <mat-label>Hora</mat-label>
+                                <input matInput type="number" min="0" max="23" [(ngModel)]="selectedHour" (ngModelChange)="updateTime(i)">
+                              </mat-form-field>
+                              <span class="mx-1">:</span>
+                              <mat-form-field appearance="outline" class="ms-2">
+                                <mat-label>Minutos</mat-label>
+                                <input matInput type="number" min="0" max="59" [(ngModel)]="selectedMinute" (ngModelChange)="updateTime(i)">
+                              </mat-form-field>
+                            </div>
+                            <div class="d-flex justify-content-end mt-2">
+                              <button mat-raised-button color="primary" (click)="confirmDateTime(i)">Confirmar</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </mat-menu>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="row mt-4" *ngIf="hasAnyObservations(selectedFicha.treatments)">
+          <div class="col-12">
+            <mat-card>
+              <mat-card-content>
+                <h3 class="mb-3">Observaciones</h3>
+                <div *ngFor="let treatment of selectedFicha.treatments; let i = index">
+                  <div *ngIf="treatment.observations" class="mb-3">
+                    <h5 class="mb-2">Tratamiento #{{ i + 1 }}: {{ treatment.treatment }}</h5>
+                    <p class="mb-0">{{ treatment.observations }}</p>
+                    <hr *ngIf="i < selectedFicha.treatments.length - 1">
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+        
+        <!-- Radiografías -->
+        <div class="row mt-4">
+          <div class="col-12">
+            <mat-card>
+              <mat-card-content>
+                <h3 class="mb-3">Radiografías</h3>
+                <div *ngFor="let treatment of selectedFicha.treatments; let i = index">
+                  <div *ngIf="treatment.radiography && treatment.radiography.length > 0" class="mb-4">
+                    <h5 class="mb-2">Tratamiento #{{ i + 1 }}: {{ treatment.treatment }}</h5>
+                    <div class="d-flex flex-wrap gap-4">
+                      <div *ngFor="let base64Image of treatment.radiography; let j = index" class="radiography-preview-item">
+                        <div class="position-relative">
+                          <img [src]="'data:image/jpeg;base64,' + base64Image" alt="Radiografía {{j+1}}" 
+                               class="img-thumbnail" style="height: 150px; width: 150px; object-fit: cover;"
+                               (click)="openImageViewer('data:image/jpeg;base64,' + base64Image)">
+                          <div class="d-flex justify-content-center mt-2">
+                            <button mat-icon-button color="primary" matTooltip="Descargar imagen" 
+                                    (click)="downloadImage(base64Image, 'radiografia_' + (i+1) + '_' + (j+1) + '.jpg')">
+                              <i-tabler name="download" class="icon-18"></i-tabler>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <hr *ngIf="i < selectedFicha.treatments.length - 1">
+                  </div>
+                </div>
+                
+                <!-- Mensaje cuando no hay radiografías -->
+                <div *ngIf="!hasAnyRadiographs(selectedFicha.treatments)" class="text-center py-4">
+                  <i-tabler name="file-x" class="icon-48 text-muted mb-3"></i-tabler>
+                  <p class="text-muted">No hay radiografías disponibles para esta ficha clínica.</p>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Formulario de Registro de Ficha Clínica -->
+<div *ngIf="!isDetailView" class="row">
+  <div class="col-lg-12">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <div>
+            <h2 class="m-0">{{ formTitle }}</h2>
+            <hr>
+            <h5 class="text-muted fw-normal mb-0">Ingrese los datos de la ficha clínica</h5>
+            <br>
+          </div>
+        </div>
+
+        <form [formGroup]="fichaClinicaForm" (ngSubmit)="onSubmit()">
+          <div class="row">
+            <!-- Paciente -->
+            <div class="col-lg-12 mb-4">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Paciente</mat-label>
+                <mat-select formControlName="patient">
+                  <mat-option *ngFor="let paciente of pacientes" [value]="paciente._id">
+                    {{ paciente.name }}
+                  </mat-option>
+                </mat-select>
+                <ng-container
+                  *ngIf="fichaClinicaForm.get('patient')?.invalid && fichaClinicaForm.get('patient')?.touched">
+                  <mat-error>
+                    {{ getErrorMessage('patient') }}
+                  </mat-error>
+                </ng-container>
+              </mat-form-field>
+            </div>
+
+            <!-- Lista de tratamientos -->
+            <div class="col-lg-12 mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="m-0">Tratamientos</h3>
+                <button mat-flat-button color="primary" type="button" (click)="showAddTreatmentForm()">
+                  <i-tabler name="plus" class="icon-18 me-2"></i-tabler>
+                  Agregar tratamiento
+                </button>
+              </div>
+
+              <!-- Tabla de tratamientos -->
+              <div class="table-responsive mb-3" *ngIf="treatments.length > 0">
+                <table class="table table-bordered table-hover">
+                  <thead class="bg-light">
+                    <tr>
+                      <th>#</th>
+                      <th>Diagnóstico</th>
+                      <th>Pieza</th>
+                      <th>Tratamiento</th>
+                      <th>Precio</th>
+                      <th>Abono</th>
+                      <th>Fecha Cita</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let treatment of treatments.controls; let i = index">
+                      <td>{{ i + 1 }}</td>
+                      <td>{{ treatment.get('diagnosis')?.value }}</td>
+                      <td>{{ treatment.get('toothNumber')?.value }}</td>
+                      <td>{{ treatment.get('treatment')?.value }}</td>
+                      <td>{{ formatPrice(treatment.get('price')?.value) }}</td>
+                      <td>{{ formatPrice(treatment.get('deposit')?.value) }}</td>
+                      <td *ngIf="treatment.get('appointmentDate')?.value">{{
+                        formatDate(treatment.get('appointmentDate')?.value) }}</td>
+                      <td *ngIf="!treatment.get('appointmentDate')?.value">Sin citas pendientes</td>
+                      <td>
+                        <span *ngIf="treatment.get('status')?.value === 'Pendiente'"
+                          class="bg-light-warning text-warning rounded f-w-600 p-6 p-y-4 f-s-12">
+                          Pendiente
+                        </span>
+                        <span *ngIf="treatment.get('status')?.value === 'En proceso'"
+                          class="bg-light-primary text-primary rounded f-w-600 p-6 p-y-4 f-s-12">
+                          En proceso
+                        </span>
+                        <span *ngIf="treatment.get('status')?.value === 'Completado'"
+                          class="bg-light-success text-success rounded f-w-600 p-6 p-y-4 f-s-12">
+                          Completado
+                        </span>
+                        <span *ngIf="treatment.get('status')?.value === 'Cancelado'"
+                          class="bg-light-error text-error rounded f-w-600 p-6 p-y-4 f-s-12">
+                          Cancelado
+                        </span>
+                      </td>
+                      <td>
+                        <div class="d-flex gap-1">
+                          <button mat-icon-button color="primary" type="button" (click)="editTreatment(i)"
+                            matTooltip="Editar tratamiento">
+                            <i-tabler name="edit" class="icon-18"></i-tabler>
+                          </button>
+                          <button mat-icon-button color="warn" type="button" (click)="removeTreatment(i)"
+                            matTooltip="Eliminar tratamiento">
+                            <i-tabler name="trash" class="icon-18"></i-tabler>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr class="bg-light">
+                      <td colspan="4" class="text-end"><strong>Totales:</strong></td>
+                      <td><strong>{{ formatPrice(calculateTotalPrice()) }}</strong></td>
+                      <td><strong>{{ formatPrice(calculateTotalDeposit()) }}</strong></td>
+                      <td colspan="3"></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              <!-- Mensaje cuando no hay tratamientos -->
+              <div *ngIf="treatments.length === 0" class="alert alert-info">
+                <i-tabler name="info-circle" class="icon-24 me-2"></i-tabler>
+                No hay tratamientos registrados. Haga clic en "Agregar tratamiento" para comenzar.
+              </div>
+            </div>
+
+            <!-- Formulario de tratamiento (visible solo cuando se está agregando/editando un tratamiento) -->
+            <div *ngIf="showTreatmentForm" class="col-lg-12 mb-4">
+              <mat-card class="mb-3">
+                <mat-card-content>
+                  <h4 class="mb-3">{{ currentTreatmentIndex !== null ? 'Editar Tratamiento' : 'Nuevo Tratamiento' }}
+                  </h4>
+
+                  <form [formGroup]="treatmentForm">
+                    <div class="row">
+                      <!-- Diagnóstico -->
+                      <div class="col-lg-6 mb-3">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Diagnóstico</mat-label>
+                          <input matInput formControlName="diagnosis" placeholder="Ej: Caries profunda">
+                          <ng-container
+                            *ngIf="treatmentForm.get('diagnosis')?.invalid && treatmentForm.get('diagnosis')?.touched">
+                            <mat-error>
+                              {{ getErrorMessage('diagnosis', treatmentForm) }}
+                            </mat-error>
+                          </ng-container>
+                        </mat-form-field>
+                      </div>
+
+                      <!-- Radiografía -->
+                      <div class="col-lg-6 mb-3">
+                        <label class="form-label">Radiografías</label>
+                        <div class="custom-file-upload">
+                          <button type="button" mat-raised-button color="primary" class="mb-2" (click)="fileInput.click()">
+                            <i-tabler name="upload" class="icon-18 me-2"></i-tabler>
+                            Cargar imágenes
+                          </button>
+                          <input #fileInput type="file" style="display: none" multiple accept="image/*" class="form-control" id="radiographyFiles" (change)="onFileSelected($event)">
+                          <mat-hint>Puede seleccionar múltiples imágenes</mat-hint>
+                        </div>
+                        
+                        <!-- Vista previa de imágenes -->
+                        <div class="radiography-preview mt-3" *ngIf="radiographyPreviews && radiographyPreviews.length > 0">
+                          <div class="d-flex flex-wrap gap-2">
+                            <div *ngFor="let preview of radiographyPreviews; let i = index" class="radiography-preview-item">
+                              <div class="position-relative">
+                                <img [src]="preview" alt="Radiografía" class="img-thumbnail" style="height: 100px; width: 100px; object-fit: cover;">
+                                <button type="button" mat-mini-fab color="warn" class="remove-image-btn" style="position: absolute; top: -10px; right: -10px; transform: scale(0.7);" (click)="removeFile(i)">
+                                  <i-tabler name="trash" class="icon-16"></i-tabler>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Pieza Dental -->
+                      <div class="col-lg-6 mb-3">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Pieza Dental</mat-label>
+                          <mat-select formControlName="toothNumber">
+                            <mat-option value="">Seleccione una pieza dental</mat-option>
+                            <ng-container *ngFor="let group of dentalPieces">
+                              <mat-optgroup [label]="group.label">
+                                <mat-option *ngFor="let option of group.options" [value]="option.value">
+                                  {{ option.label }}
+                                </mat-option>
+                              </mat-optgroup>
+                            </ng-container>
+                          </mat-select>
+
+                          <ng-container
+                            *ngIf="treatmentForm.get('toothNumber')?.invalid && treatmentForm.get('toothNumber')?.touched">
+                            <mat-error>
+                              {{ getErrorMessage('toothNumber', treatmentForm) }}
+                            </mat-error>
+                          </ng-container>
+                        </mat-form-field>
+                      </div>
+
+
+                      <!-- Tratamiento -->
+                      <div class="col-lg-6 mb-3">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Tratamiento</mat-label>
+                          <input matInput formControlName="treatment" placeholder="Ej: Endodoncia">
+                          <ng-container
+                            *ngIf="treatmentForm.get('treatment')?.invalid && treatmentForm.get('treatment')?.touched">
+                            <mat-error>
+                              {{ getErrorMessage('treatment', treatmentForm) }}
+                            </mat-error>
+                          </ng-container>
+                        </mat-form-field>
+                      </div>
+
+                      <!-- Precio -->
+                      <div class="col-lg-6 mb-3">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Precio</mat-label>
+                          <input matInput formControlName="price" placeholder="Ej: 150000" type="number">
+                          <span matPrefix>$ &nbsp;</span>
+                          <ng-container
+                            *ngIf="treatmentForm.get('price')?.invalid && treatmentForm.get('price')?.touched">
+                            <mat-error>
+                              {{ getErrorMessage('price', treatmentForm) }}
+                            </mat-error>
+                          </ng-container>
+                        </mat-form-field>
+                      </div>
+
+                      <!-- Abono -->
+                      <div class="col-lg-6 mb-3">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Abono</mat-label>
+                          <input matInput formControlName="deposit" placeholder="Ej: 50000" type="number">
+                          <span matPrefix>$ &nbsp;</span>
+                          <mat-hint>Opcional</mat-hint>
+                          <ng-container
+                            *ngIf="treatmentForm.get('deposit')?.invalid && treatmentForm.get('deposit')?.touched">
+                            <mat-error>
+                              {{ getErrorMessage('deposit', treatmentForm) }}
+                            </mat-error>
+                          </ng-container>
+                        </mat-form-field>
+                      </div>
+
+                      <!-- Fecha de Atención -->
+                      <div class="col-lg-6 mb-3">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Fecha de Atención</mat-label>
+                          <input matInput [matDatepicker]="treatmentPicker" formControlName="appointmentDate">
+                          <mat-datepicker-toggle matSuffix [for]="treatmentPicker"></mat-datepicker-toggle>
+                          <mat-datepicker #treatmentPicker></mat-datepicker>
+                          <ng-container
+                            *ngIf="treatmentForm.get('appointmentDate')?.invalid && treatmentForm.get('appointmentDate')?.touched">
+                            <mat-error>
+                              {{ getErrorMessage('appointmentDate', treatmentForm) }}
+                            </mat-error>
+                          </ng-container>
+                        </mat-form-field>
+                      </div>
+
+                      <!-- Estado -->
+                      <div class="col-lg-6 mb-3">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Estado</mat-label>
+                          <mat-select formControlName="status">
+                            <mat-option *ngFor="let estado of estados" [value]="estado">
+                              {{ estado }}
+                            </mat-option>
+                          </mat-select>
+                          <ng-container
+                            *ngIf="treatmentForm.get('status')?.invalid && treatmentForm.get('status')?.touched">
+                            <mat-error>
+                              {{ getErrorMessage('status', treatmentForm) }}
+                            </mat-error>
+                          </ng-container>
+                        </mat-form-field>
+                      </div>
+
+                      <!-- Observaciones -->
+                      <div class="col-lg-12 mb-3">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Observaciones</mat-label>
+                          <textarea matInput formControlName="observations" placeholder="Observaciones adicionales"
+                            rows="3"></textarea>
+                          <mat-hint>Opcional</mat-hint>
+                        </mat-form-field>
+                      </div>
+
+                      <!-- Botones de acción del tratamiento -->
+                      <div class="col-12 d-flex justify-content-end gap-2">
+                        <button mat-stroked-button color="warn" type="button" (click)="cancelTreatmentEdit()">
+                          Cancelar
+                        </button>
+                        <button mat-flat-button color="primary" type="button" [disabled]="treatmentForm.invalid"
+                          (click)="saveTreatment()">
+                          {{ currentTreatmentIndex !== null ? 'Actualizar' : 'Agregar' }} Tratamiento
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <!-- Archivos adjuntos -->
+            <div class="col-lg-12 mb-4">
+              <h4>Archivos Adjuntos</h4>
+              <p class="text-muted">Funcionalidad de adjuntos en desarrollo</p>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+              <button mat-stroked-button color="warn" type="button" [disabled]="isSubmitting" (click)="cancelar()">
+                Cancelar
+              </button>
+              <button mat-flat-button color="primary" type="submit"
+                [disabled]="fichaClinicaForm.invalid || treatments.length === 0 || isSubmitting">
+                <span *ngIf="!isSubmitting && !isEditMode">Guardar Ficha</span>
+                <span *ngIf="!isSubmitting && isEditMode">Actualizar Ficha</span>
+                <span *ngIf="isSubmitting" class="d-flex align-items-center">
+                  <i-tabler name="loader" class="icon-18 me-2 d-flex animate-spin"></i-tabler>
+                  <span *ngIf="!isEditMode">Guardando...</span>
+                  <span *ngIf="isEditMode">Actualizando...</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<style>
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Estilos para los Snackbar */
+  ::ng-deep .success-snackbar {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  ::ng-deep .error-snackbar {
+    background-color: #f44336;
+    color: white;
+  }
+
+  /* Estilos para el paginador */
+  ::ng-deep .mat-mdc-paginator {
+    background-color: transparent;
+  }
+</style>

@@ -1,0 +1,134 @@
+/* Estilos para el calendario */
+.calendar-container {
+  height: 650px;
+  margin-top: 20px;
+}
+
+.fc { /* the calendar root */
+  max-width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  font-family: inherit;
+}
+
+/* Estilos mejorados para los eventos */
+.fc-event {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 4px 6px;
+  margin: 2px 0;
+  border: none !important;
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.fc-event:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.fc-daygrid-event {
+  border-left-width: 4px !important;
+  padding-left: 6px !important;
+}
+
+.fc-event-title {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 2px;
+}
+
+.fc-event-time {
+  font-weight: bold;
+  margin-right: 4px;
+  display: inline-block;
+}
+
+/* Estilos para eventos en vista mes */
+.fc-daygrid-dot-event {
+  padding: 4px 8px !important;
+}
+
+.fc-daygrid-dot-event .fc-event-title {
+  font-weight: 500;
+}
+
+/* Estilos para eventos en vista semana/día */
+.fc-timegrid-event {
+  padding: 4px 8px !important;
+  border-left-width: 4px !important;
+}
+
+.fc-timegrid-event .fc-event-title {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+/* Estilos para el indicador de "más eventos" */
+.fc-daygrid-more-link {
+  font-weight: 500;
+  color: #5D87FF;
+  background-color: rgba(93, 135, 255, 0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+  margin-top: 2px;
+  display: inline-block;
+}
+
+.fc-toolbar-title {
+  font-size: 1.5em;
+  font-weight: 500;
+  color: #333;
+}
+
+.fc-button-primary {
+  background-color: #5D87FF !important;
+  border-color: #5D87FF !important;
+}
+
+.fc-button-primary:hover {
+  background-color: #4a6ecc !important;
+  border-color: #4a6ecc !important;
+}
+
+.fc-button-primary:disabled {
+  background-color: #9db5ff !important;
+  border-color: #9db5ff !important;
+}
+
+.fc-daygrid-day.fc-day-today {
+  background-color: rgba(93, 135, 255, 0.1) !important;
+}
+
+.fc-daygrid-day-number {
+  font-weight: 500;
+}
+
+.fc-col-header-cell {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .calendar-container {
+    height: 500px;
+  }
+  
+  .fc-toolbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+  }
+}

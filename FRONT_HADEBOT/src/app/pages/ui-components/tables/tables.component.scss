@@ -1,0 +1,262 @@
+/* Estilos para el chat */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 150px);
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.chat-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+}
+
+mat-card-content {
+  flex: 1;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.chat-messages {
+  height: 100%;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.user-message, .bot-message {
+  max-width: 80%;
+  margin-bottom: 8px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.user-message {
+  align-self: flex-end;
+}
+
+.bot-message {
+  align-self: flex-start;
+}
+
+.message-content {
+  display: flex;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.user-message .message-content {
+  background-color: #5D87FF;
+  color: white;
+  border-radius: 18px 18px 0 18px;
+}
+
+.bot-message .message-content {
+  background-color: #f0f2f5;
+  color: #333;
+  border-radius: 18px 18px 18px 0;
+}
+
+.message-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.bot-message .message-avatar {
+  background-color: #5D87FF;
+  color: white;
+}
+
+.user-message .message-avatar {
+  background-color: #4a6ecc;
+  color: white;
+}
+
+.message-text {
+  padding: 12px;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.message-sender {
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.message-time {
+  font-size: 11px;
+  opacity: 0.7;
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* Estilos para imágenes en el chat */
+.message-image {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  max-width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.chat-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+/* Estilos para la previsualización de imágenes */
+.image-preview-container {
+  padding: 0 16px;
+  margin-bottom: 16px;
+}
+
+.image-preview {
+  position: relative;
+  display: inline-block;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #5D87FF;
+}
+
+.preview-image {
+  max-height: 120px;
+  max-width: 200px;
+  object-fit: cover;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: rgba(255, 255, 255, 0.8);
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  min-width: unset;
+  padding: 0;
+}
+
+/* Estilos para el botón de adjuntar archivos */
+.attach-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.chat-input-container {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+}
+
+.chat-input {
+  flex: 1;
+}
+
+.suggestion-chips {
+  padding: 0 16px 16px;
+}
+
+mat-chip-option {
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+/* Indicador de escritura */
+.typing-indicator {
+  padding: 8px;
+}
+
+.typing-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+}
+
+.typing-dots span {
+  height: 8px;
+  width: 8px;
+  margin: 0 2px;
+  background-color: #5D87FF;
+  border-radius: 50%;
+  display: inline-block;
+  opacity: 0.4;
+}
+
+.typing-dots span:nth-child(1) {
+  animation: pulse 1s infinite;
+}
+
+.typing-dots span:nth-child(2) {
+  animation: pulse 1s infinite 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+  animation: pulse 1s infinite 0.4s;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .chat-container {
+    height: calc(100vh - 120px);
+  }
+  
+  .user-message, .bot-message {
+    max-width: 90%;
+  }
+  
+  .preview-image {
+    max-height: 100px;
+    max-width: 150px;
+  }
+}

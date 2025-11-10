@@ -1,0 +1,12 @@
+<div class="image-viewer-container">
+  <div class="image-viewer-header">
+    <h2 mat-dialog-title>Radiografía</h2>
+    <button mat-icon-button (click)="closeDialog()">
+      <i-tabler name="x" class="icon-18"></i-tabler>
+    </button>
+  </div>
+
+  <div mat-dialog-content class="image-content">
+    <img [src]="data.imageUrl" alt="Radiografía" class="full-image">
+  </div>
+</div>

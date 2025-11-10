@@ -1,0 +1,19 @@
+<div class="confirm-dialog-container">
+  <div class="dialog-header" [ngClass]="data.iconColor || 'text-danger'">
+    <i-tabler [name]="data.icon || 'alert-triangle'" class="icon-48 mb-3"></i-tabler>
+    <h2 mat-dialog-title>{{ data.title }}</h2>
+  </div>
+  
+  <mat-dialog-content>
+    <p>{{ data.message }}</p>
+  </mat-dialog-content>
+  
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="onCancel()">
+      {{ data.cancelText }}
+    </button>
+    <button mat-flat-button [color]="data.iconColor === 'text-warning' ? 'warn' : 'primary'" (click)="onConfirm()">
+      {{ data.confirmText }}
+    </button>
+  </mat-dialog-actions>
+</div>

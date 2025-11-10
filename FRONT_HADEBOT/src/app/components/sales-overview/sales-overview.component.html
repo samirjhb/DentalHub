@@ -1,0 +1,16 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <div class="d-flex w-100 mb-4">
+      <mat-card-title>Calendario de Citas</mat-card-title>
+    </div>
+    
+    <div class="calendar-container">
+      <full-calendar [options]='calendarOptions()'>
+        <ng-template #eventContent let-arg>
+          <b>{{ arg.timeText }}</b>
+          <i>{{ arg.event.title }}</i>
+        </ng-template>
+      </full-calendar>
+    </div>
+  </mat-card-content>
+</mat-card>
