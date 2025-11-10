@@ -1,0 +1,95 @@
+# Docker Compose para DESARROLLO
+# Para producción, usa: docker-compose.prod.yml
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongo:
+    image: mongo:latest
+    container_name: dental-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: dentalhub
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - dental-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # MongoDB Express - Interface de gestión
+  mongo-express:
+    image: mongo-express:latest
+    container_name: dental-mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    depends_on:
+      - mongo
+    networks:
+      - dental-network
+
+  # Backend NestJS
+  backend:
+    build:
+      context: ./DentalHUB_Backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: dental-backend
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MONGO_CONNECTION_TEST=mongodb://mongo:27017/dentalhub
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - dental-network
+    volumes:
+      - ./DentalHUB_Backend:/usr/src/app
+      - /usr/src/app/node_modules
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/documentation', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Angular
+  frontend:
+    build:
+      context: ./FRONT_HADEBOT
+      dockerfile: Dockerfile
+    container_name: dental-frontend
+    restart: always
+    ports:
+      - "4200:80"
+    environment:
+      - API_URL=http://localhost:3001/v1
+    depends_on:
+      - backend
+    networks:
+      - dental-network
+
+networks:
+  dental-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local
+
