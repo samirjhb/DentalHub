@@ -22,6 +22,7 @@ ARG API_URL=http://localhost:3001/v1
 
 # Instalar dependencias del frontend
 COPY FRONT_HADEBOT/package*.json ./
+COPY FRONT_HADEBOT/.npmrc ./
 RUN npm install
 
 # Copiar código del frontend y construir para producción
