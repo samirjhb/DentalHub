@@ -18,7 +18,7 @@ FROM node:20-alpine AS frontend-build
 
 WORKDIR /app/frontend
 
-ARG API_URL=http://localhost:3001/v1
+ARG API_URL=https://dentalhub-backend.onrender.com/v1
 
 # Instalar dependencias del frontend
 COPY FRONT_HADEBOT/package*.json ./
