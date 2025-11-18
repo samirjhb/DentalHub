@@ -37,10 +37,7 @@ services:
 
   # Backend NestJS
   backend:
-    build:
-      context: ./DentalHUB_Backend
-      dockerfile: Dockerfile
-      target: production
+    image: samirjhb/dentalhub:backend-latest
     container_name: dental-backend-prod
     restart: unless-stopped
     ports:
@@ -75,11 +72,7 @@ services:
 
   # Frontend Angular
   frontend:
-    build:
-      context: ./FRONT_HADEBOT
-      dockerfile: Dockerfile
-      args:
-        API_URL: ${API_URL:-http://localhost:3001/v1}
+    image: samirjhb/dentalhub:frontend-latest
     container_name: dental-frontend-prod
     restart: unless-stopped
     ports:
