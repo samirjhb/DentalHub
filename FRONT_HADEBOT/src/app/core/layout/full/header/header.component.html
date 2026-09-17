@@ -14,6 +14,9 @@
     <button mat-menu-item>Elemento 2</button>
   </mat-menu>
 
+  <button mat-icon-button (click)="toggleTheme()" aria-label="Cambiar tema">
+    <i-tabler class="d-flex" [name]="theme() === 'light' ? 'moon' : 'sun'"></i-tabler>
+  </button>
 
   <span class="flex-1-auto"></span>
 

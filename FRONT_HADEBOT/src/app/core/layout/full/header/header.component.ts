@@ -11,6 +11,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { AuthService } from 'src/app/core/auth/services/auth.service';
+import { ThemeService } from 'src/app/core/layout/services/theme.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -30,10 +31,17 @@ export class HeaderComponent {
   @Input() toggleChecked = false;
   @Output() toggleMobileNav = new EventEmitter<void>();
 
+  theme = this.themeService.theme;
+
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private themeService: ThemeService,
   ) {}
+
+  toggleTheme(): void {
+    this.themeService.toggle();
+  }
 
   logout(): void {
     // Llamar al método logout del servicio de autenticación

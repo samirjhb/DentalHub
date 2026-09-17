@@ -1,7 +1,12 @@
 {
-  "Starter": "Starter",
-  "Menu Level": "Menu Level",
-  "Menu 1": "Menu 1",
-  "Menu 2": "Menu 2",
-  "Disabled": "Disabled"
+  "Inicio": "Home",
+  "Dashboard": "Dashboard",
+  "Herramientas de Trabajo": "Work Tools",
+  "Paciente": "Patient",
+  "Agenda": "Schedule",
+  "Historia Clínica": "Medical Record",
+  "Chat": "Chat",
+  "Autenticación": "Authentication",
+  "Iniciar Sesión": "Log In",
+  "Registrarse": "Sign Up"
 }
