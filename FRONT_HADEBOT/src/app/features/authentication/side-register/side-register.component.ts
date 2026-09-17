@@ -8,10 +8,11 @@ import { MaterialModule } from 'src/app/shared/material.module';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { SessionManagerService } from 'src/app/core/auth/services/session-manager.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { BrandLogoComponent } from 'src/app/shared/components/brand-logo/brand-logo.component';
 
 @Component({
   selector: 'app-side-register',
-  imports: [RouterModule, MaterialModule, FormsModule, ReactiveFormsModule],
+  imports: [RouterModule, MaterialModule, FormsModule, ReactiveFormsModule, BrandLogoComponent],
   templateUrl: './side-register.component.html',
 })
 export class AppSideRegisterComponent implements OnInit {

@@ -1,7 +1,6 @@
 @use "badge";
 @use "button";
 @use "button-toggle";
-@use "card";
 @use "checkbox";
 @use "chip";
 @use "dialog";
@@ -10,6 +9,10 @@
 @use "list";
 @use "menu";
 @use "theme";
+// `card` (y `table`, que depende de la variable que `card` fija) deben cargar
+// DESPUÉS de `theme` — `mat.theme()` genera la baseline completa de tokens
+// M3 y pisaría el override de `elevated-container-color` si cargara antes.
+@use "card";
 @use "table";
 @use "typography";
 @use "drawer";
