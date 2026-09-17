@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { CommonModule, NgIf, NgFor } from '@angular/common';
-import { FichaClinicaService, ClinicalRecord, CreateClinicalRecordDto, DentalTreatment, AddTreatmentDto, UpdateStatusDto, AddDepositDto, UpdateAppointmentDateDto, FilterClinicalRecordDto } from 'src/app/features/historia-clinica/services/ficha-clinica.service';
+import { FichaClinicaService, ClinicalRecord, CreateClinicalRecordDto, DentalTreatment, AddTreatmentDto, UpdateStatusDto, UpdateAppointmentDateDto, FilterClinicalRecordDto } from 'src/app/features/historia-clinica/services/ficha-clinica.service';
 import { PacienteService } from 'src/app/core/services/paciente.service';
 import { MatIconModule } from '@angular/material/icon';
 import { TablerIconsModule } from 'angular-tabler-icons';
@@ -20,7 +20,9 @@ import { MatTableModule } from '@angular/material/table';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDividerModule } from '@angular/material/divider';
-import { DepositDialogComponent } from '../dialogs/deposit-dialog/deposit-dialog.component';
+import { PaymentDialogComponent, PaymentDialogResult } from 'src/app/shared/components/dialogs/payment-dialog/payment-dialog.component';
+import { BillingService } from 'src/app/core/services/billing.service';
+import { SessionManagerService } from 'src/app/core/auth/services/session-manager.service';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -166,7 +168,9 @@ export class FichaClinicaComponent implements OnInit {
     private dialog: MatDialog,
     private pdfService: PdfService,
     private selectedPatientService: SelectedPatientService,
-    private odontogramaService: OdontogramaService
+    private odontogramaService: OdontogramaService,
+    private billingService: BillingService,
+    private sessionManager: SessionManagerService
   ) { }
 
   // Inicializar el formulario principal de ficha clínica
@@ -887,8 +891,8 @@ export class FichaClinicaComponent implements OnInit {
   async addDeposit(treatmentIndex: number) {
     if (!this.selectedFicha) return;
     
-    // Abrir diálogo para ingresar monto
-    const dialogRef = this.dialog.open(DepositDialogComponent, {
+    // Abrir diálogo para ingresar monto y método de pago
+    const dialogRef = this.dialog.open(PaymentDialogComponent, {
       width: '400px',
       data: {
         title: 'Registrar Abono',
@@ -897,12 +901,14 @@ export class FichaClinicaComponent implements OnInit {
         cancelText: 'Cancelar',
         icon: 'cash',
         iconColor: 'text-success',
-        amount: 0
+        amount: 0,
+        method: 'EFECTIVO'
       }
     });
-    
-    dialogRef.afterClosed().subscribe(async (amount) => {
-      if (amount) {
+
+    dialogRef.afterClosed().subscribe(async (result: PaymentDialogResult | undefined) => {
+      if (result) {
+        const { amount, method } = result;
         if (amount <= 0) {
           this.snackBar.open('El monto debe ser mayor a cero', 'Cerrar', {
             duration: 5000,
@@ -910,15 +916,20 @@ export class FichaClinicaComponent implements OnInit {
           });
           return;
         }
-        
+
         try {
           if (this.selectedFicha) {
-            const depositData: AddDepositDto = { amount };
-            await this.fichaClinicaService.addTreatmentDeposit(
-              this.selectedFicha._id, 
-              treatmentIndex, 
-              depositData
-            );
+            const registeredBy = this.sessionManager.getUserId();
+            if (!registeredBy) {
+              throw new Error('No se pudo identificar al usuario logueado');
+            }
+            await this.billingService.registerPayment({
+              clinicalRecord: this.selectedFicha._id,
+              treatmentIndex,
+              amount,
+              method,
+              registeredBy
+            });
             
             // Actualizar los datos locales primero
             if (this.selectedFicha && this.selectedFicha.treatments && this.selectedFicha.treatments[treatmentIndex]) {

@@ -85,7 +85,15 @@ export class SessionManagerService {
     return this.decodeTokenClaim('email');
   }
 
-  private decodeTokenClaim(claim: 'role' | 'email'): string | null {
+  /**
+   * Decode the stored JWT's id claim (the logged-in user's Auth document id).
+   * @returns The user id string, or null if there is no token or it can't be decoded
+   */
+  getUserId(): string | null {
+    return this.decodeTokenClaim('id');
+  }
+
+  private decodeTokenClaim(claim: 'role' | 'email' | 'id'): string | null {
     const token = this.getToken();
     if (!token) return null;
 

@@ -1,6 +1,6 @@
-.deposit-dialog-container {
+.payment-dialog-container {
   padding: 20px;
-  min-width: 300px;
+  min-width: 320px;
 }
 
 .dialog-header {

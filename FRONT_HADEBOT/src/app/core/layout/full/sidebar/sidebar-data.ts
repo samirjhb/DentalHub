@@ -18,6 +18,15 @@ const CLINICAL_ROLES: Role[] = [
   Role.DENTAL_ASSISTANT,
 ];
 
+// Manejar dinero no es rol de HYGIENIST/DENTAL_ASSISTANT — mismo criterio
+// que FINANCIAL_ROLES en tools.routes.ts (backend en billing.controller.ts).
+const FINANCIAL_ROLES: Role[] = [
+  Role.SUPER_ADMIN,
+  Role.CLINIC_ADMIN,
+  Role.RECEPTIONIST,
+  Role.DENTIST,
+];
+
 export const navItems: NavItem[] = [
   {
     navCap: 'Inicio',
@@ -54,6 +63,12 @@ export const navItems: NavItem[] = [
     iconName: 'robot',
     route: '/herramientas-de-trabajo/chat',
     roles: STAFF_ROLES,
+  },
+  {
+    displayName: 'Cobranza',
+    iconName: 'cash',
+    route: '/herramientas-de-trabajo/cobranza',
+    roles: FINANCIAL_ROLES,
   },
 
   {

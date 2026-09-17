@@ -1,9 +1,9 @@
-<div class="deposit-dialog-container">
+<div class="payment-dialog-container">
   <div class="dialog-header" [ngClass]="data.iconColor || 'text-success'">
     <i-tabler [name]="data.icon || 'cash'" class="icon-48 mb-3"></i-tabler>
     <h2 mat-dialog-title>{{ data.title }}</h2>
   </div>
-  
+
   <mat-dialog-content>
     <p>{{ data.message }}</p>
     <mat-form-field appearance="outline" class="w-100 mt-3">
@@ -11,13 +11,22 @@
       <input matInput type="number" [(ngModel)]="data.amount" min="1" required>
       <span matTextPrefix>$</span>
     </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Método de pago</mat-label>
+      <mat-select [(ngModel)]="data.method">
+        <mat-option *ngFor="let option of methodOptions" [value]="option.value">
+          {{ option.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
   </mat-dialog-content>
-  
+
   <mat-dialog-actions align="end">
     <button mat-stroked-button (click)="onCancel()">
       {{ data.cancelText }}
     </button>
-    <button mat-flat-button color="primary" (click)="onConfirm()" [disabled]="data.amount <= 0">
+    <button mat-flat-button color="primary" (click)="onConfirm()" [disabled]="data.amount <= 0 || !data.method">
       {{ data.confirmText }}
     </button>
   </mat-dialog-actions>

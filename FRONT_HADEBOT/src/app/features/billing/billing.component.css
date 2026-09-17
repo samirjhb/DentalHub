@@ -1,0 +1,57 @@
+.billing-card {
+  padding: 24px;
+}
+
+.page-title {
+  margin: 0;
+}
+
+.page-subtitle {
+  color: rgba(0, 0, 0, 0.6);
+  margin: 4px 0 20px;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 24px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.section-title {
+  margin-top: 24px;
+}
+
+.balance-summary {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.balance-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.balance-item .label {
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.balance-item .value {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.text-success {
+  color: #13deb9;
+}
+
+.text-error {
+  color: #fa896b;
+}

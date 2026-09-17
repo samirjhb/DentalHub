@@ -10,6 +10,7 @@ import { ClinicalRecordModule } from './clinical-record/clinical-record.module';
 import { AiModule } from './ai/ai.module';
 import { OdontogramModule } from './odontogram/odontogram.module';
 import { AppointmentModule } from './appointment/appointment.module';
+import { BillingModule } from './billing/billing.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AppointmentModule } from './appointment/appointment.module';
     AiModule,
     OdontogramModule,
     AppointmentModule,
+    BillingModule,
   ],
   controllers: [],
   providers: [JwtStrategy],
