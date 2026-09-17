@@ -2,9 +2,18 @@
   <div class="col-lg-8">
     <app-sales-overview></app-sales-overview>
   </div>
-  <div class="col-lg-4">
-    <app-yearly-breakup></app-yearly-breakup>
-    <app-monthly-earnings></app-monthly-earnings>
+  <div class="col-lg-4 d-flex flex-column gap-16">
+    <app-stat-card
+      icon="users"
+      label="Pacientes registrados"
+      [value]="patientsCount"
+      accentColor="#5d87ff"
+    ></app-stat-card>
+    <app-stat-card
+      icon="calendar-event"
+      label="Citas de hoy"
+      [value]="todaysAppointmentsCount"
+      accentColor="#13deb9"
+    ></app-stat-card>
   </div>
 </div>
-

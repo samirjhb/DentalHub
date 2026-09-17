@@ -1,7 +1,12 @@
 {
-  "Starter": "Menüebene",
-  "Menu Level": "Menüebene",
-  "Menu 1": "Menü 1",
-  "Menu 2": "Menü 2",
-  "Disabled": "Behinderte"
+  "Inicio": "Start",
+  "Dashboard": "Dashboard",
+  "Herramientas de Trabajo": "Arbeitswerkzeuge",
+  "Paciente": "Patient",
+  "Agenda": "Terminplan",
+  "Historia Clínica": "Krankenakte",
+  "Chat": "Chat",
+  "Autenticación": "Authentifizierung",
+  "Iniciar Sesión": "Anmelden",
+  "Registrarse": "Registrieren"
 }

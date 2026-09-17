@@ -74,13 +74,25 @@ export class SessionManagerService {
    * @returns The role string, or null if there is no token or it can't be decoded
    */
   getRole(): string | null {
+    return this.decodeTokenClaim('role');
+  }
+
+  /**
+   * Decode the stored JWT's email claim.
+   * @returns The email string, or null if there is no token or it can't be decoded
+   */
+  getEmail(): string | null {
+    return this.decodeTokenClaim('email');
+  }
+
+  private decodeTokenClaim(claim: 'role' | 'email'): string | null {
     const token = this.getToken();
     if (!token) return null;
 
     try {
       const payload = token.split('.')[1];
       const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-      return decoded.role ?? null;
+      return decoded[claim] ?? null;
     } catch {
       return null;
     }

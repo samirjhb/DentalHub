@@ -1,7 +1,12 @@
 {
-  "Starter": "Analytique",
-  "Menu Level": "Niveau menu",
-  "Menu 1": "Menu 1",
-  "Menu 2": "Menu 2",
-  "Disabled": "Désactivé"
+  "Inicio": "Accueil",
+  "Dashboard": "Tableau de bord",
+  "Herramientas de Trabajo": "Outils de travail",
+  "Paciente": "Patient",
+  "Agenda": "Agenda",
+  "Historia Clínica": "Dossier médical",
+  "Chat": "Chat",
+  "Autenticación": "Authentification",
+  "Iniciar Sesión": "Se connecter",
+  "Registrarse": "S'inscrire"
 }

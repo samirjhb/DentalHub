@@ -19,6 +19,7 @@ import { navItems } from './sidebar/sidebar-data';
 import { AppTopstripComponent } from './top-strip/topstrip.component';
 import { SessionManagerService } from '../../auth/services/session-manager.service';
 import { Role } from '../../auth/enums/role.enum';
+import { ThemeService } from '../services/theme.service';
 
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
@@ -48,6 +49,7 @@ export class FullComponent implements OnInit {
   navItems = navItems.filter(
     (item) => !item.roles || item.roles.includes(this.sessionManager.getRole() as Role),
   );
+  theme = this.themeService.theme;
 
   @ViewChild('leftsidenav')
   public sidenav: MatSidenav;
@@ -71,6 +73,7 @@ export class FullComponent implements OnInit {
     private router: Router,
     private breakpointObserver: BreakpointObserver,
     private sessionManager: SessionManagerService,
+    private themeService: ThemeService,
   ) {
     this.htmlElement = document.querySelector('html')!;
     this.layoutChangesSubscription = this.breakpointObserver

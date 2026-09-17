@@ -8,10 +8,11 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { SessionManagerService } from 'src/app/core/auth/services/session-manager.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { BrandLogoComponent } from 'src/app/shared/components/brand-logo/brand-logo.component';
 
 @Component({
   selector: 'app-side-login',
-  imports: [RouterModule, MaterialModule, FormsModule, ReactiveFormsModule],
+  imports: [RouterModule, MaterialModule, FormsModule, ReactiveFormsModule, BrandLogoComponent],
   templateUrl: './side-login.component.html',
 })
 export class AppSideLoginComponent implements OnInit {
