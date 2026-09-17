@@ -1,0 +1,5 @@
+export enum PaymentMethod {
+  EFECTIVO = 'EFECTIVO',
+  TARJETA = 'TARJETA',
+  TRANSFERENCIA = 'TRANSFERENCIA',
+}

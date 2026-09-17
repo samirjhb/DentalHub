@@ -4,6 +4,7 @@ import { PacienteComponent } from './paciente/paciente.component';
 import { HistoriaClinicaComponent } from './historia-clinica/historia-clinica.component';
 import { AgendaComponent } from './agenda/agenda.component';
 import { ChatComponent } from './chat/chat.component';
+import { BillingComponent } from './billing/billing.component';
 import { RoleGuard } from '../core/auth/guards/role.guard';
 import { Role } from '../core/auth/enums/role.enum';
 
@@ -22,6 +23,16 @@ const CLINICAL_ROLES = [
   Role.DENTIST,
   Role.HYGIENIST,
   Role.DENTAL_ASSISTANT,
+];
+
+// Manejar dinero no es rol de HYGIENIST/DENTAL_ASSISTANT — a diferencia de
+// CLINICAL_ROLES, donde sí tienen lectura de datos clínicos. Mismo criterio
+// ya usado en billing.controller.ts (backend).
+const FINANCIAL_ROLES = [
+  Role.SUPER_ADMIN,
+  Role.CLINIC_ADMIN,
+  Role.RECEPTIONIST,
+  Role.DENTIST,
 ];
 
 // Archivo de composición de rutas (no una feature única): agrupa bajo
@@ -54,6 +65,12 @@ export const ToolsRoutes: Routes = [
         component: ChatComponent,
         canActivate: [RoleGuard],
         data: { roles: STAFF_ROLES },
+      },
+      {
+        path: 'cobranza',
+        component: BillingComponent,
+        canActivate: [RoleGuard],
+        data: { roles: FINANCIAL_ROLES },
       },
     ],
   },

@@ -2,7 +2,7 @@
   <div class="col-lg-8">
     <app-sales-overview></app-sales-overview>
   </div>
-  <div class="col-lg-4 d-flex flex-column gap-16">
+  <div class="col-lg-4" style="display: flex; flex-direction: column; gap: 16px">
     <app-stat-card
       icon="users"
       label="Pacientes registrados"
@@ -14,6 +14,13 @@
       label="Citas de hoy"
       [value]="todaysAppointmentsCount"
       accentColor="#13deb9"
+    ></app-stat-card>
+    <app-stat-card
+      *ngIf="canSeeTotalBalance && totalPendingBalance !== null"
+      icon="cash"
+      label="Saldo pendiente total"
+      [value]="'$' + totalPendingBalance"
+      accentColor="#fa896b"
     ></app-stat-card>
   </div>
 </div>
