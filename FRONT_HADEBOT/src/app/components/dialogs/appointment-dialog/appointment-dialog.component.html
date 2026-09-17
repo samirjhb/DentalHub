@@ -1,0 +1,60 @@
+<div class="appointment-dialog-container">
+  <div class="dialog-header">
+    <i-tabler name="calendar-event" class="icon-48 mb-3"></i-tabler>
+    <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nueva cita' : 'Editar cita' }}</h2>
+  </div>
+
+  <mat-dialog-content>
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Paciente</mat-label>
+      <mat-select [(ngModel)]="data.patient">
+        <mat-option *ngFor="let paciente of pacientes" [value]="paciente._id">
+          {{ paciente.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Odontólogo</mat-label>
+      <mat-select [(ngModel)]="data.dentist">
+        <mat-option *ngFor="let dentista of dentistas" [value]="dentista._id">
+          {{ dentista.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Fecha y hora</mat-label>
+      <input matInput type="datetime-local" [(ngModel)]="data.startAt" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Duración (minutos)</mat-label>
+      <input matInput type="number" min="1" [(ngModel)]="data.durationMinutes" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Motivo de consulta</mat-label>
+      <input matInput [(ngModel)]="data.reason" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Observaciones</mat-label>
+      <textarea matInput [(ngModel)]="data.observations" rows="2"></textarea>
+    </mat-form-field>
+
+    <mat-form-field *ngIf="data.mode === 'edit'" appearance="outline" class="w-100 mt-3">
+      <mat-label>Estado</mat-label>
+      <mat-select [(ngModel)]="data.status">
+        <mat-option *ngFor="let status of statusOptions" [value]="status">
+          {{ status }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onConfirm()">Guardar</button>
+  </mat-dialog-actions>
+</div>

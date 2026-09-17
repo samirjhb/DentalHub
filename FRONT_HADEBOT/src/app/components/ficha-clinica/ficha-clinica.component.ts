@@ -33,6 +33,12 @@ import { DirectivesModule } from 'src/app/directives/directives.module';
 import { PdfService } from 'src/app/services/pdf.service';
 import dentalPieces from 'src/assets/i18n/dental-pieces.json';
 import { ImageViewerDialogComponent } from '../shared/image-viewer-dialog/image-viewer-dialog.component';
+import { SelectedPatientService } from 'src/app/services/selected-patient.service';
+import { OdontogramaService } from 'src/app/services/odontograma.service';
+import {
+  ToothDialogComponent,
+  ToothDialogData,
+} from '../dialogs/tooth-dialog/tooth-dialog.component';
 
 // Interfaz para los datos de la tabla de fichas clínicas adaptada al modelo del backend
 export interface FichaClinicaData {
@@ -158,7 +164,9 @@ export class FichaClinicaComponent implements OnInit {
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
-    private pdfService: PdfService
+    private pdfService: PdfService,
+    private selectedPatientService: SelectedPatientService,
+    private odontogramaService: OdontogramaService
   ) { }
 
   // Inicializar el formulario principal de ficha clínica
@@ -216,6 +224,18 @@ export class FichaClinicaComponent implements OnInit {
     // En una aplicación real, obtendríamos el ID del dentista del servicio de autenticación
     // Por ahora, usamos un valor por defecto
     this.getCurrentDentist();
+
+    // Sincronización con el tab de Odontograma (Historia Clínica).
+    this.selectedPatientService.selectedPatientId.subscribe((patientId) => {
+      if (patientId && this.fichaClinicaForm.get('patient')?.value !== patientId) {
+        this.fichaClinicaForm.get('patient')?.setValue(patientId, { emitEvent: false });
+      }
+    });
+    this.fichaClinicaForm.get('patient')?.valueChanges.subscribe((patientId) => {
+      if (patientId) {
+        this.selectedPatientService.setSelectedPatient(patientId);
+      }
+    });
   }
 
   // Método para obtener el dentista actual (simulado)
@@ -994,6 +1014,13 @@ export class FichaClinicaComponent implements OnInit {
         duration: 5000,
         panelClass: ['success-snackbar']
       });
+
+      // Al completar un tratamiento sobre una pieza real, se OFRECE sincronizar el
+      // odontograma (nunca se infiere el estado resultante del texto del tratamiento:
+      // "Limpieza" completada no implica lo mismo que "Endodoncia" completada).
+      if (newStatus === 'Completado') {
+        this.offerOdontogramSync(treatmentIndex);
+      }
     } catch (error) {
       console.error('Error al actualizar estado:', error);
       this.snackBar.open('Error al actualizar estado', 'Cerrar', {
@@ -1002,7 +1029,51 @@ export class FichaClinicaComponent implements OnInit {
       });
     }
   }
-  
+
+  // Ofrece actualizar el odontograma tras completar un tratamiento — no bloquea ni
+  // adivina: si el paciente no tiene odontograma o el odontólogo cancela, no pasa nada.
+  private async offerOdontogramSync(treatmentIndex: number): Promise<void> {
+    const treatment = this.selectedFicha?.treatments?.[treatmentIndex];
+    const patient = this.selectedFicha?.patient;
+    const patientId = typeof patient === 'string' ? patient : patient?._id;
+    const toothNumber = treatment ? String((treatment as any).toothNumber) : null;
+    if (!patientId || !toothNumber) return;
+
+    let odontogram;
+    try {
+      odontogram = await this.odontogramaService.getByPatient(patientId);
+    } catch {
+      // Sin odontograma para este paciente todavía — se omite en silencio.
+      return;
+    }
+
+    const tooth = odontogram.teeth.find((t) => t.toothNumber === toothNumber);
+    if (!tooth) return;
+
+    const dialogRef = this.dialog.open(ToothDialogComponent, {
+      width: '420px',
+      data: {
+        toothNumber,
+        toothLabel: this.dentalPieces
+          .flatMap((g: any) => g.options)
+          .find((o: any) => o.value === toothNumber)?.label ?? toothNumber,
+        status: tooth.status,
+        observations: tooth.observations,
+      } as ToothDialogData,
+    });
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) return;
+      try {
+        await this.odontogramaService.updateTooth(patientId, toothNumber, result);
+        this.selectedPatientService.notifyOdontogramUpdated();
+        this.snackBar.open('Odontograma actualizado', 'Cerrar', { duration: 3000 });
+      } catch {
+        this.snackBar.open('Error al actualizar el odontograma', 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
+
   // Método para seleccionar la fecha (sin actualizar aún)
   selectDate(treatmentIndex: number, newDate: Date) {
     this.selectedDateTemp = newDate;

@@ -19,11 +19,14 @@ async registerService(data: any) {
    const response: any = await firstValueFrom(this.http.post(`${environment.apiUrl}/auth/register`, data));
    console.log(response);
    
-   // Store the token in session storage
+   // Store the tokens in session storage
    if (response && response.token) {
      this.sessionManager.setToken(response.token);
    }
-   
+   if (response && response.refreshToken) {
+     this.sessionManager.setRefreshToken(response.refreshToken);
+   }
+
    return response;
   } catch (error: any) {
     console.error('Registration error:', error);
@@ -46,11 +49,14 @@ async loginService(data: any) {
     const response: any = await firstValueFrom(this.http.post(`${environment.apiUrl}/auth/login`, data));
     console.log(response);
     
-    // Store the token in session storage
+    // Store the tokens in session storage
     if (response && response.token) {
       this.sessionManager.setToken(response.token);
     }
-    
+    if (response && response.refreshToken) {
+      this.sessionManager.setRefreshToken(response.refreshToken);
+    }
+
     return response;
   } catch (error: any) {
     console.error('Login error:', error);
@@ -69,7 +75,14 @@ async loginService(data: any) {
 }
 
 logout() {
-  // Clear the token from session storage
+  // Revocar el refresh token en el backend (best-effort, no bloquea la UI) antes
+  // de limpiar la sesión local.
+  const refreshToken = this.sessionManager.getRefreshToken();
+  if (refreshToken) {
+    this.http.post(`${environment.apiUrl}/auth/logout`, { refreshToken }).subscribe({
+      error: () => {}
+    });
+  }
   this.sessionManager.clearToken();
 }
 

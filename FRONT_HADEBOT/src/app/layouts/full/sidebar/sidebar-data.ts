@@ -19,9 +19,14 @@ export const navItems: NavItem[] = [
     route: '/herramientas-de-trabajo/paciente',
   },
   {
-    displayName: 'Ficha Clínica',
+    displayName: 'Agenda',
+    iconName: 'calendar',
+    route: '/herramientas-de-trabajo/agenda',
+  },
+  {
+    displayName: 'Historia Clínica',
     iconName: 'file-text',
-    route: '/herramientas-de-trabajo/fichaClinica',
+    route: '/herramientas-de-trabajo/historia-clinica',
   },
   {
     displayName: 'Chat',
