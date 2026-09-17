@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
-import { BlankComponent } from './layouts/blank/blank.component';
-import { FullComponent } from './layouts/full/full.component';
-import { AuthGuard } from './guards/auth.guard';
+import { BlankComponent } from './core/layout/blank/blank.component';
+import { FullComponent } from './core/layout/full/full.component';
+import { AuthGuard } from './core/auth/guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
     component: FullComponent,
-    canActivate: [AuthGuard], 
+    canActivate: [AuthGuard],
     children: [
       {
         path: '',
@@ -17,14 +17,12 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadChildren: () =>
-          import('./pages/pages.routes').then((m) => m.PagesRoutes),
+          import('./features/dashboard/dashboard.routes').then((m) => m.DashboardRoutes),
       },
       {
         path: 'herramientas-de-trabajo',
         loadChildren: () =>
-          import('./pages/ui-components/ui-components.routes').then(
-            (m) => m.UiComponentsRoutes
-          ),
+          import('./features/tools.routes').then((m) => m.ToolsRoutes),
       },
     ],
   },
@@ -35,14 +33,16 @@ export const routes: Routes = [
       {
         path: 'authentication',
         loadChildren: () =>
-          import('./pages/authentication/authentication.routes').then(
+          import('./features/authentication/authentication.routes').then(
             (m) => m.AuthenticationRoutes
           ),
       },
     ],
   },
   {
+    // Antes redirigía a 'authentication/error', una ruta inexistente (bug
+    // preexistente) — mismo destino que usa RoleGuard al bloquear una ruta.
     path: '**',
-    redirectTo: 'authentication/error',
+    redirectTo: '/dashboard',
   },
 ];

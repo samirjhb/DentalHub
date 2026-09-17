@@ -28,9 +28,9 @@ import * as TablerIcons from 'angular-tabler-icons/icons';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 
 //Import all material modules
-import { MaterialModule } from './material.module';
+import { MaterialModule } from './shared/material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { AuthInterceptor } from './core/auth/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
