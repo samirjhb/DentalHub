@@ -1,0 +1,124 @@
+<mat-card class="odontograma-card">
+  <h2 class="page-title">Odontograma</h2>
+  <p class="page-subtitle">Mapa dental del paciente por pieza (notación FDI)</p>
+
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Paciente</mat-label>
+    <mat-select [(ngModel)]="selectedPatientId" (selectionChange)="onPatientChange()">
+      <mat-option *ngFor="let paciente of pacientes" [value]="paciente._id">
+        {{ paciente.name }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+  <div *ngIf="!selectedPatientId" class="empty-state">
+    Seleccione un paciente para ver su odontograma.
+  </div>
+
+  <div *ngIf="selectedPatientId && hasNoOdontogram && !isLoading" class="empty-state">
+    <p>Este paciente aún no tiene un odontograma registrado.</p>
+    <button mat-flat-button color="primary" [disabled]="isSaving" (click)="crearOdontograma()">
+      <i-tabler name="plus" class="icon-18"></i-tabler>
+      Crear odontograma
+    </button>
+  </div>
+
+  <div *ngIf="odontogram && !isLoading" class="odontogram-body">
+    <div class="legend">
+      <span class="legend-item" *ngFor="let entry of legendEntries">
+        <span class="legend-dot" [style.background]="entry.color"></span>
+        {{ entry.status }}
+      </span>
+    </div>
+
+    <div class="dental-chart">
+      <div class="arch upper-arch">
+        <div class="quadrant">
+          <div
+            class="tooth-slot"
+            *ngFor="let toothNumber of upperRight"
+            [matTooltip]="getToothLabel(toothNumber)"
+            (click)="openToothDialog(toothNumber)"
+          >
+            <svg viewBox="0 0 40 52" class="tooth-svg tooth-flip">
+              <path
+                d="M20 2 C10 2 6 10 6 18 C6 24 8 28 10 32 C11 36 12 42 15 46 C16 47 18 45 18 40 C18 36 19 34 20 34 C21 34 22 36 22 40 C22 45 24 47 25 46 C28 42 29 36 30 32 C32 28 34 24 34 18 C34 10 30 2 20 2 Z"
+                [attr.fill]="getToothColor(toothNumber)"
+                class="tooth-shape"
+              ></path>
+            </svg>
+            <span class="tooth-number">{{ toothNumber }}</span>
+          </div>
+        </div>
+        <div class="midline"></div>
+        <div class="quadrant">
+          <div
+            class="tooth-slot"
+            *ngFor="let toothNumber of upperLeft"
+            [matTooltip]="getToothLabel(toothNumber)"
+            (click)="openToothDialog(toothNumber)"
+          >
+            <svg viewBox="0 0 40 52" class="tooth-svg tooth-flip">
+              <path
+                d="M20 2 C10 2 6 10 6 18 C6 24 8 28 10 32 C11 36 12 42 15 46 C16 47 18 45 18 40 C18 36 19 34 20 34 C21 34 22 36 22 40 C22 45 24 47 25 46 C28 42 29 36 30 32 C32 28 34 24 34 18 C34 10 30 2 20 2 Z"
+                [attr.fill]="getToothColor(toothNumber)"
+                class="tooth-shape"
+              ></path>
+            </svg>
+            <span class="tooth-number">{{ toothNumber }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bite-line"></div>
+
+      <div class="arch lower-arch">
+        <div class="quadrant">
+          <div
+            class="tooth-slot"
+            *ngFor="let toothNumber of lowerRight"
+            [matTooltip]="getToothLabel(toothNumber)"
+            (click)="openToothDialog(toothNumber)"
+          >
+            <span class="tooth-number">{{ toothNumber }}</span>
+            <svg viewBox="0 0 40 52" class="tooth-svg">
+              <path
+                d="M20 2 C10 2 6 10 6 18 C6 24 8 28 10 32 C11 36 12 42 15 46 C16 47 18 45 18 40 C18 36 19 34 20 34 C21 34 22 36 22 40 C22 45 24 47 25 46 C28 42 29 36 30 32 C32 28 34 24 34 18 C34 10 30 2 20 2 Z"
+                [attr.fill]="getToothColor(toothNumber)"
+                class="tooth-shape"
+              ></path>
+            </svg>
+          </div>
+        </div>
+        <div class="midline"></div>
+        <div class="quadrant">
+          <div
+            class="tooth-slot"
+            *ngFor="let toothNumber of lowerLeft"
+            [matTooltip]="getToothLabel(toothNumber)"
+            (click)="openToothDialog(toothNumber)"
+          >
+            <span class="tooth-number">{{ toothNumber }}</span>
+            <svg viewBox="0 0 40 52" class="tooth-svg">
+              <path
+                d="M20 2 C10 2 6 10 6 18 C6 24 8 28 10 32 C11 36 12 42 15 46 C16 47 18 45 18 40 C18 36 19 34 20 34 C21 34 22 36 22 40 C22 45 24 47 25 46 C28 42 29 36 30 32 C32 28 34 24 34 18 C34 10 30 2 20 2 Z"
+                [attr.fill]="getToothColor(toothNumber)"
+                class="tooth-shape"
+              ></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Observaciones generales</mat-label>
+      <textarea matInput [(ngModel)]="generalObservations" rows="3"></textarea>
+    </mat-form-field>
+    <button mat-flat-button color="primary" [disabled]="isSaving" (click)="guardarObservacionesGenerales()">
+      Guardar observaciones
+    </button>
+  </div>
+</mat-card>

@@ -1,0 +1,12 @@
+.agenda-card {
+  padding: 24px;
+}
+
+.page-title {
+  margin: 0;
+}
+
+.page-subtitle {
+  color: rgba(0, 0, 0, 0.6);
+  margin: 4px 0 20px;
+}

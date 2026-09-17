@@ -1,0 +1,28 @@
+<div class="tooth-dialog-container">
+  <div class="dialog-header">
+    <i-tabler name="dental" class="icon-48 mb-3"></i-tabler>
+    <h2 mat-dialog-title>Pieza {{ data.toothNumber }}</h2>
+    <p class="tooth-label">{{ data.toothLabel }}</p>
+  </div>
+
+  <mat-dialog-content>
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Estado</mat-label>
+      <mat-select [(ngModel)]="data.status">
+        <mat-option *ngFor="let option of statusOptions" [value]="option.value">
+          {{ option.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Observaciones</mat-label>
+      <textarea matInput [(ngModel)]="data.observations" rows="3"></textarea>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onConfirm()">Guardar</button>
+  </mat-dialog-actions>
+</div>

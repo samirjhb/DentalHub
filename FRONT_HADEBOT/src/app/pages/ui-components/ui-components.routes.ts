@@ -7,15 +7,20 @@ import { AppMenuComponent } from './menu/menu.component';
 import { AppTooltipsComponent } from './tooltips/tooltips.component';
 import { AppChatComponent } from './tables/tables.component';
 import { PacienteComponent } from 'src/app/components/paciente/paciente.component';
-import { FichaClinicaComponent } from 'src/app/components/ficha-clinica/ficha-clinica.component';
+import { HistoriaClinicaComponent } from 'src/app/components/historia-clinica/historia-clinica.component';
+import { AgendaComponent } from 'src/app/components/agenda/agenda.component';
 
 export const UiComponentsRoutes: Routes = [
   {
     path: '',
     children: [
       {
-        path: 'fichaClinica',
-        component: FichaClinicaComponent,
+        path: 'historia-clinica',
+        component: HistoriaClinicaComponent,
+      },
+      {
+        path: 'agenda',
+        component: AgendaComponent,
       },
       {
         path: 'chips',

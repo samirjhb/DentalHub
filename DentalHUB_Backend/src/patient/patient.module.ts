@@ -1,19 +1,37 @@
 import { Module } from '@nestjs/common';
-import { PatientService } from './patient.service';
-import { PatientController } from './patient.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Patient, PatientSchema } from './schema/patient.schema';
+import {
+  Patient,
+  PatientSchema,
+} from './infrastructure/persistence/mongo/patient.schema';
+import { PatientController } from './infrastructure/controllers/patient.controller';
+import { PatientRepository } from './domain/repositories/patient.repository';
+import { PatientMongoRepository } from './infrastructure/persistence/mongo/patient-mongo.repository';
+import { CreatePatientUseCase } from './application/use-cases/create-patient.use-case';
+import { FindAllPatientsUseCase } from './application/use-cases/find-all-patients.use-case';
+import { FindPatientByIdUseCase } from './application/use-cases/find-patient-by-id.use-case';
+import { UpdatePatientUseCase } from './application/use-cases/update-patient.use-case';
+import { RemovePatientUseCase } from './application/use-cases/remove-patient.use-case';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {
+        // Sigue siendo el token literal 'Patient' — clinical-record depende de
+        // este nombre exacto para su propio registro independiente del modelo.
         name: Patient.name,
         schema: PatientSchema,
       },
     ]),
   ],
   controllers: [PatientController],
-  providers: [PatientService],
+  providers: [
+    { provide: PatientRepository, useClass: PatientMongoRepository },
+    CreatePatientUseCase,
+    FindAllPatientsUseCase,
+    FindPatientByIdUseCase,
+    UpdatePatientUseCase,
+    RemovePatientUseCase,
+  ],
 })
 export class PatientModule {}

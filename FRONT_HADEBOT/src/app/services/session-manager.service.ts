@@ -6,6 +6,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 })
 export class SessionManagerService {
   private readonly TOKEN_KEY = 'auth_token';
+  private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
 
   constructor() { }
@@ -40,7 +41,24 @@ export class SessionManagerService {
    */
   clearToken(): void {
     sessionStorage.removeItem(this.TOKEN_KEY);
+    sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
     this.isAuthenticatedSubject.next(false);
+  }
+
+  /**
+   * Store the refresh token in session storage
+   * @param refreshToken The refresh token to store
+   */
+  setRefreshToken(refreshToken: string): void {
+    sessionStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+  }
+
+  /**
+   * Get the stored refresh token
+   * @returns The refresh token or null if not found
+   */
+  getRefreshToken(): string | null {
+    return sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
   /**
@@ -49,5 +67,22 @@ export class SessionManagerService {
    */
   isAuthenticated(): Observable<boolean> {
     return this.isAuthenticatedSubject.asObservable();
+  }
+
+  /**
+   * Decode the stored JWT's role claim, set by the backend on login/register.
+   * @returns The role string, or null if there is no token or it can't be decoded
+   */
+  getRole(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+      return decoded.role ?? null;
+    } catch {
+      return null;
+    }
   }
 }
