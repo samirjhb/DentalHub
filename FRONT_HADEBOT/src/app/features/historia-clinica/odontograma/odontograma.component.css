@@ -97,6 +97,7 @@
 }
 
 .tooth-slot {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -113,6 +114,30 @@
 
 .tooth-slot:hover .tooth-shape {
   filter: brightness(1.1);
+}
+
+.tooth-status-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #5d87ff;
+}
+
+.tooth-status-btn i-tabler {
+  width: 10px;
+  height: 10px;
 }
 
 .tooth-svg {

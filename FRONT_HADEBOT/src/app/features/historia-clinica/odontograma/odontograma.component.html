@@ -2,7 +2,7 @@
   <h2 class="page-title">Odontograma</h2>
   <p class="page-subtitle">Mapa dental del paciente por pieza (notación FDI)</p>
 
-  <mat-form-field appearance="outline" class="w-100">
+  <mat-form-field appearance="outline" class="w-100" *ngIf="showPatientSelector">
     <mat-label>Paciente</mat-label>
     <mat-select [(ngModel)]="selectedPatientId" (selectionChange)="onPatientChange()">
       <mat-option *ngFor="let paciente of pacientes" [value]="paciente._id">
@@ -50,6 +50,15 @@
               ></path>
             </svg>
             <span class="tooth-number">{{ toothNumber }}</span>
+            <button
+              *ngIf="treatmentMode"
+              type="button"
+              class="tooth-status-btn"
+              matTooltip="Agregar tratamiento para esta pieza"
+              (click)="onChangeStatusClick($event, toothNumber)"
+            >
+              <i-tabler name="edit"></i-tabler>
+            </button>
           </div>
         </div>
         <div class="midline"></div>
@@ -68,6 +77,15 @@
               ></path>
             </svg>
             <span class="tooth-number">{{ toothNumber }}</span>
+            <button
+              *ngIf="treatmentMode"
+              type="button"
+              class="tooth-status-btn"
+              matTooltip="Agregar tratamiento para esta pieza"
+              (click)="onChangeStatusClick($event, toothNumber)"
+            >
+              <i-tabler name="edit"></i-tabler>
+            </button>
           </div>
         </div>
       </div>
@@ -90,6 +108,15 @@
                 class="tooth-shape"
               ></path>
             </svg>
+            <button
+              *ngIf="treatmentMode"
+              type="button"
+              class="tooth-status-btn"
+              matTooltip="Agregar tratamiento para esta pieza"
+              (click)="onChangeStatusClick($event, toothNumber)"
+            >
+              <i-tabler name="edit"></i-tabler>
+            </button>
           </div>
         </div>
         <div class="midline"></div>
@@ -108,6 +135,15 @@
                 class="tooth-shape"
               ></path>
             </svg>
+            <button
+              *ngIf="treatmentMode"
+              type="button"
+              class="tooth-status-btn"
+              matTooltip="Agregar tratamiento para esta pieza"
+              (click)="onChangeStatusClick($event, toothNumber)"
+            >
+              <i-tabler name="edit"></i-tabler>
+            </button>
           </div>
         </div>
       </div>
@@ -117,7 +153,13 @@
       <mat-label>Observaciones generales</mat-label>
       <textarea matInput [(ngModel)]="generalObservations" rows="3"></textarea>
     </mat-form-field>
-    <button mat-flat-button color="primary" [disabled]="isSaving" (click)="guardarObservacionesGenerales()">
+    <button
+      *ngIf="showObservationsSaveButton"
+      mat-flat-button
+      color="primary"
+      [disabled]="isSaving"
+      (click)="guardarObservacionesGenerales()"
+    >
       Guardar observaciones
     </button>
   </div>

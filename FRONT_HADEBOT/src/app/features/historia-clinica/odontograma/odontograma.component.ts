@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule, NgIf, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -75,6 +75,24 @@ const STATUS_COLORS: Record<ToothStatus, string> = {
   ],
 })
 export class OdontogramaComponent implements OnInit {
+  // false cuando se embebe dentro de otra pantalla (ej. Ficha Clínica) que ya
+  // tiene su propio selector de paciente y sincroniza vía SelectedPatientService.
+  @Input() showPatientSelector = true;
+
+  // true cuando se embebe dentro de Ficha Clínica: clic en una pieza deja de
+  // abrir el diálogo de solo-estado y en su lugar emite addTreatmentForTooth,
+  // para que el padre abra el alta de tratamiento con esa pieza precargada.
+  @Input() treatmentMode = false;
+  @Output() addTreatmentForTooth = new EventEmitter<{
+    toothNumber: string;
+    toothLabel: string;
+  }>();
+
+  // false cuando se embebe dentro de Ficha Clínica: el botón propio de
+  // "Guardar observaciones" se oculta, porque esas observaciones pasan a
+  // guardarse junto con "Guardar Ficha" (ver ficha-clinica.component.ts).
+  @Input() showObservationsSaveButton = true;
+
   pacientes: any[] = [];
   selectedPatientId: string | null = null;
 
@@ -106,7 +124,9 @@ export class OdontogramaComponent implements OnInit {
 
   ngOnInit(): void {
     this.buildToothLabels();
-    this.loadPacientes();
+    if (this.showPatientSelector) {
+      this.loadPacientes();
+    }
 
     // Sincroniza con el paciente elegido desde el tab de Ficha Clínica (Historia Clínica).
     this.selectedPatientService.selectedPatientId.subscribe((patientId) => {
@@ -217,6 +237,26 @@ export class OdontogramaComponent implements OnInit {
   }
 
   openToothDialog(toothNumber: string): void {
+    if (this.treatmentMode) {
+      this.addTreatmentForTooth.emit({
+        toothNumber,
+        toothLabel: this.getToothLabel(toothNumber),
+      });
+      return;
+    }
+
+    this.openStatusDialog(toothNumber);
+  }
+
+  // Segundo punto de entrada al mismo flujo que el clic principal (abre el
+  // alta de tratamiento con la pieza precargada) — stopPropagation evita que
+  // el clic también dispare el handler del .tooth-slot padre.
+  onChangeStatusClick(event: MouseEvent, toothNumber: string): void {
+    event.stopPropagation();
+    this.openToothDialog(toothNumber);
+  }
+
+  private openStatusDialog(toothNumber: string): void {
     const tooth = this.getTooth(toothNumber);
     if (!this.odontogram || !tooth || !this.selectedPatientId) return;
 
@@ -248,21 +288,25 @@ export class OdontogramaComponent implements OnInit {
     });
   }
 
-  guardarObservacionesGenerales(): void {
-    if (!this.selectedPatientId) return;
+  guardarObservacionesGenerales(showFeedback = true): void {
+    if (!this.selectedPatientId || !this.odontogram) return;
     this.isSaving = true;
     this.odontogramaService
       .updateGeneralObservations(this.selectedPatientId, this.generalObservations)
       .then((odontogram) => {
         this.odontogram = odontogram;
-        this.snackBar.open('Observaciones guardadas', 'Cerrar', {
-          duration: 2000,
-        });
+        if (showFeedback) {
+          this.snackBar.open('Observaciones guardadas', 'Cerrar', {
+            duration: 2000,
+          });
+        }
       })
       .catch(() => {
-        this.snackBar.open('Error al guardar las observaciones', 'Cerrar', {
-          duration: 3000,
-        });
+        if (showFeedback) {
+          this.snackBar.open('Error al guardar las observaciones', 'Cerrar', {
+            duration: 3000,
+          });
+        }
       })
       .finally(() => {
         this.isSaving = false;
