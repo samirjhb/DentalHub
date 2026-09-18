@@ -5,6 +5,8 @@ import { HistoriaClinicaComponent } from './historia-clinica/historia-clinica.co
 import { AgendaComponent } from './agenda/agenda.component';
 import { ChatComponent } from './chat/chat.component';
 import { BillingComponent } from './billing/billing.component';
+import { InventarioComponent } from './inventario/inventario.component';
+import { ReportesComponent } from './reportes/reportes.component';
 import { RoleGuard } from '../core/auth/guards/role.guard';
 import { Role } from '../core/auth/enums/role.enum';
 
@@ -34,6 +36,10 @@ const FINANCIAL_ROLES = [
   Role.RECEPTIONIST,
   Role.DENTIST,
 ];
+
+// Métricas de gestión, no operativas — mismo criterio que TOTAL_BALANCE_ROLES
+// de billing.controller.ts (backend en reports.controller.ts).
+const REPORTS_ROLES = [Role.SUPER_ADMIN, Role.CLINIC_ADMIN];
 
 // Archivo de composición de rutas (no una feature única): agrupa bajo
 // /herramientas-de-trabajo/* las pantallas de varias features, preservando
@@ -71,6 +77,18 @@ export const ToolsRoutes: Routes = [
         component: BillingComponent,
         canActivate: [RoleGuard],
         data: { roles: FINANCIAL_ROLES },
+      },
+      {
+        path: 'inventario',
+        component: InventarioComponent,
+        canActivate: [RoleGuard],
+        data: { roles: STAFF_ROLES },
+      },
+      {
+        path: 'reportes',
+        component: ReportesComponent,
+        canActivate: [RoleGuard],
+        data: { roles: REPORTS_ROLES },
       },
     ],
   },

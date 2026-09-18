@@ -1,0 +1,48 @@
+.reportes-card {
+  padding: 24px;
+  margin: 16px;
+}
+
+.page-title {
+  margin-bottom: 4px;
+}
+
+.page-subtitle {
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 20px;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.kpi-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi-row app-stat-card {
+  flex: 1 1 220px;
+}
+
+.charts-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.chart-card {
+  flex: 1 1 400px;
+  padding: 16px;
+}
+
+.chart-card h3 {
+  margin-bottom: 8px;
+}

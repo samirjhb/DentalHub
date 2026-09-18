@@ -27,6 +27,10 @@ const FINANCIAL_ROLES: Role[] = [
   Role.DENTIST,
 ];
 
+// Métricas de gestión, no operativas — mismo criterio que TOTAL_BALANCE_ROLES
+// de billing.controller.ts (backend en reports.controller.ts).
+const REPORTS_ROLES: Role[] = [Role.SUPER_ADMIN, Role.CLINIC_ADMIN];
+
 export const navItems: NavItem[] = [
   {
     navCap: 'Inicio',
@@ -69,6 +73,18 @@ export const navItems: NavItem[] = [
     iconName: 'cash',
     route: '/herramientas-de-trabajo/cobranza',
     roles: FINANCIAL_ROLES,
+  },
+  {
+    displayName: 'Inventario',
+    iconName: 'box',
+    route: '/herramientas-de-trabajo/inventario',
+    roles: STAFF_ROLES,
+  },
+  {
+    displayName: 'Reportes',
+    iconName: 'chart-bar',
+    route: '/herramientas-de-trabajo/reportes',
+    roles: REPORTS_ROLES,
   },
 
   {

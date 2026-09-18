@@ -1,0 +1,15 @@
+import { Injectable } from '@nestjs/common';
+import { ReportsRepository } from '../../domain/repositories/reports.repository';
+import { ReportsDateRangeDto } from '../dto/reports-date-range.dto';
+
+@Injectable()
+export class GetAppointmentsReportUseCase {
+  constructor(private readonly repository: ReportsRepository) {}
+
+  async execute(dto: ReportsDateRangeDto) {
+    return this.repository.getAppointmentsSummary({
+      startDate: dto.startDate ? new Date(dto.startDate) : undefined,
+      endDate: dto.endDate ? new Date(dto.endDate) : undefined,
+    });
+  }
+}

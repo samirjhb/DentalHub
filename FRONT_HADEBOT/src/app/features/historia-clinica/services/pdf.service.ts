@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FichaClinicaData } from '../ficha-clinica/ficha-clinica.component';
+import { Prescription } from './prescription.service';
 
 @Injectable({
   providedIn: 'root'
@@ -153,5 +154,130 @@ export class PdfService {
     
     // Guardar el PDF
     doc.save(`Presupuesto_${ficha.patient.name || 'Paciente'}_${new Date().toISOString().slice(0, 10)}.pdf`);
+  }
+
+  /**
+   * Genera una receta en PDF para una prescripción
+   * @param prescription Datos de la receta
+   * @param patientName Nombre del paciente (resuelto por el componente, la receta solo tiene el ID)
+   * @param dentistName Nombre del odontólogo (resuelto por el componente, la receta solo tiene el ID)
+   * @param logoUrl URL del logo a incluir en el PDF
+   */
+  generatePrescriptionPdf(
+    prescription: Prescription,
+    patientName: string,
+    dentistName: string,
+    logoUrl: string,
+  ): void {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    if (logoUrl) {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0);
+          const dataUrl = canvas.toDataURL('image/png');
+
+          const logoWidth = 25;
+          const logoHeight = 25;
+          doc.addImage(dataUrl, 'PNG', 15, 15, logoWidth, logoHeight);
+
+          this.completePrescriptionPdf(doc, prescription, patientName, dentistName, pageWidth, pageHeight);
+        } catch (error) {
+          console.error('Error al procesar el logo:', error);
+          this.completePrescriptionPdf(doc, prescription, patientName, dentistName, pageWidth, pageHeight);
+        }
+      };
+
+      img.onerror = () => {
+        console.error('Error al cargar el logo');
+        this.completePrescriptionPdf(doc, prescription, patientName, dentistName, pageWidth, pageHeight);
+      };
+
+      img.src = logoUrl;
+    } else {
+      this.completePrescriptionPdf(doc, prescription, patientName, dentistName, pageWidth, pageHeight);
+    }
+  }
+
+  private completePrescriptionPdf(
+    doc: jsPDF,
+    prescription: Prescription,
+    patientName: string,
+    dentistName: string,
+    pageWidth: number,
+    pageHeight: number,
+  ): void {
+    doc.setFontSize(22);
+    doc.setTextColor(0, 102, 204);
+    doc.text('RECETA MÉDICA', pageWidth - 15, 30, { align: 'right' });
+
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Clínica Dental - Atención Especializada', pageWidth - 15, 40, { align: 'right' });
+    doc.text('Teléfono: +56 9 1234 5678 | Email: contacto@clinicadental.cl', pageWidth - 15, 45, { align: 'right' });
+    doc.text('Dirección: Av. Principal 123, Santiago, Chile', pageWidth - 15, 50, { align: 'right' });
+
+    doc.setDrawColor(0, 102, 204);
+    doc.setLineWidth(0.5);
+    doc.line(15, 60, pageWidth - 15, 60);
+
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Paciente: ${patientName || 'No especificado'}`, 15, 70);
+    doc.text(
+      `Fecha: ${new Date(prescription.issuedAt).toLocaleDateString('es-CL')}`,
+      15,
+      75,
+    );
+    doc.text(`Receta #: ${prescription._id.substring(0, 8)}`, pageWidth - 15, 70, { align: 'right' });
+    doc.text(`Dentista: ${dentistName || 'No especificado'}`, pageWidth - 15, 75, { align: 'right' });
+
+    const tableData = prescription.medications.map((medication) => [
+      medication.name,
+      medication.dosage,
+      medication.frequency,
+      medication.duration,
+      medication.instructions || '-',
+    ]);
+
+    autoTable(doc, {
+      startY: 90,
+      head: [['Medicamento', 'Dosis', 'Frecuencia', 'Duración', 'Instrucciones']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [0, 102, 204],
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: {
+        fillColor: [240, 240, 240],
+      },
+      margin: { top: 85 },
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY || 120;
+
+    if (prescription.observations) {
+      doc.setFontSize(11);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Observaciones:', 15, finalY + 20);
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(prescription.observations, 15, finalY + 28, { maxWidth: pageWidth - 30 });
+    }
+
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text('© Clínica Dental - Todos los derechos reservados', pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+    doc.save(`Receta_${patientName || 'Paciente'}_${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 }

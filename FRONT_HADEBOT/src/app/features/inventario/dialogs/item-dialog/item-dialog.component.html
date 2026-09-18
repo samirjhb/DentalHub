@@ -1,0 +1,37 @@
+<div class="item-dialog-container">
+  <h2 mat-dialog-title>Nuevo insumo</h2>
+
+  <mat-dialog-content>
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Nombre</mat-label>
+      <input matInput [(ngModel)]="data.name" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Unidad de medida</mat-label>
+      <input matInput [(ngModel)]="data.unit" placeholder="ej. unidades, ml, cajas" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Stock inicial</mat-label>
+      <input matInput type="number" [(ngModel)]="data.currentStock" min="0" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Umbral de alerta de stock bajo</mat-label>
+      <input matInput type="number" [(ngModel)]="data.minStock" min="0" required />
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="onConfirm()"
+      [disabled]="!data.name || !data.unit || data.currentStock < 0 || data.minStock < 0"
+    >
+      Crear
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -11,6 +11,9 @@ import { AiModule } from './ai/ai.module';
 import { OdontogramModule } from './odontogram/odontogram.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { BillingModule } from './billing/billing.module';
+import { PrescriptionModule } from './prescription/prescription.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -25,6 +28,9 @@ import { BillingModule } from './billing/billing.module';
     OdontogramModule,
     AppointmentModule,
     BillingModule,
+    PrescriptionModule,
+    InventoryModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [JwtStrategy],

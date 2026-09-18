@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -40,7 +40,9 @@ import { OdontogramaService } from 'src/app/features/historia-clinica/services/o
 import {
   ToothDialogComponent,
   ToothDialogData,
+  TOOTH_STATUS_OPTIONS,
 } from '../dialogs/tooth-dialog/tooth-dialog.component';
+import { OdontogramaComponent } from '../odontograma/odontograma.component';
 
 // Interfaz para los datos de la tabla de fichas clínicas adaptada al modelo del backend
 export interface FichaClinicaData {
@@ -96,7 +98,8 @@ const FICHAS_EJEMPLO: FichaClinicaData[] = [];
     MatStepperModule,
     MatTooltipModule,
     MatTabsModule,
-    MatDividerModule
+    MatDividerModule,
+    OdontogramaComponent
   ],
 })
 export class FichaClinicaComponent implements OnInit {
@@ -123,6 +126,10 @@ export class FichaClinicaComponent implements OnInit {
   currentTreatmentIndex: number | null = null;
   isDetailView: boolean = false;
   dentalPieces: any[] = [];
+  // "Diagnóstico" del formulario de tratamiento reutiliza los mismos 10 estados
+  // del odontograma (ToothDialogComponent) — al guardar, ese valor se aplica
+  // directo como el nuevo estado de la pieza, sin pop-up aparte.
+  toothStatusOptions = TOOTH_STATUS_OPTIONS;
   selectedFicha: FichaClinicaData | null = null;
 
   // Variables para filtrado
@@ -145,6 +152,15 @@ export class FichaClinicaComponent implements OnInit {
 
   // Referencia al paginador
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  // Referencia al panel de alta/edición de tratamiento — solo existe en el DOM
+  // cuando showTreatmentForm es true (*ngIf), se usa para el scroll automático
+  // al abrirlo desde un clic en una pieza del odontograma embebido.
+  @ViewChild('treatmentFormSection') treatmentFormSection?: ElementRef;
+
+  // Referencia al odontograma embebido — ya no tiene botón propio de guardar
+  // observaciones, se persisten junto con "Guardar Ficha" (ver onSubmit).
+  @ViewChild(OdontogramaComponent) odontogramaChild?: OdontogramaComponent;
 
   // Dentista actual (en una aplicación real, esto vendría del servicio de autenticación)
   currentDentist: string = 'dentista_default';
@@ -199,7 +215,7 @@ export class FichaClinicaComponent implements OnInit {
   initTreatmentForm(treatment?: DentalTreatment) {
     this.treatmentForm = this.fb.group({
       diagnosis: [treatment?.diagnosis || '', Validators.required],
-      radiography: [treatment?.radiography || ''],
+      radiography: [treatment?.radiography || []],
       toothNumber: [treatment?.toothNumber || '', Validators.required],
       treatment: [treatment?.treatment || '', Validators.required],
       price: [treatment?.price || '', [Validators.required, Validators.min(0)]],
@@ -478,6 +494,12 @@ export class FichaClinicaComponent implements OnInit {
       this.isSubmitting = true;
       console.log('Estado de edición:', { isEditMode: this.isEditMode, currentFichaId: this.currentFichaId });
 
+      // El odontograma embebido ya no tiene botón propio de guardar — sus
+      // observaciones generales se persisten junto con la ficha, en paralelo
+      // (recurso independiente, no bloquea ni revierte el guardado de la ficha
+      // si falla — mismo criterio que el guardado inmediato por pieza).
+      this.odontogramaChild?.guardarObservacionesGenerales(false);
+
       // Método para preparar los datos antes de enviar al backend
       const formData = this.prepareFormData();
 
@@ -750,7 +772,7 @@ export class FichaClinicaComponent implements OnInit {
           fichaActualizada.treatments.forEach((treatment: DentalTreatment) => {
             const treatmentGroup = this.fb.group({
               diagnosis: [treatment.diagnosis, Validators.required],
-              radiography: [treatment.radiography || ''],
+              radiography: [treatment.radiography || []],
               toothNumber: [treatment.toothNumber, Validators.required],
               treatment: [treatment.treatment, Validators.required],
               price: [treatment.price, [Validators.required, Validators.min(0)]],
@@ -782,7 +804,7 @@ export class FichaClinicaComponent implements OnInit {
         ficha.treatments.forEach((treatment: DentalTreatment) => {
           const treatmentGroup = this.fb.group({
             diagnosis: [treatment.diagnosis, Validators.required],
-            radiography: [treatment.radiography || ''],
+            radiography: [treatment.radiography || []],
             toothNumber: [treatment.toothNumber, Validators.required],
             treatment: [treatment.treatment, Validators.required],
             price: [treatment.price, [Validators.required, Validators.min(0)]],
@@ -820,6 +842,20 @@ export class FichaClinicaComponent implements OnInit {
     this.showTreatmentForm = true;
     this.currentTreatmentIndex = null;
   }
+
+  // Clic en una pieza del odontograma embebido: abre el alta de tratamiento
+  // con esa pieza ya precargada, en vez del diálogo de solo-estado.
+  onToothSelectedForTreatment(tooth: { toothNumber: string; toothLabel: string }): void {
+    this.showAddTreatmentForm();
+    this.treatmentForm.get('toothNumber')?.setValue(tooth.toothNumber);
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.treatmentFormSection?.nativeElement?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  }
   
   // Mostrar formulario para editar un tratamiento existente
   editTreatment(index: number) {
@@ -842,7 +878,7 @@ export class FichaClinicaComponent implements OnInit {
   saveTreatment() {
     if (this.treatmentForm.valid) {
       const treatmentData = this.treatmentForm.value;
-      
+
       if (this.currentTreatmentIndex !== null) {
         // Editar tratamiento existente
         this.treatments.at(this.currentTreatmentIndex).patchValue(treatmentData);
@@ -850,7 +886,7 @@ export class FichaClinicaComponent implements OnInit {
         // Agregar nuevo tratamiento
         const treatmentGroup = this.fb.group({
           diagnosis: [treatmentData.diagnosis, Validators.required],
-          radiography: [treatmentData.radiography || ''],
+          radiography: [treatmentData.radiography || []],
           toothNumber: [treatmentData.toothNumber, Validators.required],
           treatment: [treatmentData.treatment, Validators.required],
           price: [treatmentData.price, [Validators.required, Validators.min(0)]],
@@ -870,10 +906,30 @@ export class FichaClinicaComponent implements OnInit {
       
       // Mostrar mensaje
       this.snackBar.open(
-        this.currentTreatmentIndex !== null ? 'Tratamiento actualizado' : 'Tratamiento agregado', 
-        'Cerrar', 
+        this.currentTreatmentIndex !== null ? 'Tratamiento actualizado' : 'Tratamiento agregado',
+        'Cerrar',
         { duration: 3000 }
       );
+
+      // "Diagnóstico" ahora ES el estado de la pieza — se aplica directo, sin
+      // pop-up de confirmación (el pop-up sigue existiendo, pero solo para el
+      // flujo de detalle vía offerOdontogramSync/offerOdontogramSyncForTooth).
+      if (treatmentData.toothNumber && treatmentData.diagnosis) {
+        const patientId = this.fichaClinicaForm.get('patient')?.value;
+        if (patientId) {
+          this.odontogramaService
+            .updateTooth(patientId, treatmentData.toothNumber, {
+              status: treatmentData.diagnosis,
+            })
+            .then(() => {
+              this.selectedPatientService.notifyOdontogramUpdated();
+              this.snackBar.open('Odontograma actualizado', 'Cerrar', { duration: 2000 });
+            })
+            .catch(() => {
+              this.snackBar.open('Error al actualizar el odontograma', 'Cerrar', { duration: 3000 });
+            });
+        }
+      }
     } else {
       // Marcar campos como tocados para mostrar errores
       this.markFormGroupTouched(this.treatmentForm);
@@ -1049,7 +1105,14 @@ export class FichaClinicaComponent implements OnInit {
     const patientId = typeof patient === 'string' ? patient : patient?._id;
     const toothNumber = treatment ? String((treatment as any).toothNumber) : null;
     if (!patientId || !toothNumber) return;
+    await this.offerOdontogramSyncForTooth(patientId, toothNumber);
+  }
 
+  // Ofrece actualizar el odontograma para una pieza puntual — no bloquea ni
+  // adivina: si el paciente no tiene odontograma o el odontólogo cancela, no
+  // pasa nada. Usado tanto al completar un tratamiento en el detalle
+  // (offerOdontogramSync) como al crear un tratamiento nuevo (saveTreatment).
+  private async offerOdontogramSyncForTooth(patientId: string, toothNumber: string): Promise<void> {
     let odontogram;
     try {
       odontogram = await this.odontogramaService.getByPatient(patientId);
