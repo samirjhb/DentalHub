@@ -1,0 +1,65 @@
+.prescripciones-card {
+  padding: 24px;
+  margin: 16px;
+}
+
+.page-title {
+  margin-bottom: 4px;
+}
+
+.page-subtitle {
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 20px;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.mt-3 {
+  margin-top: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.prescripciones-body {
+  margin-top: 16px;
+}
+
+.medication-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.medication-row mat-form-field {
+  flex: 1 1 160px;
+}
+
+.instructions-field {
+  flex: 1 1 220px;
+}
+
+.prescription-history-item {
+  margin-top: 12px;
+  padding: 16px;
+}
+
+.prescription-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.prescription-observations {
+  color: rgba(0, 0, 0, 0.6);
+  margin-top: 8px;
+}

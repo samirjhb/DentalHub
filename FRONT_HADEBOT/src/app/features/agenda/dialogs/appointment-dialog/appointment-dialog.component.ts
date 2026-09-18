@@ -8,7 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { PacienteService } from 'src/app/core/services/paciente.service';
-import { StaffService, StaffMember } from 'src/app/features/agenda/services/staff.service';
+import { StaffService, StaffMember } from 'src/app/core/services/staff.service';
 import { AppointmentStatus } from 'src/app/core/services/appointment.service';
 
 export interface AppointmentDialogData {

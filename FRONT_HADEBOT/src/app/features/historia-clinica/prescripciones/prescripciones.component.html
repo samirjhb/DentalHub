@@ -1,0 +1,114 @@
+<mat-card class="prescripciones-card">
+  <h2 class="page-title">Prescripciones</h2>
+  <p class="page-subtitle">Recetas médicas emitidas al paciente</p>
+
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Paciente</mat-label>
+    <mat-select [(ngModel)]="selectedPatientId" (selectionChange)="onPatientChange()">
+      <mat-option *ngFor="let paciente of pacientes" [value]="paciente._id">
+        {{ paciente.name }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+  <div *ngIf="!selectedPatientId" class="empty-state">
+    Seleccione un paciente para emitir o ver sus recetas.
+  </div>
+
+  <div *ngIf="selectedPatientId" class="prescripciones-body">
+    <ng-container *ngIf="canWrite">
+      <h3>Nueva receta</h3>
+
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Odontólogo</mat-label>
+        <mat-select [(ngModel)]="selectedDentistId">
+          <mat-option *ngFor="let dentista of dentistas" [value]="dentista._id">
+            {{ dentista.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <div class="medication-row" *ngFor="let medication of medications; let i = index">
+        <mat-form-field appearance="outline">
+          <mat-label>Medicamento</mat-label>
+          <input matInput [(ngModel)]="medication.name" [name]="'name' + i" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Dosis</mat-label>
+          <input matInput [(ngModel)]="medication.dosage" [name]="'dosage' + i" placeholder="ej. 500mg" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Frecuencia</mat-label>
+          <input matInput [(ngModel)]="medication.frequency" [name]="'frequency' + i" placeholder="ej. cada 8 horas" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Duración</mat-label>
+          <input matInput [(ngModel)]="medication.duration" [name]="'duration' + i" placeholder="ej. 7 días" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="instructions-field">
+          <mat-label>Instrucciones (opcional)</mat-label>
+          <input matInput [(ngModel)]="medication.instructions" [name]="'instructions' + i" />
+        </mat-form-field>
+        <button
+          mat-icon-button
+          color="warn"
+          type="button"
+          [disabled]="medications.length === 1"
+          (click)="removeMedicationRow(i)"
+          matTooltip="Quitar medicamento"
+        >
+          <i-tabler name="trash" class="icon-18"></i-tabler>
+        </button>
+      </div>
+
+      <button mat-stroked-button type="button" (click)="addMedicationRow()">
+        <i-tabler name="plus" class="icon-18"></i-tabler>
+        Agregar medicamento
+      </button>
+
+      <mat-form-field appearance="outline" class="w-100 mt-3">
+        <mat-label>Observaciones (opcional)</mat-label>
+        <textarea matInput [(ngModel)]="observations" rows="2"></textarea>
+      </mat-form-field>
+
+      <button
+        mat-flat-button
+        color="primary"
+        class="mt-3"
+        [disabled]="!canSubmit() || isSaving"
+        (click)="emitirReceta()"
+      >
+        <i-tabler name="file-text" class="icon-18"></i-tabler>
+        Emitir receta
+      </button>
+    </ng-container>
+
+    <h3 class="mt-3">Recetas anteriores</h3>
+    <div *ngIf="prescriptions.length === 0 && !isLoading" class="empty-state">
+      Este paciente no tiene recetas registradas.
+    </div>
+    <mat-card class="prescription-history-item" *ngFor="let prescription of prescriptions">
+      <div class="prescription-history-header">
+        <span>
+          {{ prescription.issuedAt | date: 'dd/MM/yyyy HH:mm' }} — Dr(a).
+          {{ getDentistName(prescription.dentist) }}
+        </span>
+        <button mat-icon-button (click)="generatePdf(prescription)" matTooltip="Generar PDF">
+          <i-tabler name="download" class="icon-18"></i-tabler>
+        </button>
+      </div>
+      <ul>
+        <li *ngFor="let medication of prescription.medications">
+          {{ medication.name }} — {{ medication.dosage }}, {{ medication.frequency }},
+          {{ medication.duration }}
+          <span *ngIf="medication.instructions"> ({{ medication.instructions }})</span>
+        </li>
+      </ul>
+      <p *ngIf="prescription.observations" class="prescription-observations">
+        {{ prescription.observations }}
+      </p>
+    </mat-card>
+  </div>
+</mat-card>
