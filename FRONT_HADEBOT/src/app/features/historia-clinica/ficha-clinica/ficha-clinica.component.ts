@@ -512,6 +512,10 @@ export class FichaClinicaComponent implements OnInit {
             .then(response => {
               console.log('Ficha clínica actualizada:', response);
 
+              // Recién ahora la ficha está persistida de verdad — se sincroniza
+              // el odontograma con el diagnóstico de cada tratamiento guardado.
+              this.syncOdontogramaTeeth(formData.patient, formData.treatments);
+
               // Mostrar mensaje de éxito
               this.snackBar.open(
                 'Ficha clínica actualizada exitosamente',
@@ -551,6 +555,10 @@ export class FichaClinicaComponent implements OnInit {
           await this.fichaClinicaService.createFichaClinica(formData)
             .then(response => {
               console.log('Ficha clínica creada:', response);
+
+              // Recién ahora la ficha está persistida de verdad — se sincroniza
+              // el odontograma con el diagnóstico de cada tratamiento guardado.
+              this.syncOdontogramaTeeth(formData.patient, formData.treatments);
 
               // Mostrar mensaje de éxito
               this.snackBar.open(
@@ -603,6 +611,31 @@ export class FichaClinicaComponent implements OnInit {
     } else {
       // Marcar todos los campos como tocados para mostrar errores
       this.markFormGroupTouched(this.fichaClinicaForm);
+    }
+  }
+
+  // Sincroniza el odontograma con el diagnóstico de cada tratamiento — se
+  // llama solo tras un guardado real de la ficha (ver onSubmit), nunca desde
+  // saveTreatment(), que únicamente edita el FormArray en memoria: llamarlo
+  // ahí persistía el color de la pieza aunque el odontólogo cancelara la
+  // ficha o el guardado fallara.
+  private async syncOdontogramaTeeth(
+    patientId: string,
+    treatments: { toothNumber?: string | number; diagnosis?: string }[],
+  ): Promise<void> {
+    if (!patientId) return;
+    const updates = treatments.filter((t) => t.toothNumber && t.diagnosis);
+    if (updates.length === 0) return;
+
+    try {
+      for (const t of updates) {
+        await this.odontogramaService.updateTooth(patientId, String(t.toothNumber), {
+          status: t.diagnosis as any,
+        });
+      }
+      this.selectedPatientService.notifyOdontogramUpdated();
+    } catch {
+      this.snackBar.open('Error al actualizar el odontograma', 'Cerrar', { duration: 3000 });
     }
   }
 
@@ -843,10 +876,16 @@ export class FichaClinicaComponent implements OnInit {
     this.currentTreatmentIndex = null;
   }
 
-  // Clic en una pieza del odontograma embebido: abre el alta de tratamiento
-  // con esa pieza ya precargada, en vez del diálogo de solo-estado.
+  // Clic en una pieza del odontograma embebido: precarga esa pieza en el
+  // formulario de tratamiento. Si ya hay un formulario abierto (sea "nuevo"
+  // o "editar"), solo actualiza la pieza ahí — antes siempre llamaba a
+  // showAddTreatmentForm(), que reseteaba currentTreatmentIndex a null y
+  // descartaba silenciosamente una edición en curso para arrancar un alta
+  // nueva. Solo abre un formulario nuevo si no había ninguno abierto.
   onToothSelectedForTreatment(tooth: { toothNumber: string; toothLabel: string }): void {
-    this.showAddTreatmentForm();
+    if (!this.showTreatmentForm) {
+      this.showAddTreatmentForm();
+    }
     this.treatmentForm.get('toothNumber')?.setValue(tooth.toothNumber);
     this.cdr.detectChanges();
     setTimeout(() => {
@@ -911,25 +950,10 @@ export class FichaClinicaComponent implements OnInit {
         { duration: 3000 }
       );
 
-      // "Diagnóstico" ahora ES el estado de la pieza — se aplica directo, sin
-      // pop-up de confirmación (el pop-up sigue existiendo, pero solo para el
-      // flujo de detalle vía offerOdontogramSync/offerOdontogramSyncForTooth).
-      if (treatmentData.toothNumber && treatmentData.diagnosis) {
-        const patientId = this.fichaClinicaForm.get('patient')?.value;
-        if (patientId) {
-          this.odontogramaService
-            .updateTooth(patientId, treatmentData.toothNumber, {
-              status: treatmentData.diagnosis,
-            })
-            .then(() => {
-              this.selectedPatientService.notifyOdontogramUpdated();
-              this.snackBar.open('Odontograma actualizado', 'Cerrar', { duration: 2000 });
-            })
-            .catch(() => {
-              this.snackBar.open('Error al actualizar el odontograma', 'Cerrar', { duration: 3000 });
-            });
-        }
-      }
+      // "Diagnóstico" ahora ES el estado de la pieza, pero este método solo
+      // actualiza el FormArray en memoria (this.treatments) — todavía no hay
+      // ficha persistida. El sync real al odontograma se hace en onSubmit(),
+      // una vez que la ficha se guarda de verdad (ver syncOdontogramaTeeth).
     } else {
       // Marcar campos como tocados para mostrar errores
       this.markFormGroupTouched(this.treatmentForm);

@@ -6,6 +6,12 @@
     <i-tabler name="menu-2" class="icon-20 d-flex"></i-tabler>
   </button>
 
+  @if (showToggle) {
+  <button mat-icon-button (click)="toggleSidenavCollapsed.emit()" aria-label="Compactar menú">
+    <i-tabler class="d-flex" [name]="sidenavCollapsed ? 'layout-sidebar-left-expand' : 'layout-sidebar-left-collapse'"></i-tabler>
+  </button>
+  }
+
   <button mat-icon-button (click)="toggleTheme()" aria-label="Cambiar tema">
     <i-tabler class="d-flex" [name]="theme() === 'light' ? 'moon' : 'sun'"></i-tabler>
   </button>

@@ -10,6 +10,52 @@
   border-radius: 0px !important;
 }
 
+// Modo compacto (solo íconos) — activado por options.sidenavCollapsed en
+// full.component.ts, ya usado también para arrancar colapsado en tablet
+// (TABLET_VIEW). Oculta todo lo que dependa del texto del item.
+.mat-drawer.sidebarNav-mini {
+  width: $sidenav-mini;
+
+  .hide-menu,
+  .nav-caption,
+  .arrow-icon {
+    display: none !important;
+  }
+
+  .sidebar-list.mdc-list {
+    padding: 0 8px;
+  }
+
+  .menu-list-item {
+    justify-content: center;
+
+    .mdc-list-item__start {
+      margin-right: 0 !important;
+    }
+
+    // .mdc-list-item__content crece por defecto (flex: 1 1 0%, propio de MDC)
+    // para dejarle lugar al texto — aunque ese texto esté oculto por
+    // .hide-menu, el contenedor sigue ocupando espacio y corre el ícono fuera
+    // del centro real del ítem. Se anula el grow para que el ícono quede solo.
+    .mdc-list-item__content {
+      flex: none;
+    }
+  }
+
+  // Centra el logo en el mismo eje que los íconos del nav de abajo (que se
+  // centran vía .menu-list-item justify-content: center) en vez de quedar
+  // corrido a la izquierda por el margin propio de .logodark (m-2).
+  .marca {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .logodark {
+    margin: 12px 0 !important;
+  }
+}
+
 .branding {
   padding: 20px;
 }

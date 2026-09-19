@@ -21,7 +21,9 @@ import { Component, Input } from '@angular/core';
           class="brand-logo__tooth"
         />
       </svg>
+      @if (showWordmark) {
       <span class="brand-logo__wordmark">Hadebot</span>
+      }
     </span>
   `,
   styles: [
@@ -52,4 +54,5 @@ import { Component, Input } from '@angular/core';
 })
 export class BrandLogoComponent {
   @Input() size = 36;
+  @Input() showWordmark = true;
 }

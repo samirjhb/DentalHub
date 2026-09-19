@@ -1,0 +1,26 @@
+// FullCalendar no reacondiciona su propia barra superior en pantallas
+// angostas — se usa en el widget del Dashboard y en la página de Agenda,
+// mismo breakpoint que MOBILE_VIEW (full.component.ts) para consistencia.
+@media (max-width: 768px) {
+  .fc-header-toolbar {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .fc-toolbar-chunk {
+    flex: 1 1 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .fc-toolbar-title {
+    font-size: 1.1rem;
+  }
+
+  .fc-event-title,
+  .fc-event-time {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

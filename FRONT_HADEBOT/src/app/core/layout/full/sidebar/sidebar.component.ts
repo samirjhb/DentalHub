@@ -18,6 +18,7 @@ import { MaterialModule } from 'src/app/shared/material.module';
 export class SidebarComponent implements OnInit {
   constructor() {}
   @Input() showToggle = true;
+  @Input() collapsed = false;
   @Output() toggleMobileNav = new EventEmitter<void>();
   @Output() toggleCollapsed = new EventEmitter<void>();
 

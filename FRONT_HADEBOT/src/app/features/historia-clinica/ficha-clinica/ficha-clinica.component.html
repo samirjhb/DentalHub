@@ -464,6 +464,8 @@
                 [showPatientSelector]="false"
                 [treatmentMode]="true"
                 [showObservationsSaveButton]="false"
+                [selectedToothNumber]="showTreatmentForm ? treatmentForm.get('toothNumber')?.value : null"
+                [previewStatus]="showTreatmentForm ? treatmentForm.get('diagnosis')?.value : null"
                 (addTreatmentForTooth)="onToothSelectedForTreatment($event)"
               ></app-odontograma>
             </div>
@@ -586,12 +588,12 @@
                       <div class="col-lg-6 mb-3">
                         <label class="form-label">Radiografías</label>
                         <div class="custom-file-upload">
-                          <button type="button" mat-raised-button color="primary" class="mb-2" (click)="fileInput.click()">
+                          <button type="button" mat-raised-button color="primary" (click)="fileInput.click()">
                             <i-tabler name="upload" class="icon-18 me-2"></i-tabler>
                             Cargar imágenes
                           </button>
                           <input #fileInput type="file" style="display: none" multiple accept="image/*" class="form-control" id="radiographyFiles" (change)="onFileSelected($event)">
-                          <mat-hint>Puede seleccionar múltiples imágenes</mat-hint>
+                          <span class="file-upload-hint">Puede seleccionar múltiples imágenes</span>
                         </div>
                         
                         <!-- Vista previa de imágenes -->

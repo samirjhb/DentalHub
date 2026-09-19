@@ -86,18 +86,4 @@ export const navItems: NavItem[] = [
     route: '/herramientas-de-trabajo/reportes',
     roles: REPORTS_ROLES,
   },
-
-  {
-    navCap: 'Autenticación',
-  },
-  {
-    displayName: 'Iniciar Sesión',
-    iconName: 'login',
-    route: '/authentication/login',
-  },
-  {
-    displayName: 'Registrarse',
-    iconName: 'user-plus',
-    route: '/authentication/register',
-  },
 ];

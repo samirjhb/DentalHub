@@ -38,6 +38,7 @@
         <div class="quadrant">
           <div
             class="tooth-slot"
+            [class.tooth-slot--selected]="selectedToothNumber === toothNumber"
             *ngFor="let toothNumber of upperRight"
             [matTooltip]="getToothLabel(toothNumber)"
             (click)="openToothDialog(toothNumber)"
@@ -65,6 +66,7 @@
         <div class="quadrant">
           <div
             class="tooth-slot"
+            [class.tooth-slot--selected]="selectedToothNumber === toothNumber"
             *ngFor="let toothNumber of upperLeft"
             [matTooltip]="getToothLabel(toothNumber)"
             (click)="openToothDialog(toothNumber)"
@@ -96,6 +98,7 @@
         <div class="quadrant">
           <div
             class="tooth-slot"
+            [class.tooth-slot--selected]="selectedToothNumber === toothNumber"
             *ngFor="let toothNumber of lowerRight"
             [matTooltip]="getToothLabel(toothNumber)"
             (click)="openToothDialog(toothNumber)"
@@ -123,6 +126,7 @@
         <div class="quadrant">
           <div
             class="tooth-slot"
+            [class.tooth-slot--selected]="selectedToothNumber === toothNumber"
             *ngFor="let toothNumber of lowerLeft"
             [matTooltip]="getToothLabel(toothNumber)"
             (click)="openToothDialog(toothNumber)"
