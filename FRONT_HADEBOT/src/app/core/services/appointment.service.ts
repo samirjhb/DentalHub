@@ -48,6 +48,21 @@ export interface AppointmentFilter {
   endDate?: string;
 }
 
+// Igual que CreateAppointmentDto pero sin `patient`: el portal de pacientes
+// nunca elige de quién es la cita, el backend la inyecta desde el JWT.
+export interface RequestAppointmentDto {
+  dentist: string;
+  startAt: string;
+  durationMinutes?: number;
+  reason: string;
+}
+
+export interface MyAppointmentFilter {
+  status?: AppointmentStatus;
+  startDate?: string;
+  endDate?: string;
+}
+
 // El AuthInterceptor global ya adjunta el Bearer token real a toda petición
 // HttpClient — no hace falta leerlo/adjuntarlo a mano acá.
 @Injectable({
@@ -96,6 +111,37 @@ export class AppointmentService {
       this.http.patch<Appointment>(
         `${environment.apiUrl}/appointment/${id}/reschedule`,
         dto,
+      ),
+    );
+  }
+
+  // --- Portal de Pacientes: /appointment/me ---
+
+  async getMine(filter: MyAppointmentFilter = {}): Promise<Appointment[]> {
+    const params: Record<string, string> = {};
+    Object.entries(filter).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+    const response = await firstValueFrom(
+      this.http.get<{ appointments: Appointment[] }>(
+        `${environment.apiUrl}/appointment/me`,
+        { params },
+      ),
+    );
+    return response.appointments;
+  }
+
+  async requestMine(dto: RequestAppointmentDto): Promise<Appointment> {
+    return await firstValueFrom(
+      this.http.post<Appointment>(`${environment.apiUrl}/appointment/me`, dto),
+    );
+  }
+
+  async cancelMine(id: string): Promise<Appointment> {
+    return await firstValueFrom(
+      this.http.patch<Appointment>(
+        `${environment.apiUrl}/appointment/me/${id}/cancel`,
+        {},
       ),
     );
   }

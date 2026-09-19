@@ -67,7 +67,23 @@ export class PacienteService {
     }));
   }
   
-  async getPacienteById(id: string) {    
+  // El AuthInterceptor global ya adjunta el Bearer token — a diferencia de
+  // los métodos de arriba, estos dos no lo adjuntan a mano.
+  async getPortalAccess(patientId: string): Promise<{ linked: boolean; email?: string }> {
+    return await firstValueFrom(
+      this.http.get<{ linked: boolean; email?: string }>(
+        `${environment.apiUrl}/auth/patient-access/${patientId}`,
+      ),
+    );
+  }
+
+  async grantPortalAccess(dto: { patientId: string; email: string; password?: string }) {
+    return await firstValueFrom(
+      this.http.post<any>(`${environment.apiUrl}/auth/patient-access`, dto),
+    );
+  }
+
+  async getPacienteById(id: string) {
     // Obtener el token de sessionStorage o localStorage
     let token = sessionStorage.getItem('token');
     if (!token) {

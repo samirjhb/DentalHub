@@ -21,6 +21,10 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../shared/components/dialogs/confirm-dialog/confirm-dialog.component';
+import {
+  PortalAccessDialogComponent,
+  PortalAccessDialogResult,
+} from './dialogs/portal-access-dialog/portal-access-dialog.component';
 import { DirectivesModule } from 'src/app/shared/directives/directives.module';
 import { MatTableDataSource } from '@angular/material/table';
 
@@ -447,6 +451,51 @@ export class PacienteComponent implements OnInit {
           );
         }
       }
+    });
+  }
+
+  // Método para abrir el diálogo de acceso al Portal de Pacientes
+  async openPortalAccessDialog(paciente: PacienteData): Promise<void> {
+    let status: { linked: boolean; email?: string };
+    try {
+      status = await this.pacienteService.getPortalAccess(paciente._id);
+    } catch (error) {
+      console.error('Error al consultar el acceso al portal:', error);
+      this.snackBar.open('Error al consultar el acceso al portal', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+      });
+      return;
+    }
+
+    const dialogRef = this.dialog.open(PortalAccessDialogComponent, {
+      width: '420px',
+      data: {
+        patientId: paciente._id,
+        patientName: paciente.name,
+        patientEmail: paciente.email,
+        linked: status.linked,
+        linkedEmail: status.email ?? null,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result: PortalAccessDialogResult | undefined) => {
+      if (!result) return;
+      this.pacienteService
+        .grantPortalAccess(result)
+        .then(() => {
+          this.snackBar.open('Acceso al portal otorgado correctamente', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['success-snackbar'],
+          });
+        })
+        .catch((error) => {
+          const message = error?.error?.message ?? 'Error al otorgar el acceso al portal';
+          this.snackBar.open(message, 'Cerrar', {
+            duration: 4000,
+            panelClass: ['error-snackbar'],
+          });
+        });
     });
   }
 

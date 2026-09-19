@@ -9,6 +9,8 @@ import { Role } from '../../../shared/enums/role.enum';
 export class InMemoryAuthRepository extends AuthRepository {
   private users: Auth[] = [];
   private nextId = 1;
+  // Ids de paciente "existentes" para que verifyPatientExists tenga algo contra qué chequear en tests.
+  public seededPatientIds = new Set<string>();
 
   async findByEmail(email: string): Promise<Auth | null> {
     return this.users.find((u) => u.email === email) ?? null;
@@ -29,6 +31,7 @@ export class InMemoryAuthRepository extends AuthRepository {
       data.password,
       data.name,
       data.role,
+      undefined,
       new Date(),
       new Date(),
     );
@@ -46,5 +49,26 @@ export class InMemoryAuthRepository extends AuthRepository {
     if (data.name !== undefined) user.name = data.name;
     if (data.role !== undefined) user.role = data.role;
     return user;
+  }
+
+  async findByPatientId(patientId: string): Promise<Auth | null> {
+    return this.users.find((u) => u.patientId === patientId) ?? null;
+  }
+
+  async linkPatient(authId: string, patientId: string): Promise<Auth | null> {
+    const user = this.users.find((u) => u._id === authId);
+    if (!user) return null;
+    user.patientId = patientId;
+    return user;
+  }
+
+  async verifyPatientExists(patientId: string): Promise<boolean> {
+    return this.seededPatientIds.has(patientId);
+  }
+
+  async updatePassword(id: string, hashedPassword: string): Promise<void> {
+    const user = this.users.find((u) => u._id === id);
+    if (!user) return;
+    user.password = hashedPassword;
   }
 }

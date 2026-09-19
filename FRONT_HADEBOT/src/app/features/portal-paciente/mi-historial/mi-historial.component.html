@@ -1,0 +1,43 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <h3 class="m-0 m-b-16">Mi historial clínico</h3>
+
+    <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+    <table mat-table [dataSource]="dataSource" class="w-100 m-t-16" *ngIf="!isLoading">
+      <ng-container matColumnDef="toothNumber">
+        <th mat-header-cell *matHeaderCellDef>Pieza</th>
+        <td mat-cell *matCellDef="let element">{{ element.toothNumber }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="treatment">
+        <th mat-header-cell *matHeaderCellDef>Tratamiento</th>
+        <td mat-cell *matCellDef="let element">{{ element.treatment }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let element">
+          <mat-chip selected>{{ element.status }}</mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="appointmentDate">
+        <th mat-header-cell *matHeaderCellDef>Fecha</th>
+        <td mat-cell *matCellDef="let element">{{ formatDate(element.appointmentDate) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="pendingBalance">
+        <th mat-header-cell *matHeaderCellDef>Saldo pendiente</th>
+        <td mat-cell *matCellDef="let element">{{ formatCurrency(element.pendingBalance) }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    <p *ngIf="!isLoading && dataSource.data.length === 0" class="text-muted m-t-16">
+      Aún no tienes tratamientos registrados.
+    </p>
+  </mat-card-content>
+</mat-card>

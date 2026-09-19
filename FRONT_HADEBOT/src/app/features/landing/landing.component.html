@@ -1,0 +1,169 @@
+<div class="landing">
+  <!-- Header -->
+  <header class="landing-header">
+    <div class="landing-header__inner">
+      <app-brand-logo [size]="34"></app-brand-logo>
+      <a [routerLink]="['/authentication/login']" mat-stroked-button color="primary" class="landing-header__cta">
+        Ingresar
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero__blob hero__blob--one"></div>
+    <div class="hero__blob hero__blob--two"></div>
+
+    <div class="hero__content text-center">
+      <div class="hero__badge">
+        <i-tabler name="sparkles" class="icon-16"></i-tabler>
+        Nuevo: Portal de Pacientes
+      </div>
+
+      <div class="d-flex justify-content-center m-b-24">
+        <app-brand-logo [size]="72"></app-brand-logo>
+      </div>
+
+      <h1 class="hero__title">
+        La forma más simple de <span class="hero__title-accent">gestionar tu clínica dental</span>
+      </h1>
+      <p class="hero__subtitle">
+        Agenda, fichas clínicas, cobranza, inventario y reportes en un solo lugar — y ahora,
+        un portal para que tus propios pacientes agenden y revisen su historial.
+      </p>
+
+      <div class="hero__actions">
+        <a [routerLink]="['/authentication/login']" mat-flat-button color="primary" class="hero__cta-primary">
+          Ingresar
+          <i-tabler name="arrow-right" class="icon-18 m-l-4"></i-tabler>
+        </a>
+        <a [routerLink]="[]" fragment="features" mat-stroked-button color="primary" class="hero__cta-secondary">
+          Ver módulos
+        </a>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-tile" *ngFor="let stat of stats">
+        <div class="stat-tile__icon">
+          <i-tabler [name]="stat.icon" class="icon-24"></i-tabler>
+        </div>
+        <div>
+          <h3 class="stat-tile__value">{{ stat.value }}</h3>
+          <span class="stat-tile__label">{{ stat.label }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="section-heading text-center">
+      <span class="section-eyebrow">Todo lo que necesitas</span>
+      <h2 class="section-title">Un módulo para cada parte de tu clínica</h2>
+      <p class="section-subtitle">
+        Sin planillas sueltas ni papeles perdidos: cada equipo trabaja donde debe, con la
+        información siempre al día.
+      </p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card" *ngFor="let feature of features">
+        <div class="feature-card__icon" [style.background]="feature.color + '1a'" [style.color]="feature.color">
+          <i-tabler [name]="feature.icon" class="icon-28"></i-tabler>
+        </div>
+        <h3 class="feature-card__title">{{ feature.title }}</h3>
+        <p class="feature-card__description">{{ feature.description }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="how-it-works">
+    <div class="section-heading text-center">
+      <span class="section-eyebrow">Cómo funciona</span>
+      <h2 class="section-title">Empieza a operar en tres pasos</h2>
+    </div>
+
+    <div class="steps">
+      <div class="step" *ngFor="let step of steps; let last = last">
+        <div class="step__marker">
+          <div class="step__number">{{ step.number }}</div>
+          <div class="step__line" *ngIf="!last"></div>
+        </div>
+        <div class="step__body">
+          <i-tabler [name]="step.icon" class="icon-24 step__icon"></i-tabler>
+          <h3 class="step__title">{{ step.title }}</h3>
+          <p class="step__description">{{ step.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Portal de Pacientes highlight -->
+  <section class="highlight">
+    <div class="highlight__card">
+      <div class="highlight__badge">
+        <i-tabler name="device-mobile" class="icon-18"></i-tabler>
+        Portal de Pacientes
+      </div>
+      <h2 class="highlight__title">Tus pacientes, más autónomos</h2>
+      <p class="highlight__subtitle">
+        Con su propio acceso, tus pacientes pueden solicitar y cancelar citas, revisar su
+        historial de tratamientos y ver su facturación — sin llamar a la clínica.
+      </p>
+
+      <div class="highlight__grid">
+        <div class="highlight__item">
+          <div class="highlight__item-icon">
+            <i-tabler name="calendar-check" class="icon-20"></i-tabler>
+          </div>
+          <span>Solicitar y cancelar citas online</span>
+        </div>
+        <div class="highlight__item">
+          <div class="highlight__item-icon">
+            <i-tabler name="file-text" class="icon-20"></i-tabler>
+          </div>
+          <span>Ver historial clínico resumido</span>
+        </div>
+        <div class="highlight__item">
+          <div class="highlight__item-icon">
+            <i-tabler name="report-money" class="icon-20"></i-tabler>
+          </div>
+          <span>Consultar saldo y pagos</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security -->
+  <section class="security">
+    <div class="security__icon">
+      <i-tabler name="shield-lock" class="icon-32"></i-tabler>
+    </div>
+    <h2 class="section-title">Acceso seguro, por diseño</h2>
+    <p class="section-subtitle">
+      Autenticación con tokens, roles y permisos por perfil, y un portal separado para
+      pacientes que solo ve su propia información — nunca la de otros.
+    </p>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-cta">
+    <div class="final-cta__card text-center">
+      <h2 class="final-cta__title">¿Listo para ordenar tu clínica?</h2>
+      <p class="final-cta__subtitle">Ingresa con tu cuenta y retoma justo donde quedaste.</p>
+      <a [routerLink]="['/authentication/login']" mat-flat-button color="primary" class="hero__cta-primary">
+        Ingresar
+        <i-tabler name="arrow-right" class="icon-18 m-l-4"></i-tabler>
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <app-brand-logo [size]="28" [showWordmark]="true"></app-brand-logo>
+    <span class="landing-footer__copy">© {{ currentYear }} Hadebot — Gestión clínica dental</span>
+  </footer>
+</div>

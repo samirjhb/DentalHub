@@ -93,7 +93,16 @@ export class SessionManagerService {
     return this.decodeTokenClaim('id');
   }
 
-  private decodeTokenClaim(claim: 'role' | 'email' | 'id'): string | null {
+  /**
+   * Decode the stored JWT's patientId claim — solo presente cuando el rol es
+   * PATIENT y el staff ya lo vinculó a un registro Patient (ver TokenIssuerService).
+   * @returns The patient id string, or null if absent/can't be decoded
+   */
+  getPatientId(): string | null {
+    return this.decodeTokenClaim('patientId');
+  }
+
+  private decodeTokenClaim(claim: 'role' | 'email' | 'id' | 'patientId'): string | null {
     const token = this.getToken();
     if (!token) return null;
 

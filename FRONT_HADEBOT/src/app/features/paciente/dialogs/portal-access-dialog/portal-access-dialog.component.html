@@ -1,0 +1,46 @@
+<div class="portal-access-dialog-container">
+  <div class="dialog-header">
+    <i-tabler name="key" class="icon-48 mb-3"></i-tabler>
+    <h2 mat-dialog-title>Acceso al portal</h2>
+  </div>
+
+  <mat-dialog-content>
+    <ng-container *ngIf="data.linked; else grantForm">
+      <p>
+        <strong>{{ data.patientName }}</strong> ya tiene acceso al portal con el email
+        <strong>{{ data.linkedEmail }}</strong>.
+      </p>
+    </ng-container>
+
+    <ng-template #grantForm>
+      <p class="text-muted">
+        Crea las credenciales de acceso al Portal de Pacientes para
+        <strong>{{ data.patientName }}</strong>.
+      </p>
+
+      <mat-form-field appearance="outline" class="w-100 mt-3">
+        <mat-label>Email de acceso</mat-label>
+        <input matInput type="email" [(ngModel)]="form.email" required />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-100 mt-3">
+        <mat-label>Contraseña</mat-label>
+        <input matInput type="password" [(ngModel)]="form.password" required />
+        <mat-hint>Mínimo 6 caracteres. Compártela con el paciente por un canal seguro.</mat-hint>
+      </mat-form-field>
+    </ng-template>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="onCancel()">Cerrar</button>
+    <button
+      *ngIf="!data.linked"
+      mat-flat-button
+      color="primary"
+      (click)="onConfirm()"
+      [disabled]="!isValid"
+    >
+      Otorgar acceso
+    </button>
+  </mat-dialog-actions>
+</div>

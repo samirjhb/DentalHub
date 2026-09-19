@@ -1,0 +1,90 @@
+<div>
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+  <div class="stats-row" *ngIf="!isLoading && balance">
+    <app-stat-card
+      icon="cash"
+      label="Saldo pendiente"
+      [value]="formatCurrency(balance.pendingBalance)"
+      accentColor="#fa896b"
+    ></app-stat-card>
+    <app-stat-card
+      icon="receipt"
+      label="Total pagado"
+      [value]="formatCurrency(balance.totalPaid)"
+      accentColor="#13deb9"
+    ></app-stat-card>
+    <app-stat-card
+      icon="report-money"
+      label="Total tratamientos"
+      [value]="formatCurrency(balance.totalPrice)"
+      accentColor="#5d87ff"
+    ></app-stat-card>
+  </div>
+
+  <mat-card class="cardWithShadow m-t-24" *ngIf="!isLoading">
+    <mat-card-content>
+      <h3 class="m-0 m-b-16">Mis tratamientos</h3>
+      <table mat-table [dataSource]="treatmentsDataSource" class="w-100">
+        <ng-container matColumnDef="treatment">
+          <th mat-header-cell *matHeaderCellDef>Tratamiento</th>
+          <td mat-cell *matCellDef="let element">{{ element.treatment }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="toothNumber">
+          <th mat-header-cell *matHeaderCellDef>Pieza</th>
+          <td mat-cell *matCellDef="let element">{{ element.toothNumber }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="price">
+          <th mat-header-cell *matHeaderCellDef>Precio</th>
+          <td mat-cell *matCellDef="let element">{{ formatCurrency(element.price) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="deposit">
+          <th mat-header-cell *matHeaderCellDef>Abonado</th>
+          <td mat-cell *matCellDef="let element">{{ formatCurrency(element.deposit) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="pendingBalance">
+          <th mat-header-cell *matHeaderCellDef>Saldo</th>
+          <td mat-cell *matCellDef="let element">{{ formatCurrency(element.pendingBalance) }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="treatmentsColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: treatmentsColumns"></tr>
+      </table>
+      <p *ngIf="treatmentsDataSource.data.length === 0" class="text-muted m-t-16">
+        Aún no tienes tratamientos facturados.
+      </p>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="cardWithShadow m-t-24" *ngIf="!isLoading">
+    <mat-card-content>
+      <h3 class="m-0 m-b-16">Mis pagos</h3>
+      <table mat-table [dataSource]="paymentsDataSource" class="w-100">
+        <ng-container matColumnDef="paidAt">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let element">{{ formatDate(element.paidAt) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Monto</th>
+          <td mat-cell *matCellDef="let element">{{ formatCurrency(element.amount) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="method">
+          <th mat-header-cell *matHeaderCellDef>Método</th>
+          <td mat-cell *matCellDef="let element">{{ element.method }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="paymentsColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: paymentsColumns"></tr>
+      </table>
+      <p *ngIf="paymentsDataSource.data.length === 0" class="text-muted m-t-16">
+        Aún no tienes pagos registrados.
+      </p>
+    </mat-card-content>
+  </mat-card>
+</div>

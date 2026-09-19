@@ -92,6 +92,10 @@
                     <i-tabler name="edit" class="icon-18 m-r-8"></i-tabler>
                     <span>Editar</span>
                   </button>
+                  <button mat-menu-item (click)="openPortalAccessDialog(element)">
+                    <i-tabler name="key" class="icon-18 m-r-8"></i-tabler>
+                    <span>Acceso al portal</span>
+                  </button>
                   <button mat-menu-item (click)="eliminarPaciente(element._id)">
                     <i-tabler name="trash" class="icon-18 m-r-8"></i-tabler>
                     <span>Eliminar</span>

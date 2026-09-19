@@ -2,8 +2,10 @@ import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/co
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { RegisterPaymentDto } from '../../application/dto/register-payment.dto';
 import { FilterPaymentDto } from '../../application/dto/filter-payment.dto';
+import { FilterMyPaymentDto } from '../../application/dto/filter-my-payment.dto';
 import { RegisterPaymentUseCase } from '../../application/use-cases/register-payment.use-case';
 import { FindPaymentsUseCase } from '../../application/use-cases/find-payments.use-case';
+import { FindMyPaymentsUseCase } from '../../application/use-cases/find-my-payments.use-case';
 import { CalculatePatientBalanceUseCase } from '../../application/use-cases/calculate-patient-balance.use-case';
 import { CalculateTotalClinicBalanceUseCase } from '../../application/use-cases/calculate-total-clinic-balance.use-case';
 import { FindPatientTreatmentsUseCase } from '../../application/use-cases/find-patient-treatments.use-case';
@@ -11,6 +13,7 @@ import { JwtAuthGuard } from 'src/shared/security/jwt-auth.guard';
 import { RolesGuard } from 'src/shared/guards/roles.guard';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { Role } from 'src/shared/enums/role.enum';
+import { CurrentPatientId } from 'src/shared/decorators/current-patient-id.decorator';
 
 // Manejar dinero no es rol de HYGIENIST/DENTAL_ASSISTANT — a diferencia de
 // clinical-record, donde sí tienen lectura de datos clínicos, acá quedan
@@ -31,7 +34,32 @@ export class BillingController {
     private readonly calculatePatientBalanceUseCase: CalculatePatientBalanceUseCase,
     private readonly calculateTotalClinicBalanceUseCase: CalculateTotalClinicBalanceUseCase,
     private readonly findPatientTreatmentsUseCase: FindPatientTreatmentsUseCase,
+    private readonly findMyPaymentsUseCase: FindMyPaymentsUseCase,
   ) {}
+
+  @Get('me/balance')
+  @Roles(Role.PATIENT)
+  @ApiOperation({ summary: 'Mi saldo pendiente (portal de pacientes)' })
+  getMyBalance(@CurrentPatientId() patientId: string) {
+    return this.calculatePatientBalanceUseCase.execute(patientId);
+  }
+
+  @Get('me/payments')
+  @Roles(Role.PATIENT)
+  @ApiOperation({ summary: 'Mis pagos (portal de pacientes)' })
+  getMyPayments(
+    @CurrentPatientId() patientId: string,
+    @Query() filter: FilterMyPaymentDto,
+  ) {
+    return this.findMyPaymentsUseCase.execute(patientId, filter);
+  }
+
+  @Get('me/treatments')
+  @Roles(Role.PATIENT)
+  @ApiOperation({ summary: 'Mis tratamientos con precio/abono/saldo (portal de pacientes)' })
+  getMyTreatments(@CurrentPatientId() patientId: string) {
+    return this.findPatientTreatmentsUseCase.execute(patientId);
+  }
 
   @Post('payments')
   @Roles(...WRITE_ROLES)
