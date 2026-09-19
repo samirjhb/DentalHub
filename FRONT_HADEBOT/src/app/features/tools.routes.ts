@@ -7,6 +7,7 @@ import { ChatComponent } from './chat/chat.component';
 import { BillingComponent } from './billing/billing.component';
 import { InventarioComponent } from './inventario/inventario.component';
 import { ReportesComponent } from './reportes/reportes.component';
+import { AdministracionComponent } from './administracion/administracion.component';
 import { RoleGuard } from '../core/auth/guards/role.guard';
 import { Role } from '../core/auth/enums/role.enum';
 
@@ -40,6 +41,11 @@ const FINANCIAL_ROLES = [
 // Métricas de gestión, no operativas — mismo criterio que TOTAL_BALANCE_ROLES
 // de billing.controller.ts (backend en reports.controller.ts).
 const REPORTS_ROLES = [Role.SUPER_ADMIN, Role.CLINIC_ADMIN];
+
+// Crear personal y ver la nómina completa es exclusivo de administración —
+// mismo criterio que @Roles(SUPER_ADMIN, CLINIC_ADMIN) en POST /auth/staff
+// (backend en auth.controller.ts).
+const ADMIN_ROLES = [Role.SUPER_ADMIN, Role.CLINIC_ADMIN];
 
 // Archivo de composición de rutas (no una feature única): agrupa bajo
 // /herramientas-de-trabajo/* las pantallas de varias features, preservando
@@ -89,6 +95,12 @@ export const ToolsRoutes: Routes = [
         component: ReportesComponent,
         canActivate: [RoleGuard],
         data: { roles: REPORTS_ROLES },
+      },
+      {
+        path: 'administracion',
+        component: AdministracionComponent,
+        canActivate: [RoleGuard],
+        data: { roles: ADMIN_ROLES },
       },
     ],
   },

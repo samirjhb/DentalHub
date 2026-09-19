@@ -1,0 +1,81 @@
+.administracion-card {
+  padding: 24px;
+  margin: 16px;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.page-title {
+  margin-bottom: 4px;
+}
+
+.page-subtitle {
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
+  margin-bottom: 0;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.mt-3 {
+  margin-top: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
+}
+
+.role-badge {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--mat-sys-primary-container, rgba(93, 135, 255, 0.15));
+  color: var(--mat-sys-on-primary-container, #5d87ff);
+}
+
+.mobile-staff-detail {
+  display: none;
+}
+
+/* Con width:100% el paginador solo cubre el ancho VISIBLE del contenedor,
+   no el ancho real de la tabla (5 columnas, necesita scroll horizontal en
+   pantallas angostas) — mismo problema y mismo fix que en Ficha Clínica
+   (ver ficha-clinica.component.css). Grid de una sola columna hace que el
+   paginador adopte el mismo ancho que la tabla y ambos scrollean juntos. */
+.table-responsive {
+  display: grid;
+  grid-template-columns: max-content;
+}
+
+.table-responsive .mat-mdc-paginator-container {
+  justify-content: flex-start;
+}
+
+/* Con 4 columnas la tabla obligaba a scroll horizontal en mobile — se
+   ocultan Email/Rol y su info se apila dentro de la columna Nombre (ver
+   .mobile-staff-detail en el html). La columna Creado se mantiene porque
+   por sí sola no fuerza scroll. */
+@media (max-width: 768px) {
+  .mat-column-email,
+  .mat-column-role {
+    display: none;
+  }
+
+  .mobile-staff-detail {
+    display: block;
+  }
+
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
+    padding: 0 8px;
+    white-space: normal;
+  }
+}
