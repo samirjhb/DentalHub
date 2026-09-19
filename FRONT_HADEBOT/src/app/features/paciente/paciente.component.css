@@ -2,6 +2,20 @@
   display: none;
 }
 
+/* Con width:100% el paginador solo cubre el ancho VISIBLE del contenedor,
+   no el ancho real de la tabla (5 columnas) — mismo problema y mismo fix
+   que en Ficha Clínica y Administración (ver esos .component.css). Grid de
+   una sola columna hace que el paginador adopte el mismo ancho que la
+   tabla y ambos scrollean juntos. */
+.table-responsive {
+  display: grid;
+  grid-template-columns: max-content;
+}
+
+.table-responsive .mat-mdc-paginator-container {
+  justify-content: flex-start;
+}
+
 
 /* En pantallas angostas, la tabla de pacientes con 5 columnas obligaba a
    scrollear horizontalmente para ver RUT/Contacto — se ocultan esas dos
