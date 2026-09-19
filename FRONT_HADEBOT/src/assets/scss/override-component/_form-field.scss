@@ -21,7 +21,27 @@ html {
     top: calc(var(--mat-form-field-container-height) / 2.15);
   }
 
+  // El contenedor de 37px es más bajo que el que Material usa por defecto
+  // para calcular cuánto sube la etiqueta al flotar (fijo, no depende de
+  // container-height) — con el contenedor bajo, la etiqueta flotada queda
+  // ~5.5px demasiado abajo y su parte inferior queda tapada por el borde
+  // superior del input. Se compensa solo el estado flotado (el reposo no
+  // se toca, ya está bien centrado).
+  .mat-mdc-text-field-wrapper .mat-mdc-form-field-flex .mat-mdc-floating-label.mdc-floating-label--float-above {
+    top: calc(var(--mat-form-field-container-height) / 2.15 - 5.5px);
+  }
+
   .demo-inline-calendar-card {
     width: 300px;
+  }
+
+  // Con la corrección de arriba, la etiqueta del primer campo de un diálogo
+  // puede quedar por encima del borde superior de .mat-mdc-dialog-content
+  // (que no tenía padding-top) y recortarse ahí (overflow: auto) — un poco
+  // de aire arriba le da lugar para flotar sin cortarse. !important porque
+  // el padding propio del componente (MDC, encapsulado) gana por
+  // especificidad — mismo criterio ya usado en _card.scss/_dialog.scss.
+  .mat-mdc-dialog-content {
+    padding-top: 16px !important;
   }
 }

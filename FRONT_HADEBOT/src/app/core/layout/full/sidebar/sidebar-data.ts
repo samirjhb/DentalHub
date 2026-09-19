@@ -31,6 +31,10 @@ const FINANCIAL_ROLES: Role[] = [
 // de billing.controller.ts (backend en reports.controller.ts).
 const REPORTS_ROLES: Role[] = [Role.SUPER_ADMIN, Role.CLINIC_ADMIN];
 
+// Mismo criterio que ADMIN_ROLES en tools.routes.ts (backend en
+// @Roles(SUPER_ADMIN, CLINIC_ADMIN) de POST /auth/staff).
+const ADMIN_ROLES: Role[] = [Role.SUPER_ADMIN, Role.CLINIC_ADMIN];
+
 export const navItems: NavItem[] = [
   {
     navCap: 'Inicio',
@@ -85,5 +89,11 @@ export const navItems: NavItem[] = [
     iconName: 'chart-bar',
     route: '/herramientas-de-trabajo/reportes',
     roles: REPORTS_ROLES,
+  },
+  {
+    displayName: 'Administración',
+    iconName: 'users-group',
+    route: '/herramientas-de-trabajo/administracion',
+    roles: ADMIN_ROLES,
   },
 ];

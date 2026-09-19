@@ -1,0 +1,37 @@
+<div class="staff-dialog-container">
+  <h2 mat-dialog-title>{{ data.isEdit ? 'Editar personal' : 'Nuevo miembro del personal' }}</h2>
+
+  <mat-dialog-content>
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Nombre completo</mat-label>
+      <input matInput [(ngModel)]="data.name" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3" *ngIf="!data.isEdit">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" [(ngModel)]="data.email" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3" *ngIf="!data.isEdit">
+      <mat-label>Contraseña</mat-label>
+      <input matInput type="password" [(ngModel)]="data.password" required />
+      <mat-hint>Mínimo 6 caracteres</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Rol</mat-label>
+      <mat-select [(ngModel)]="data.role" required>
+        <mat-option *ngFor="let option of roleOptions" [value]="option.value">
+          {{ option.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button mat-flat-button color="primary" (click)="onConfirm()" [disabled]="!isValid">
+      {{ data.isEdit ? 'Guardar' : 'Crear' }}
+    </button>
+  </mat-dialog-actions>
+</div>
