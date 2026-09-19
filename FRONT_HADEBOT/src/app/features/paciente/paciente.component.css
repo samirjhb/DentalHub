@@ -1,0 +1,42 @@
+.mobile-patient-detail {
+  display: none;
+}
+
+
+/* En pantallas angostas, la tabla de pacientes con 5 columnas obligaba a
+   scrollear horizontalmente para ver RUT/Contacto — se ocultan esas dos
+   columnas y su información se muestra apilada dentro de la columna
+   Paciente (ver .mobile-patient-detail en el html), que ya se apoya en
+   overflow del mat-table nativo para las columnas restantes. */
+@media (max-width: 768px) {
+  .mat-column-rut,
+  .mat-column-contact {
+    display: none;
+  }
+
+  .mobile-patient-detail {
+    display: block;
+  }
+
+  /* Ajustado para que Paciente + Estado + Acciones entren en 375px sin
+     scroll horizontal, ahora que Contacto/RUT ya no compiten por espacio. */
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
+    padding: 0 8px;
+  }
+
+  /* .table-responsive fija white-space:nowrap en todas las celdas — un
+     email largo en .mobile-patient-detail forzaba la columna Paciente
+     mucho más ancha de lo necesario, empujando la tabla a desbordar su
+     contenedor otra vez. Acá sí puede envolver a una segunda línea. */
+  .mat-column-name {
+    white-space: normal;
+  }
+
+  /* Los emails no tienen espacios — con solo white-space:normal seguían sin
+     cortarse y forzaban la columna igual de ancha. */
+  .mobile-patient-detail {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+}

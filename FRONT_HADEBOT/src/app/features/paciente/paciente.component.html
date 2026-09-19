@@ -1,13 +1,13 @@
 <!-- Tabla de Pacientes -->
-<div class="row mb-4">
+<div class="row m-b-24">
   <div class="col-lg-12">
     <mat-card class="cardWithShadow">
       <mat-card-content>
-        <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center justify-content-between m-b-24">
           <div>
             <h2 class="m-0">Lista de Pacientes</h2>
             <hr>
-            <h5 class="text-muted fw-normal mb-0">Pacientes registrados en el sistema</h5>
+            <h5 class="text-muted f-w-400 m-b-0">Pacientes registrados en el sistema</h5>
             <br>
           </div>
         </div>
@@ -21,10 +21,17 @@
               </th>
               <td mat-cell *matCellDef="let element">
                 <div class="d-flex align-items-center">
-                  <i-tabler name="user-circle" class="icon-24 me-2"></i-tabler>
+                  <i-tabler name="user-circle" class="icon-24 m-r-8"></i-tabler>
                   <div>
-                    <h6 class="f-s-14 f-w-600 mb-0">{{ element.name }}</h6>
+                    <h6 class="f-s-14 f-w-600 m-b-0">{{ element.name }}</h6>
                     <span class="f-s-12 text-muted">Ficha: {{ element.record }}</span>
+                    <!-- En mobile se ocultan las columnas RUT/Contacto (ver .css) para
+                         evitar el scroll horizontal — este detalle las reemplaza acá. -->
+                    <div class="mobile-patient-detail">
+                      <span class="f-s-12 text-muted d-block">{{ element.rut }}</span>
+                      <span class="f-s-12 text-muted d-block">{{ element.email }}</span>
+                      <span class="f-s-12 text-muted d-block">{{ element.cel }}</span>
+                    </div>
                   </div>
                 </div>
               </td>
@@ -36,7 +43,7 @@
                 RUT
               </th>
               <td mat-cell *matCellDef="let element">
-                <h6 class="f-s-14 f-w-600 mb-0">{{ element.rut }}</h6>
+                <h6 class="f-s-14 f-w-600 m-b-0">{{ element.rut }}</h6>
                 <span class="f-s-12 text-muted">Fecha Nac.: {{ formatDate(element.birthDate) }}</span>
               </td>
             </ng-container>
@@ -47,7 +54,7 @@
                 Contacto
               </th>
               <td mat-cell *matCellDef="let element">
-                <h6 class="f-s-14 mb-0">{{ element.email }}</h6>
+                <h6 class="f-s-14 m-b-0">{{ element.email }}</h6>
                 <span class="f-s-12 text-muted">{{ element.cel }}</span>
               </td>
             </ng-container>
@@ -82,11 +89,11 @@
                 </button>
                 <mat-menu #menu="matMenu">
                   <button mat-menu-item (click)="editarPaciente(element)">
-                    <i-tabler name="edit" class="icon-18 me-2"></i-tabler>
+                    <i-tabler name="edit" class="icon-18 m-r-8"></i-tabler>
                     <span>Editar</span>
                   </button>
                   <button mat-menu-item (click)="eliminarPaciente(element._id)">
-                    <i-tabler name="trash" class="icon-18 me-2"></i-tabler>
+                    <i-tabler name="trash" class="icon-18 m-r-8"></i-tabler>
                     <span>Eliminar</span>
                   </button>
                 </mat-menu>
@@ -98,22 +105,23 @@
           </table>
 
           <!-- Paginador -->
-          <mat-paginator 
-            [pageSizeOptions]="[5, 10, 20]" 
-            showFirstLastButtons 
+          <mat-paginator
+            class="w-100"
+            [pageSizeOptions]="[5, 10, 20]"
+            showFirstLastButtons
             aria-label="Seleccionar página de pacientes">
           </mat-paginator>
 
           <!-- Mensaje cuando no hay datos -->
-          <div *ngIf="pacientes.length === 0 && !isLoading" class="text-center py-5">
-            <i-tabler name="users" class="icon-48 text-muted mb-2"></i-tabler>
+          <div *ngIf="pacientes.length === 0 && !isLoading" class="text-center p-y-48">
+            <i-tabler name="users" class="icon-48 text-muted m-b-8"></i-tabler>
             <h5 class="text-muted">No hay pacientes registrados</h5>
             <p class="text-muted">Utilice el formulario para registrar un nuevo paciente</p>
           </div>
 
           <!-- Indicador de carga -->
-          <div *ngIf="isLoading" class="text-center py-5">
-            <i-tabler name="loader" class="icon-48 text-primary mb-2 animate-spin"></i-tabler>
+          <div *ngIf="isLoading" class="text-center p-y-48">
+            <i-tabler name="loader" class="icon-48 text-primary m-b-8 animate-spin"></i-tabler>
             <h5>Cargando pacientes...</h5>
           </div>
         </div>
@@ -127,11 +135,11 @@
   <div class="col-lg-12">
     <mat-card class="cardWithShadow">
       <mat-card-content>
-        <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center justify-content-between m-b-24">
           <div>
             <h2 class="m-0">{{ formTitle }}</h2>
             <hr>
-            <h5 class="text-muted fw-normal mb-0">Ingrese los datos del paciente</h5>
+            <h5 class="text-muted f-w-400 m-b-0">Ingrese los datos del paciente</h5>
             <br>
           </div>
         </div>
@@ -139,7 +147,7 @@
         <form [formGroup]="pacienteForm" (ngSubmit)="onSubmit()">
           <div class="row">
             <!-- Nombre completo -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-lg-6 m-b-24">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>Nombre completo</mat-label>
                 <input matInput formControlName="name" placeholder="Ej: Juan Pérez González">
@@ -152,11 +160,11 @@
             </div>
 
             <!-- RUT -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-lg-6 m-b-24">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>RUT</mat-label>
                 <input matInput formControlName="rut" placeholder="Ej: 12.345.678-9" rutFormat>
-                <mat-hint>Se aplicará formato automáticamente (12.345.678-9)</mat-hint>
+                <mat-hint>Formato: 12.345.678-9</mat-hint>
                 <ng-container *ngIf="pacienteForm.get('rut')?.invalid && pacienteForm.get('rut')?.touched">
                   <mat-error>
                     {{ getErrorMessage('rut') }}
@@ -166,7 +174,7 @@
             </div>
 
             <!-- Celular -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-lg-6 m-b-24">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>Celular</mat-label>
                 <input matInput formControlName="cel" placeholder="Ej: 56912345678" type="number">
@@ -179,7 +187,7 @@
             </div>
 
             <!-- Email -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-lg-6 m-b-24">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>Correo electrónico</mat-label>
                 <input matInput formControlName="email" placeholder="Ej: juan.perez@ejemplo.com" type="email">
@@ -192,7 +200,7 @@
             </div>
 
             <!-- Ficha -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-lg-6 m-b-24">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>Número de ficha</mat-label>
                 <input matInput formControlName="record" placeholder="Ej: DH-2025-001">
@@ -205,7 +213,7 @@
             </div>
 
             <!-- Fecha de nacimiento -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-lg-6 m-b-24">
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>Fecha de nacimiento</mat-label>
                 <input matInput [matDatepicker]="picker" formControlName="birthDate" [max]="maxDate">
@@ -220,7 +228,7 @@
             </div>
 
             <!-- Botones de acción -->
-            <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+            <div class="col-12 d-flex justify-content-end gap-2 m-t-16">
               <button mat-stroked-button color="warn" type="button" [disabled]="isSubmitting" (click)="cancelar()">
                 Cancelar
               </button>
@@ -229,7 +237,7 @@
                 <span *ngIf="!isSubmitting && !isEditMode">Guardar Paciente</span>
                 <span *ngIf="!isSubmitting && isEditMode">Actualizar Paciente</span>
                 <span *ngIf="isSubmitting" class="d-flex align-items-center">
-                  <i-tabler name="loader" class="icon-18 me-2 d-flex animate-spin"></i-tabler> 
+                  <i-tabler name="loader" class="icon-18 m-r-8 d-flex animate-spin"></i-tabler> 
                   <span *ngIf="!isEditMode">Guardando...</span>
                   <span *ngIf="isEditMode">Actualizando...</span>
                 </span>
@@ -241,20 +249,6 @@
     </mat-card>
   </div>
 </div>
-
-<!-- Vista previa de los datos ingresados (para desarrollo) -->
-<ng-container *ngIf="pacienteForm.valid">
-  <div class="row mt-4">
-    <div class="col-lg-12">
-      <mat-card class="cardWithShadow">
-        <mat-card-content>
-          <h3>Datos del paciente</h3>
-          <pre>{{ pacienteForm.value | json }}</pre>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  </div>
-</ng-container>
 
 <style>
   .animate-spin {

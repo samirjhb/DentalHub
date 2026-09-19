@@ -8,7 +8,7 @@
 }
 
 .page-subtitle {
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
   margin-bottom: 20px;
 }
 
@@ -23,7 +23,7 @@
 .empty-state {
   text-align: center;
   padding: 32px 16px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
 }
 
 .prescripciones-body {
@@ -60,6 +60,6 @@
 }
 
 .prescription-observations {
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
   margin-top: 8px;
 }

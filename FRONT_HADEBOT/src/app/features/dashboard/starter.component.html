@@ -1,26 +1,130 @@
 <div class="row">
-  <div class="col-lg-8">
-    <app-sales-overview></app-sales-overview>
-  </div>
-  <div class="col-lg-4" style="display: flex; flex-direction: column; gap: 16px">
+  <div class="col-lg-3 col-md-6 mb-4">
     <app-stat-card
       icon="users"
       label="Pacientes registrados"
       [value]="patientsCount"
       accentColor="#5d87ff"
     ></app-stat-card>
+  </div>
+  <div class="col-lg-3 col-md-6 mb-4">
     <app-stat-card
       icon="calendar-event"
       label="Citas de hoy"
-      [value]="todaysAppointmentsCount"
+      [value]="todaysAppointments.length"
       accentColor="#13deb9"
     ></app-stat-card>
+  </div>
+  <div class="col-lg-3 col-md-6 mb-4" *ngIf="canSeeTotalBalance && totalPendingBalance !== null">
     <app-stat-card
-      *ngIf="canSeeTotalBalance && totalPendingBalance !== null"
       icon="cash"
       label="Saldo pendiente total"
       [value]="'$' + totalPendingBalance"
       accentColor="#fa896b"
     ></app-stat-card>
+  </div>
+  <div class="col-lg-3 col-md-6 mb-4">
+    <app-stat-card
+      icon="alert-triangle"
+      label="Insumos con stock bajo"
+      [value]="lowStockCount"
+      accentColor="#ffae1f"
+    ></app-stat-card>
+  </div>
+</div>
+
+<div class="row" *ngIf="canSeeReports">
+  <div class="col-lg-8 mb-4">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="d-flex justify-content-between align-items-center w-100 mb-3">
+          <mat-card-title class="m-0">Ingresos (últimos 30 días)</mat-card-title>
+          <span class="f-s-20 f-w-600" *ngIf="totalRevenue !== null">${{ totalRevenue }}</span>
+        </div>
+        <mat-progress-bar mode="indeterminate" *ngIf="!reportsLoaded"></mat-progress-bar>
+        <apx-chart
+          *ngIf="reportsLoaded"
+          [series]="revenueChart.series"
+          [chart]="revenueChart.chart"
+          [xaxis]="revenueChart.xaxis"
+          [dataLabels]="revenueChart.dataLabels"
+          [plotOptions]="revenueChart.plotOptions"
+        ></apx-chart>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="col-lg-4 mb-4">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="d-flex w-100 mb-3">
+          <mat-card-title>Tratamientos por estado</mat-card-title>
+        </div>
+        <mat-progress-bar mode="indeterminate" *ngIf="!reportsLoaded"></mat-progress-bar>
+        <apx-chart
+          *ngIf="reportsLoaded"
+          [series]="treatmentsChart.series"
+          [chart]="treatmentsChart.chart"
+          [labels]="treatmentsChart.labels"
+          [responsive]="treatmentsChart.responsive"
+          [legend]="treatmentsChart.legend"
+        ></apx-chart>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-6 mb-4">
+    <mat-card class="cardWithShadow h-100">
+      <mat-card-content>
+        <div class="d-flex w-100 mb-3">
+          <mat-card-title>Próximas citas de hoy</mat-card-title>
+        </div>
+        <p class="text-muted" *ngIf="todaysAppointments.length === 0">No hay citas para hoy.</p>
+        <div
+          class="d-flex justify-content-between align-items-center py-2 dashboard-list-row"
+          *ngFor="let appointment of todaysAppointments"
+        >
+          <div>
+            <div class="f-w-600">{{ appointment.startAt | date: 'HH:mm' }}</div>
+            <div class="text-muted f-s-14">{{ appointment.reason }}</div>
+          </div>
+          <span
+            class="f-s-12 f-w-600 p-x-8 p-y-4 rounded-pill"
+            [style.background]="statusColor(appointment.status) + '1a'"
+            [style.color]="statusColor(appointment.status)"
+          >
+            {{ appointment.status }}
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="col-lg-6 mb-4">
+    <mat-card class="cardWithShadow h-100">
+      <mat-card-content>
+        <div class="d-flex w-100 mb-3">
+          <mat-card-title>Insumos con stock bajo</mat-card-title>
+        </div>
+        <p class="text-muted" *ngIf="lowStockItems.length === 0">
+          Todo el inventario está dentro de los niveles mínimos.
+        </p>
+        <div
+          class="d-flex justify-content-between align-items-center py-2 dashboard-list-row"
+          *ngFor="let item of lowStockItems"
+        >
+          <span>{{ item.name }}</span>
+          <span class="f-w-600" style="color: #fa896b">
+            {{ item.currentStock }} / {{ item.minStock }} {{ item.unit }}
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12">
+    <app-sales-overview></app-sales-overview>
   </div>
 </div>

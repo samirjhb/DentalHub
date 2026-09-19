@@ -1,0 +1,7 @@
+.dashboard-list-row {
+  border-bottom: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.08));
+}
+
+.dashboard-list-row:last-child {
+  border-bottom: none;
+}

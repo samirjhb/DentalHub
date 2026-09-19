@@ -7,7 +7,7 @@
 }
 
 .page-subtitle {
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
   margin: 4px 0 20px;
 }
 
@@ -18,7 +18,7 @@
 .empty-state {
   text-align: center;
   padding: 24px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
 }
 
 .section-title {
@@ -40,7 +40,7 @@
 
 .balance-item .label {
   font-size: 0.85rem;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
 }
 
 .balance-item .value {
@@ -54,4 +54,35 @@
 
 .text-error {
   color: #fa896b;
+}
+
+.mobile-treatment-detail,
+.mobile-payment-detail {
+  display: none;
+}
+
+/* Ambas tablas (Tratamientos e Historial de pagos) obligaban a scroll
+   horizontal en mobile — se ocultan las columnas secundarias y su info se
+   apila dentro de la primera columna (ver .mobile-*-detail en el html). */
+@media (max-width: 768px) {
+  .mat-column-toothNumber,
+  .mat-column-price,
+  .mat-column-deposit,
+  .mat-column-pendingBalance,
+  .mat-column-amount,
+  .mat-column-method,
+  .mat-column-observations {
+    display: none;
+  }
+
+  .mobile-treatment-detail,
+  .mobile-payment-detail {
+    display: block;
+  }
+
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
+    padding: 0 8px;
+    white-space: normal;
+  }
 }

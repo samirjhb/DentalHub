@@ -34,68 +34,91 @@
     </div>
 
     <h3 class="section-title">Tratamientos</h3>
-    <table mat-table [dataSource]="pendingTreatments" class="w-100">
-      <ng-container matColumnDef="treatment">
-        <th mat-header-cell *matHeaderCellDef>Tratamiento</th>
-        <td mat-cell *matCellDef="let row">{{ row.treatment }}</td>
-      </ng-container>
-      <ng-container matColumnDef="toothNumber">
-        <th mat-header-cell *matHeaderCellDef>Pieza</th>
-        <td mat-cell *matCellDef="let row">{{ row.toothNumber }}</td>
-      </ng-container>
-      <ng-container matColumnDef="price">
-        <th mat-header-cell *matHeaderCellDef>Precio</th>
-        <td mat-cell *matCellDef="let row">${{ row.price }}</td>
-      </ng-container>
-      <ng-container matColumnDef="deposit">
-        <th mat-header-cell *matHeaderCellDef>Abonado</th>
-        <td mat-cell *matCellDef="let row">${{ row.deposit }}</td>
-      </ng-container>
-      <ng-container matColumnDef="pendingBalance">
-        <th mat-header-cell *matHeaderCellDef>Saldo</th>
-        <td mat-cell *matCellDef="let row">${{ row.pendingBalance }}</td>
-      </ng-container>
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let row">
-          <button
-            mat-flat-button
-            color="primary"
-            [disabled]="row.pendingBalance <= 0"
-            (click)="openPaymentDialog(row)"
-          >
-            Registrar pago
-          </button>
-        </td>
-      </ng-container>
-      <tr mat-header-row *matHeaderRowDef="pendingColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: pendingColumns;"></tr>
-    </table>
+    <div class="table-responsive">
+      <table mat-table [dataSource]="pendingTreatments" class="w-100">
+        <ng-container matColumnDef="treatment">
+          <th mat-header-cell *matHeaderCellDef>Tratamiento</th>
+          <td mat-cell *matCellDef="let row">
+            {{ row.treatment }}
+            <!-- En mobile se ocultan Pieza/Precio/Abonado/Saldo (ver .css)
+                 para evitar el scroll horizontal — este detalle las
+                 reemplaza acá. -->
+            <div class="mobile-treatment-detail">
+              <span class="f-s-12 text-muted d-block">Pieza {{ row.toothNumber }}</span>
+              <span class="f-s-12 text-muted d-block">Precio: ${{ row.price }} — Abonado: ${{ row.deposit }}</span>
+              <span class="f-s-12 text-muted d-block">Saldo: ${{ row.pendingBalance }}</span>
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="toothNumber">
+          <th mat-header-cell *matHeaderCellDef>Pieza</th>
+          <td mat-cell *matCellDef="let row">{{ row.toothNumber }}</td>
+        </ng-container>
+        <ng-container matColumnDef="price">
+          <th mat-header-cell *matHeaderCellDef>Precio</th>
+          <td mat-cell *matCellDef="let row">${{ row.price }}</td>
+        </ng-container>
+        <ng-container matColumnDef="deposit">
+          <th mat-header-cell *matHeaderCellDef>Abonado</th>
+          <td mat-cell *matCellDef="let row">${{ row.deposit }}</td>
+        </ng-container>
+        <ng-container matColumnDef="pendingBalance">
+          <th mat-header-cell *matHeaderCellDef>Saldo</th>
+          <td mat-cell *matCellDef="let row">${{ row.pendingBalance }}</td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row">
+            <button
+              mat-flat-button
+              color="primary"
+              [disabled]="row.pendingBalance <= 0"
+              (click)="openPaymentDialog(row)"
+            >
+              Registrar pago
+            </button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="pendingColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: pendingColumns;"></tr>
+      </table>
+    </div>
     <div *ngIf="pendingTreatments.length === 0" class="empty-state">
       Este paciente no tiene tratamientos registrados.
     </div>
 
     <h3 class="section-title">Historial de pagos</h3>
-    <table mat-table [dataSource]="payments" class="w-100">
-      <ng-container matColumnDef="paidAt">
-        <th mat-header-cell *matHeaderCellDef>Fecha</th>
-        <td mat-cell *matCellDef="let payment">{{ payment.paidAt | date: 'short' }}</td>
-      </ng-container>
-      <ng-container matColumnDef="amount">
-        <th mat-header-cell *matHeaderCellDef>Monto</th>
-        <td mat-cell *matCellDef="let payment">${{ payment.amount }}</td>
-      </ng-container>
-      <ng-container matColumnDef="method">
-        <th mat-header-cell *matHeaderCellDef>Método</th>
-        <td mat-cell *matCellDef="let payment">{{ payment.method }}</td>
-      </ng-container>
-      <ng-container matColumnDef="observations">
-        <th mat-header-cell *matHeaderCellDef>Observaciones</th>
-        <td mat-cell *matCellDef="let payment">{{ payment.observations }}</td>
-      </ng-container>
-      <tr mat-header-row *matHeaderRowDef="paymentColumns"></tr>
-      <tr mat-row *matRowDef="let payment; columns: paymentColumns;"></tr>
-    </table>
+    <div class="table-responsive">
+      <table mat-table [dataSource]="payments" class="w-100">
+        <ng-container matColumnDef="paidAt">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let payment">
+            {{ payment.paidAt | date: 'short' }}
+            <!-- En mobile se ocultan Monto/Método/Observaciones (ver .css)
+                 para evitar el scroll horizontal — este detalle las
+                 reemplaza acá. -->
+            <div class="mobile-payment-detail">
+              <span class="f-s-12 text-muted d-block">${{ payment.amount }} — {{ payment.method }}</span>
+              <span class="f-s-12 text-muted d-block" *ngIf="payment.observations">{{ payment.observations }}</span>
+            </div>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Monto</th>
+          <td mat-cell *matCellDef="let payment">${{ payment.amount }}</td>
+        </ng-container>
+        <ng-container matColumnDef="method">
+          <th mat-header-cell *matHeaderCellDef>Método</th>
+          <td mat-cell *matCellDef="let payment">{{ payment.method }}</td>
+        </ng-container>
+        <ng-container matColumnDef="observations">
+          <th mat-header-cell *matHeaderCellDef>Observaciones</th>
+          <td mat-cell *matCellDef="let payment">{{ payment.observations }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="paymentColumns"></tr>
+        <tr mat-row *matRowDef="let payment; columns: paymentColumns;"></tr>
+      </table>
+    </div>
     <div *ngIf="payments.length === 0" class="empty-state">
       Este paciente aún no tiene pagos registrados.
     </div>

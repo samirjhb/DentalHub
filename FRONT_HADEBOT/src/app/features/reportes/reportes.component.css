@@ -8,7 +8,7 @@
 }
 
 .page-subtitle {
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
   margin-bottom: 20px;
 }
 

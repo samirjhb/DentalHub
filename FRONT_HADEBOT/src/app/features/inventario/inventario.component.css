@@ -14,7 +14,7 @@
 }
 
 .page-subtitle {
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
   margin-bottom: 0;
 }
 
@@ -29,7 +29,7 @@
 .empty-state {
   text-align: center;
   padding: 32px 16px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
 }
 
 .status-badge {
@@ -51,4 +51,29 @@
 
 .row-low-stock {
   background: rgba(250, 137, 107, 0.06);
+}
+
+.mobile-item-detail {
+  display: none;
+}
+
+/* Con 6 columnas la tabla obligaba a scroll horizontal en mobile — se
+   ocultan Unidad/Stock actual/Umbral mínimo y su info se apila dentro de
+   la columna Insumo (ver .mobile-item-detail en el html). */
+@media (max-width: 768px) {
+  .mat-column-unit,
+  .mat-column-currentStock,
+  .mat-column-minStock {
+    display: none;
+  }
+
+  .mobile-item-detail {
+    display: block;
+  }
+
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
+    padding: 0 8px;
+    white-space: normal;
+  }
 }
