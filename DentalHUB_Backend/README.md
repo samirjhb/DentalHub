@@ -30,6 +30,25 @@ Creación de facturas con: lista de tratamientos realizados, costos, descuentos 
 ### Chatbot Dental con IA
 Asistente virtual especializado en odontología que proporciona información sobre salud bucal, tratamientos dentales y prácticas de higiene oral.
 
+### Portal de Pacientes
+El staff otorga acceso al portal desde la pantalla de Pacientes (crea o vincula
+una cuenta `Auth` con `role: PATIENT` al registro clínico del paciente). Con
+esa cuenta, el paciente puede:
+- Ver, solicitar y cancelar sus propias citas (`/appointment/me`)
+- Ver un resumen de su historial clínico, sin notas internas ni radiografías (`/clinical-record/me/summary`)
+- Ver su saldo, pagos y tratamientos facturados (`/billing/me/*`)
+
+El ownership de estos endpoints se deriva siempre del `patientId` incluido en
+el JWT del paciente — nunca de un id que mande el cliente.
+
+### Recuperación de contraseña
+Flujo de "olvidé mi contraseña" (`POST /auth/forgot-password` y
+`POST /auth/reset-password`), aplicable a cualquier cuenta (staff o
+paciente). El token de reseteo sigue el mismo patrón de hash + expiración
+(TTL de Mongo) que el refresh token, es de un solo uso, y el email se envía
+vía la API de [Resend](https://resend.com) (ver `RESEND_API_KEY` en
+variables de entorno). El endpoint nunca revela si un email existe o no.
+
 ## Instalación
 
 ```bash
@@ -137,6 +156,44 @@ curl -X POST http://localhost:3000/ai/chat \
 
 Para más detalles, consulta el archivo [README-CHATBOT.md](./README-CHATBOT.md).
 
+## Configuración de Recuperación de Contraseña (Resend)
+
+El envío del email de "olvidé mi contraseña" usa la API HTTP de
+[Resend](https://resend.com) (vía `fetch` nativo, sin dependencias nuevas).
+
+### 1. Crear una API key
+
+Crea una cuenta gratis en [resend.com](https://resend.com) y genera una API
+key en [resend.com/api-keys](https://resend.com/api-keys).
+
+### 2. Configurar el entorno
+
+Agrega a tu `.env`:
+
+```
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxx
+RESEND_FROM=DentalHub <onboarding@resend.dev>
+FRONTEND_URL=http://localhost:4200
+PASSWORD_RESET_EXPIRES_IN_MINUTES=30
+```
+
+**Nota**: con el dominio de pruebas de Resend (`onboarding@resend.dev`) solo
+se puede enviar al email con el que creaste la cuenta de Resend, salvo que
+verifiques un dominio propio. Sin `RESEND_API_KEY`, el link de recuperación
+se registra en el log del backend en vez de enviarse — sirve para probar el
+flujo completo en desarrollo sin depender de una cuenta de Resend.
+
+### 3. Probar el flujo
+
+```bash
+curl -X POST http://localhost:3001/v1/auth/forgot-password \
+  -H "Content-Type: application/json" \
+  -d '{"email":"usuario@ejemplo.com"}'
+```
+
+La respuesta es siempre el mismo mensaje genérico, exista o no el email
+(evita revelar qué cuentas existen).
+
 ## Test
 
 ```bash
@@ -149,6 +206,17 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+
+Los tests unitarios (Jest) corren automáticamente en cada push/PR contra
+`main` vía GitHub Actions (`.github/workflows/tests.yml` en la raíz del
+repo). Usan repositorios en memoria (`in-memory-*.repository.ts`), no
+requieren una base de datos real ni variables de entorno.
+
+**Nota**: en Node.js 22+ (probado en Node 26) los tests que importan
+`@nestjs/jwt` fallan al arrancar por una incompatibilidad de
+`buffer-equal-constant-time` (dependencia de `jsonwebtoken`) con el módulo
+`buffer` de Node — usa Node 20 LTS para desarrollo local (mismo runtime que
+usa el CI).
 
 ## Paso a Paso
 

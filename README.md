@@ -91,6 +91,13 @@ Las variables de entorno se pueden configurar directamente en el archivo `docker
 - `PORT`: Puerto del backend (por defecto: 3001)
 - `MONGO_CONNECTION_TEST`: Cadena de conexión a MongoDB (por defecto: mongodb://mongo:27017/dentalhub)
 - `NODE_ENV`: Entorno de ejecución (production/development)
+- `JWT_SECRET`: Secreto para firmar los JWT (mínimo 32 caracteres)
+- `JWT_ACCESS_EXPIRES_IN` / `JWT_REFRESH_EXPIRES_IN_DAYS`: expiración del access token y del refresh token
+- `ADMIN_EMAIL` / `ADMIN_PASSWORD`: credenciales del primer `SUPER_ADMIN`, creado automáticamente al arrancar si no existe ninguno
+- `RESEND_API_KEY`: API key de [Resend](https://resend.com/api-keys) para enviar el email de recuperación de contraseña. Sin esto, el link se registra en el log del backend en vez de enviarse (útil para desarrollo local)
+- `RESEND_FROM`: remitente del email de recuperación (por defecto `DentalHub <onboarding@resend.dev>`)
+- `FRONTEND_URL`: URL pública del frontend, usada para armar el link de "recuperar contraseña" (por defecto `http://localhost:4200`)
+- `PASSWORD_RESET_EXPIRES_IN_MINUTES`: minutos de validez del link de recuperación (por defecto 30)
 
 ## Desarrollo
 
@@ -109,6 +116,22 @@ npm run start:dev
 cd FRONT_HADEBOT
 npm install
 npm start
+```
+
+## Tests y CI
+
+Cada push y pull request contra `main` corre automáticamente vía GitHub Actions
+(`.github/workflows/tests.yml`): tests unitarios del backend (Jest) y del
+frontend (Karma + ChromeHeadless). Para correrlos en local:
+
+```bash
+# Backend
+cd DentalHUB_Backend
+npm test
+
+# Frontend
+cd FRONT_HADEBOT
+npx ng test --no-watch --browsers=ChromeHeadless
 ```
 
 ## Troubleshooting
