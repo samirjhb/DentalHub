@@ -10,7 +10,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { CommonModule, NgIf } from '@angular/common';
-import { JsonPipe } from '@angular/common';
 import { PacienteService } from 'src/app/core/services/paciente.service';
 import { MatIconModule } from '@angular/material/icon';
 import { TablerIconsModule } from 'angular-tabler-icons';
@@ -58,7 +57,6 @@ const PACIENTES_EJEMPLO: PacienteData[] = [];
     MatDatepickerModule,
     MatNativeDateModule,
     CommonModule,
-    JsonPipe,
     NgIf,
     MatIconModule,
     TablerIconsModule,

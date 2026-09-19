@@ -1,3 +1,20 @@
+// FullCalendar arma varias de sus celdas <th> "wrapper" — la del scrollgrid
+// (para sincronizar el ancho al hacer scroll horizontal) y también, en la
+// vista Lista, la del encabezado de cada día — con background: white fijo
+// en su CSS por defecto. En modo oscuro esas celdas quedan opacas tapando
+// el fondo de la card, y el texto (lun/mar/..., jueves 17 de septiembre...,
+// pensado para fondo oscuro) queda casi ilegible sobre blanco. Se generaliza
+// a TODOS los <th> del calendario: los únicos <td> con background propio
+// son resaltados intencionales (día de hoy, franja "todo el día"), nunca
+// los <th>, así que no hay riesgo de taparlos.
+.fc th {
+  background: transparent !important;
+}
+
+.fc-scrollgrid-section > td {
+  background: transparent !important;
+}
+
 // FullCalendar no reacondiciona su propia barra superior en pantallas
 // angostas — se usa en el widget del Dashboard y en la página de Agenda,
 // mismo breakpoint que MOBILE_VIEW (full.component.ts) para consistencia.

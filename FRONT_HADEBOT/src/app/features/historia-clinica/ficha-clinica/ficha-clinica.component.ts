@@ -1617,7 +1617,7 @@ export class FichaClinicaComponent implements OnInit {
   // Método para generar un presupuesto en PDF
   generateBudget(ficha: FichaClinicaData) {
     // Usar la ruta estática del logo
-    const logoUrl = 'assets/images/logos/logoHadebot.png';
+    const logoUrl = 'assets/images/logos/logoHadebotPdf.svg';
     
     // Generar el PDF
     this.pdfService.generateBudgetPdf(ficha, logoUrl);

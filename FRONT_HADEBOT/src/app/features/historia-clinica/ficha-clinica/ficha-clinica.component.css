@@ -4,6 +4,43 @@
   margin-bottom: 24px;
 }
 
+/* Con width:100% el paginador solo cubre el ancho VISIBLE del contenedor,
+   no el ancho real de la tabla (que acá siempre necesita scroll horizontal
+   por la cantidad de columnas). Grid de una sola columna hace que el
+   paginador adopte el mismo ancho que la tabla, el hijo más ancho, y
+   ambos scrollean juntos cubriendo las mismas columnas. */
+.table-responsive {
+  display: grid;
+  grid-template-columns: max-content;
+}
+
+/* El paginador de Material alinea sus controles a la derecha por defecto
+   (pensado para un ancho ajustado a su contenido) — ahora que ocupa el
+   mismo ancho que la tabla (876px+), eso los deja fuera de vista hasta
+   scrollear del todo hacia la derecha. Se alinean al inicio para que
+   aparezcan ya visibles, alineados con la primera columna de la tabla. */
+.table-responsive .mat-mdc-paginator-container {
+  justify-content: flex-start;
+}
+
+/* El header de "Lista de Fichas Clínicas" pone el título y el filtro
+   (con un ancho fijo de 200px) uno al lado del otro sin wrap — en mobile el
+   filtro + botón "Actualizar" quedaban empujados fuera del viewport, sin
+   forma de scrollear hasta ellos. */
+.fichas-header-row {
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+
+.fichas-header-filters {
+  flex-wrap: wrap;
+}
+
+.fichas-status-filter {
+  width: 200px;
+  max-width: 100%;
+}
+
 .text-error {
   color: #f44336;
 }
@@ -78,7 +115,7 @@ table {
 }
 
 th.mat-header-cell {
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--mat-sys-on-surface, rgba(0, 0, 0, 0.7));
   font-weight: 600;
 }
 

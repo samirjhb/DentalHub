@@ -4,6 +4,11 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { SessionManagerService } from './session-manager.service';
 
+const LOGIN_ERROR_MESSAGES: Record<string, string> = {
+  USER_NOT_FOUND: 'Usuario no encontrado',
+  PASSWORD_INCORRECT: 'Contraseña incorrecta',
+};
+
 @Injectable({
   providedIn: 'root'
 })
@@ -64,11 +69,11 @@ async loginService(data: any) {
     // Extract error message from the response
     let errorMessage = 'Error en el inicio de sesión';
     if (error.error && error.error.message) {
-      errorMessage = error.error.message;
+      errorMessage = LOGIN_ERROR_MESSAGES[error.error.message] || error.error.message;
     } else if (error.message) {
       errorMessage = error.message;
     }
-    
+
     // Throw the error with the message so it can be caught by the component
     throw { message: errorMessage, originalError: error };
   }
