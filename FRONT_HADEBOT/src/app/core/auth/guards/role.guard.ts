@@ -21,8 +21,12 @@ export class RoleGuard implements CanActivate {
     if (!allowedRoles) return true;
 
     const role = this.sessionManager.getRole();
-    return allowedRoles.includes(role as Role)
-      ? true
-      : this.router.createUrlTree(['/dashboard']);
+    if (allowedRoles.includes(role as Role)) return true;
+
+    // /dashboard también pasa por este guard (ver app.routes.ts) — un PATIENT
+    // bloqueado ahí NUNCA puede caer de vuelta en '/dashboard', o se produce
+    // un loop de redirección infinito. Cada rol tiene un "home" distinto.
+    const fallback = role === Role.PATIENT ? '/portal-paciente/mis-citas' : '/dashboard';
+    return this.router.createUrlTree([fallback]);
   }
 }

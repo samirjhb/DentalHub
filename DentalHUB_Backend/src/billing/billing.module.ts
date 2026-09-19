@@ -14,6 +14,7 @@ import { FindPaymentsUseCase } from './application/use-cases/find-payments.use-c
 import { CalculatePatientBalanceUseCase } from './application/use-cases/calculate-patient-balance.use-case';
 import { CalculateTotalClinicBalanceUseCase } from './application/use-cases/calculate-total-clinic-balance.use-case';
 import { FindPatientTreatmentsUseCase } from './application/use-cases/find-patient-treatments.use-case';
+import { FindMyPaymentsUseCase } from './application/use-cases/find-my-payments.use-case';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { FindPatientTreatmentsUseCase } from './application/use-cases/find-patie
     CalculatePatientBalanceUseCase,
     CalculateTotalClinicBalanceUseCase,
     FindPatientTreatmentsUseCase,
+    FindMyPaymentsUseCase,
   ],
 })
 export class BillingModule {}

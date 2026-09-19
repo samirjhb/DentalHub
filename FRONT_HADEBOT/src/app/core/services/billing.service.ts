@@ -129,4 +129,36 @@ export class BillingService {
       ),
     );
   }
+
+  // --- Portal de Pacientes: /billing/me/* ---
+
+  async getMyBalance(): Promise<Balance> {
+    return await firstValueFrom(
+      this.http.get<Balance>(`${environment.apiUrl}/billing/me/balance`),
+    );
+  }
+
+  async getMyPayments(
+    filter: { startDate?: string; endDate?: string } = {},
+  ): Promise<Payment[]> {
+    const params: Record<string, string> = {};
+    Object.entries(filter).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+    const response = await firstValueFrom(
+      this.http.get<{ payments: Payment[] }>(
+        `${environment.apiUrl}/billing/me/payments`,
+        { params },
+      ),
+    );
+    return response.payments;
+  }
+
+  async getMyTreatments(): Promise<PatientTreatmentRow[]> {
+    return await firstValueFrom(
+      this.http.get<PatientTreatmentRow[]>(
+        `${environment.apiUrl}/billing/me/treatments`,
+      ),
+    );
+  }
 }

@@ -79,6 +79,28 @@ async loginService(data: any) {
   }
 }
 
+async forgotPasswordService(email: string) {
+  try {
+    return await firstValueFrom(
+      this.http.post<{ message: string }>(`${environment.apiUrl}/auth/forgot-password`, { email }),
+    );
+  } catch (error: any) {
+    const errorMessage = error.error?.message || error.message || 'Error al solicitar el enlace de recuperación';
+    throw { message: errorMessage, originalError: error };
+  }
+}
+
+async resetPasswordService(token: string, newPassword: string) {
+  try {
+    return await firstValueFrom(
+      this.http.post<{ message: string }>(`${environment.apiUrl}/auth/reset-password`, { token, newPassword }),
+    );
+  } catch (error: any) {
+    const errorMessage = error.error?.message || error.message || 'Error al restablecer la contraseña';
+    throw { message: errorMessage, originalError: error };
+  }
+}
+
 logout() {
   // Revocar el refresh token en el backend (best-effort, no bloquea la UI) antes
   // de limpiar la sesión local.

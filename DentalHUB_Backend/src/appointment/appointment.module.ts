@@ -14,6 +14,10 @@ import { FindAllAppointmentsUseCase } from './application/use-cases/find-all-app
 import { FindAppointmentByIdUseCase } from './application/use-cases/find-appointment-by-id.use-case';
 import { UpdateAppointmentStatusUseCase } from './application/use-cases/update-appointment-status.use-case';
 import { RescheduleAppointmentUseCase } from './application/use-cases/reschedule-appointment.use-case';
+import { FindMyAppointmentsUseCase } from './application/use-cases/find-my-appointments.use-case';
+import { RequestAppointmentUseCase } from './application/use-cases/request-appointment.use-case';
+import { CancelMyAppointmentUseCase } from './application/use-cases/cancel-my-appointment.use-case';
+import { AppointmentOwnershipGuard } from './infrastructure/guards/appointment-ownership.guard';
 
 @Module({
   imports: [
@@ -34,6 +38,10 @@ import { RescheduleAppointmentUseCase } from './application/use-cases/reschedule
     FindAppointmentByIdUseCase,
     UpdateAppointmentStatusUseCase,
     RescheduleAppointmentUseCase,
+    FindMyAppointmentsUseCase,
+    RequestAppointmentUseCase,
+    CancelMyAppointmentUseCase,
+    AppointmentOwnershipGuard,
   ],
 })
 export class AppointmentModule {}

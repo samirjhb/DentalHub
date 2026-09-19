@@ -9,6 +9,7 @@ export class AuthMapper {
       doc.password,
       doc.name,
       doc.role,
+      doc.patientId,
       (doc as unknown as { createdAt?: Date }).createdAt,
       (doc as unknown as { updatedAt?: Date }).updatedAt,
     );
@@ -22,6 +23,7 @@ export class AuthMapper {
       email: entity.email,
       name: entity.name,
       role: entity.role,
+      patientId: entity.patientId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     };

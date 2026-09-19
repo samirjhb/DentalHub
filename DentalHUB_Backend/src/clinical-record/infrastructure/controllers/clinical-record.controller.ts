@@ -42,6 +42,8 @@ import { RemoveTreatmentUseCase } from '../../application/use-cases/remove-treat
 import { CalculatePendingBalanceUseCase } from '../../application/use-cases/calculate-pending-balance.use-case';
 import { CalculateTotalPendingBalanceUseCase } from '../../application/use-cases/calculate-total-pending-balance.use-case';
 import { UpdateAppointmentDateUseCase } from '../../application/use-cases/update-appointment-date.use-case';
+import { FindMyClinicalSummaryUseCase } from '../../application/use-cases/find-my-clinical-summary.use-case';
+import { CurrentPatientId } from 'src/shared/decorators/current-patient-id.decorator';
 
 const READ_ROLES = [
   Role.SUPER_ADMIN,
@@ -71,6 +73,7 @@ export class ClinicalRecordController {
     private readonly calculatePendingBalanceUseCase: CalculatePendingBalanceUseCase,
     private readonly calculateTotalPendingBalanceUseCase: CalculateTotalPendingBalanceUseCase,
     private readonly updateAppointmentDateUseCase: UpdateAppointmentDateUseCase,
+    private readonly findMyClinicalSummaryUseCase: FindMyClinicalSummaryUseCase,
   ) {}
 
   @Post()
@@ -108,6 +111,18 @@ export class ClinicalRecordController {
   })
   findWithFilters(@Query() filterDto: FilterClinicalRecordDto) {
     return this.findClinicalRecordsWithFiltersUseCase.execute(filterDto);
+  }
+
+  // Declarada antes de :id para que Nest no la capture con el param dinámico.
+  @Get('me/summary')
+  @Roles(Role.PATIENT)
+  @ApiOperation({
+    summary:
+      'Mi resumen de historial clínico (portal de pacientes) — sin ' +
+      'radiografías ni observaciones internas del staff',
+  })
+  findMySummary(@CurrentPatientId() patientId: string) {
+    return this.findMyClinicalSummaryUseCase.execute(patientId);
   }
 
   @Get(':id')

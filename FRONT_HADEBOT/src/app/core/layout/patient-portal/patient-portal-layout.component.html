@@ -1,0 +1,31 @@
+<mat-sidenav-container dir="ltr" [class.light-theme]="theme() === 'light'" [class.dark-theme]="theme() === 'dark'">
+  <mat-sidenav-content>
+    <mat-toolbar color="primary" class="portal-toolbar">
+      <app-brand-logo [size]="32"></app-brand-logo>
+      <span class="portal-toolbar__spacer"></span>
+      <span class="portal-toolbar__email">{{ email }}</span>
+      <button mat-icon-button (click)="logout()" matTooltip="Cerrar sesión" aria-label="Cerrar sesión">
+        <i-tabler name="logout"></i-tabler>
+      </button>
+    </mat-toolbar>
+
+    <nav mat-tab-nav-bar [tabPanel]="tabPanel" class="portal-nav">
+      <a
+        mat-tab-link
+        *ngFor="let link of navLinks"
+        [routerLink]="link.route"
+        routerLinkActive
+        #rla="routerLinkActive"
+        [active]="rla.isActive"
+      >
+        <i-tabler [name]="link.icon" class="icon-18 m-r-4"></i-tabler>
+        {{ link.label }}
+      </a>
+    </nav>
+    <mat-tab-nav-panel #tabPanel>
+      <div class="portal-content">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-tab-nav-panel>
+  </mat-sidenav-content>
+</mat-sidenav-container>

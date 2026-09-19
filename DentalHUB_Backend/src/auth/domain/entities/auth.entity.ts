@@ -7,6 +7,7 @@ export class Auth {
     public password: string,
     public name: string,
     public role: Role,
+    public patientId?: unknown,
     public readonly createdAt?: Date,
     public readonly updatedAt?: Date,
   ) {}

@@ -21,6 +21,7 @@ import { RemoveTreatmentUseCase } from './application/use-cases/remove-treatment
 import { CalculatePendingBalanceUseCase } from './application/use-cases/calculate-pending-balance.use-case';
 import { CalculateTotalPendingBalanceUseCase } from './application/use-cases/calculate-total-pending-balance.use-case';
 import { UpdateAppointmentDateUseCase } from './application/use-cases/update-appointment-date.use-case';
+import { FindMyClinicalSummaryUseCase } from './application/use-cases/find-my-clinical-summary.use-case';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { UpdateAppointmentDateUseCase } from './application/use-cases/update-app
     CalculatePendingBalanceUseCase,
     CalculateTotalPendingBalanceUseCase,
     UpdateAppointmentDateUseCase,
+    FindMyClinicalSummaryUseCase,
   ],
 })
 export class ClinicalRecordModule {}

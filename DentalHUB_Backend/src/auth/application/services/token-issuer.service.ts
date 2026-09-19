@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { randomBytes, createHash } from 'crypto';
 import { Auth } from '../../domain/entities/auth.entity';
 import { RefreshTokenRepository } from '../../domain/repositories/refresh-token.repository';
+import { Role } from '../../../shared/enums/role.enum';
 
 // Firma el access token y emite + persiste (hasheado) un refresh token nuevo.
 // Punto único usado por Register/Login/Refresh para no triplicar esta lógica.
@@ -29,7 +30,17 @@ export class TokenIssuerService {
   async issueTokens(
     user: Auth,
   ): Promise<{ token: string; refreshToken: string }> {
-    const payload = { id: user._id, email: user.email, role: user.role };
+    const payload = {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+      // Solo las cuentas PATIENT vinculadas por el staff llevan este claim; el
+      // staff nunca tiene `patientId` seteado, así que la condición es redundante
+      // pero documenta la intención de que este claim es exclusivo del portal.
+      ...(user.role === Role.PATIENT && user.patientId
+        ? { patientId: String(user.patientId) }
+        : {}),
+    };
     const token = this.jwtService.sign(payload);
 
     const refreshToken = randomBytes(64).toString('hex');

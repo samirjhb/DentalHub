@@ -9,6 +9,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
 import { SessionManagerService } from 'src/app/core/auth/services/session-manager.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BrandLogoComponent } from 'src/app/shared/components/brand-logo/brand-logo.component';
+import { Role } from 'src/app/core/auth/enums/role.enum';
 
 @Component({
   selector: 'app-side-login',
@@ -44,9 +45,12 @@ export class AppSideLoginComponent implements OnInit {
       try {
         const response: any = await this.authService.loginService(this.form.value);
         
-        // If login was successful and we have a token, navigate to dashboard
+        // If login was successful and we have a token, navigate to the
+        // right home for this role — un PATIENT no tiene acceso al dashboard
+        // clínico (ver RoleGuard/app.routes.ts).
         if (response && response.token) {
-          this.router.navigate(['/dashboard']);
+          const isPatient = this.sessionManager.getRole() === Role.PATIENT;
+          this.router.navigate([isPatient ? '/portal-paciente/mis-citas' : '/dashboard']);
         }
       } catch (error: any) {
         console.error('Login failed:', error);
