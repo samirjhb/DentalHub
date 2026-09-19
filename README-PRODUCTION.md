@@ -31,7 +31,18 @@ JWT_SECRET=tu_jwt_secret_muy_largo_y_seguro
 
 # URLs - Cambia por tu dominio real
 API_URL=https://api.tudominio.com/v1
+
+# Recuperación de contraseña (email vía Resend — https://resend.com/api-keys)
+RESEND_API_KEY=tu_api_key_de_resend
+RESEND_FROM=DentalHub <notificaciones@tudominio.com>
+FRONTEND_URL=https://tudominio.com
+PASSWORD_RESET_EXPIRES_IN_MINUTES=30
 ```
+
+**Nota**: sin `RESEND_API_KEY` configurada, el link de recuperación de
+contraseña no se envía por correo — solo queda registrado en los logs del
+backend. En producción es obligatorio configurarla para que el flujo de
+"olvidé mi contraseña" funcione de verdad.
 
 **⚠️ IMPORTANTE**: 
 - **NUNCA** subas el archivo `.env.production` al repositorio
@@ -267,6 +278,7 @@ docker-compose -f docker-compose.prod.yml --env-file .env.production up -d --bui
 
 - [ ] Variables de entorno configuradas en `.env.production`
 - [ ] Contraseñas seguras configuradas
+- [ ] `RESEND_API_KEY` configurada y `FRONTEND_URL` apuntando al dominio real (recuperación de contraseña)
 - [ ] CORS configurado con los dominios correctos
 - [ ] MongoDB no expuesto públicamente
 - [ ] SSL/HTTPS configurado (si usas dominio)

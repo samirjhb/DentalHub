@@ -68,6 +68,33 @@ Sistema completo para la gestión financiera:
 - Múltiples métodos de pago
 - Historial de pagos y facturas pendientes
 
+### 7. Landing Page
+
+Página pública en `/`, con información del producto y un botón de ingreso:
+
+- Presentación de los módulos disponibles y cómo funciona el sistema
+- Destacado del Portal de Pacientes
+- Quien ya tiene una sesión activa es redirigido automáticamente a su
+  pantalla correspondiente (dashboard para staff, portal para pacientes)
+
+### 8. Portal de Pacientes
+
+Sección separada en `/portal-paciente`, con su propio layout (sin el menú de
+staff), pensada para que el paciente se autogestione sin llamar a la clínica:
+
+- **Mis citas**: ver, solicitar y cancelar citas propias
+- **Mi historial**: resumen de tratamientos (sin notas clínicas internas ni radiografías)
+- **Mi facturación**: saldo pendiente, pagos y tratamientos facturados
+
+El acceso lo otorga el staff desde la pantalla de Pacientes (acción "Acceso
+al portal"), no hay auto-registro público.
+
+### 9. Recuperación de Contraseña
+
+Flujo de "olvidé mi contraseña" accesible desde el login
+(`/authentication/forgot-password` y `/authentication/reset-password`), con
+mensajes que nunca revelan si un email existe o no en el sistema.
+
 ## Arquitectura del Sistema
 
 La aplicación está estructurada siguiendo el patrón Modelo-Vista-Controlador (MVC), con los siguientes componentes principales:
@@ -217,8 +244,10 @@ El sistema implementa un robusto mecanismo de autenticación y autorización:
 
 ## Requisitos Técnicos
 
-- Node.js 18.x o superior
-- Angular 17.x
+- Node.js 20.x (en Node 22+ el backend con el que se comunica falla al
+  arrancar por una incompatibilidad de `jsonwebtoken`; usa Node 20 también
+  para el frontend por consistencia con el CI)
+- Angular 19.x
 - Base de datos MongoDB
 - API RESTful para la comunicación con el backend
 
@@ -250,6 +279,15 @@ El sistema implementa un robusto mecanismo de autenticación y autorización:
    ```
    http://localhost:4200
    ```
+
+## Tests
+
+```bash
+ng test --no-watch --browsers=ChromeHeadless
+```
+
+Corre automáticamente en cada push/PR contra `main` vía GitHub Actions
+(`.github/workflows/tests.yml` en la raíz del repo).
 
 ## Contacto y Soporte
 
