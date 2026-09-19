@@ -6,3 +6,22 @@
     background-color: var(--mdc-elevated-card-container-color),
   )
 );
+
+// La variable ya apunta a --mdc-elevated-card-container-color (que sí sigue
+// el tema), pero el CSS interno de Angular Material para .mat-mdc-table fija
+// su propio --mat-table-background-color con más especificidad y gana en
+// cascada — se fuerza acá directamente, igual criterio que _card.scss.
+html {
+  .mat-mdc-table,
+  .mat-mdc-header-row,
+  .mat-mdc-row,
+  .mat-mdc-footer-row {
+    background-color: var(--mdc-elevated-card-container-color);
+  }
+
+  .mat-mdc-header-cell,
+  .mat-mdc-cell,
+  .mat-mdc-footer-cell {
+    color: var(--mat-sys-on-surface);
+  }
+}

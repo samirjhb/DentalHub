@@ -7,7 +7,10 @@
     activeMenu: item.route ? router.isActive(item.route, true) : false,
     expanded: expanded,
     disabled: item.disabled
-  }" class="menu-list-item">
+  }" class="menu-list-item"
+  [matTooltip]="item.displayName | translate"
+  [matTooltipDisabled]="!collapsed"
+  matTooltipPosition="right">
   <i-tabler class="routeIcon" name="{{ item.iconName }}" matListItemIcon></i-tabler>
   <span class="hide-menu">{{ item.displayName | translate }}</span>
   
@@ -43,6 +46,7 @@
 
 <!-- children -->
 @if(expanded) { @for(child of item.children; track child) {
-<app-nav-item [item]="child" (click)="onSubItemSelected(child)" [depth]="depth + 1">
+<app-nav-item [item]="child" (click)="onSubItemSelected(child)" [depth]="depth + 1"
+  [isOver]="isOver" [collapsed]="collapsed" (notify)="notify.emit()">
 </app-nav-item>
 } }

@@ -88,6 +88,20 @@ export class OdontogramaComponent implements OnInit {
     toothLabel: string;
   }>();
 
+  // Pieza que el formulario de tratamiento (nuevo o edición) tiene cargada
+  // ahora mismo — se resalta acá para que el odontograma quede en sincro con
+  // el formulario sin importar si la pieza se eligió clickeando el diente o
+  // desde el select "Pieza Dental" del formulario.
+  @Input() selectedToothNumber: string | null = null;
+
+  // Vista previa en vivo: mientras el formulario de tratamiento (nuevo o
+  // edición) tiene un Diagnóstico elegido para selectedToothNumber, se
+  // muestra ese color en la pieza antes de guardar — nada se persiste acá,
+  // es solo lo que ya está tipeado en el form. Si se cancela sin guardar, el
+  // color vuelve solo al que tiene guardado porque este input deja de
+  // pasarse (ver ficha-clinica.component.html).
+  @Input() previewStatus: ToothStatus | null = null;
+
   // false cuando se embebe dentro de Ficha Clínica: el botón propio de
   // "Guardar observaciones" se oculta, porque esas observaciones pasan a
   // guardarse junto con "Guardar Ficha" (ver ficha-clinica.component.ts).
@@ -228,6 +242,13 @@ export class OdontogramaComponent implements OnInit {
   }
 
   getToothColor(toothNumber: string): string {
+    if (
+      this.selectedToothNumber === toothNumber &&
+      this.previewStatus &&
+      STATUS_COLORS[this.previewStatus]
+    ) {
+      return STATUS_COLORS[this.previewStatus];
+    }
     const tooth = this.getTooth(toothNumber);
     return tooth ? STATUS_COLORS[tooth.status] : '#E0E0E0';
   }

@@ -62,8 +62,16 @@ html {
     }
   }
 
+  // "inherit" toma el border-color YA RESUELTO del padre — normalmente
+  // funciona porque el padre no tiene borde propio, pero adentro de
+  // <mat-dialog-actions> (que Angular Material arma con un borde superior
+  // transparente por defecto, para la línea divisoria opcional) el botón
+  // heredaba ESE mismo valor mixto y el borde de arriba quedaba invisible.
+  // currentColor evita el problema de raíz: toma el color de TEXTO del
+  // propio botón (que es lo que esta regla buscaba lograr) en vez de andar
+  // heredando por el árbol de ancestros.
   .mat-mdc-outlined-button:not(:disabled) {
-    border-color: inherit !important;
+    border-color: currentColor !important;
   }
 
   .mat-mdc-button-base.text-secondary:hover {

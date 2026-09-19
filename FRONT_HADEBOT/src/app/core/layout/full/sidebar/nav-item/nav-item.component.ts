@@ -26,6 +26,17 @@ export class AppNavItemComponent implements OnChanges {
 
   @Input() item: NavItem | any;
 
+  // Antes se usaba window.innerWidth < 1024 hardcodeado para decidir si
+  // cerrar el drawer al elegir un item — no coincidía con el breakpoint real
+  // de mobile (MOBILE_VIEW = 768px en full.component.ts), así que en el
+  // rango tablet (769-1024px), donde el sidenav es fijo (mode="side"), un
+  // clic en un link lo cerraba igual. Ahora el padre pasa el valor real.
+  @Input() isOver = false;
+
+  // true cuando el sidenav está en modo compacto (solo íconos) — activa el
+  // tooltip con el nombre del item, ya que el texto queda oculto.
+  @Input() collapsed = false;
+
   expanded: any = false;
 
   @HostBinding('attr.aria-expanded') ariaExpanded = this.expanded;
@@ -55,7 +66,7 @@ export class AppNavItemComponent implements OnChanges {
       behavior: 'smooth',
     });
     if (!this.expanded) {
-      if (window.innerWidth < 1024) {
+      if (this.isOver) {
         this.notify.emit();
       }
     }
@@ -69,7 +80,7 @@ export class AppNavItemComponent implements OnChanges {
 
   onSubItemSelected(item: NavItem) {
     if (!item.children || !item.children.length) {
-      if (this.expanded && window.innerWidth < 1024) {
+      if (this.expanded && this.isOver) {
         this.notify.emit();
       }
     }

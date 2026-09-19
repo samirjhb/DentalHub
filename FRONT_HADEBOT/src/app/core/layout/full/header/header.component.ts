@@ -46,7 +46,10 @@ import { Router } from '@angular/router';
 export class HeaderComponent {
   @Input() showToggle = true;
   @Input() toggleChecked = false;
+  // true cuando el sidenav de desktop está en modo compacto (solo íconos).
+  @Input() sidenavCollapsed = false;
   @Output() toggleMobileNav = new EventEmitter<void>();
+  @Output() toggleSidenavCollapsed = new EventEmitter<void>();
 
   theme = this.themeService.theme;
   userEmail = this.sessionManager.getEmail() ?? '';

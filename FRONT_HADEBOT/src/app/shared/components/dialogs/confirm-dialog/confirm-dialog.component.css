@@ -1,5 +1,5 @@
 .confirm-dialog-container {
-  padding: 10px;
+  padding: 20px;
   min-width: 350px;
 }
 
@@ -34,7 +34,8 @@ mat-dialog-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  padding: 10px 0;
+  margin-top: 20px;
+  padding: 0;
 }
 
 button {

@@ -116,6 +116,18 @@
   filter: brightness(1.1);
 }
 
+/* Pieza cargada ahora mismo en el formulario de tratamiento (nuevo o
+   edición) — mismo criterio de resaltado sin importar cómo se eligió. */
+.tooth-slot--selected {
+  background: rgba(93, 135, 255, 0.16);
+  box-shadow: 0 0 0 2px var(--mat-sys-primary, #5d87ff) inset;
+}
+
+.tooth-slot--selected .tooth-number {
+  color: var(--mat-sys-primary, #5d87ff);
+  font-weight: 700;
+}
+
 .tooth-status-btn {
   position: absolute;
   top: 0;
