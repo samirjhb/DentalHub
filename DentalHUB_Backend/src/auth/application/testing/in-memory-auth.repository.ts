@@ -1,6 +1,7 @@
 import {
   AuthRepository,
   CreateAuthData,
+  UpdateAuthData,
 } from '../../domain/repositories/auth.repository';
 import { Auth } from '../../domain/entities/auth.entity';
 import { Role } from '../../../shared/enums/role.enum';
@@ -37,5 +38,13 @@ export class InMemoryAuthRepository extends AuthRepository {
 
   async findByRole(role?: Role): Promise<Auth[]> {
     return role ? this.users.filter((u) => u.role === role) : this.users;
+  }
+
+  async update(id: string, data: UpdateAuthData): Promise<Auth | null> {
+    const user = this.users.find((u) => u._id === id);
+    if (!user) return null;
+    if (data.name !== undefined) user.name = data.name;
+    if (data.role !== undefined) user.role = data.role;
+    return user;
   }
 }

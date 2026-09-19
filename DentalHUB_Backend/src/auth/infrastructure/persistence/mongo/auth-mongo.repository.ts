@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import {
   AuthRepository,
   CreateAuthData,
+  UpdateAuthData,
 } from '../../../domain/repositories/auth.repository';
 import { Auth as AuthEntity } from '../../../domain/entities/auth.entity';
 import { Auth, AuthDocument } from './auth.schema';
@@ -40,5 +41,10 @@ export class AuthMongoRepository extends AuthRepository {
   async findByRole(role?: Role): Promise<AuthEntity[]> {
     const docs = await this.authModel.find(role ? { role } : {});
     return docs.map((doc) => AuthMapper.toDomain(doc));
+  }
+
+  async update(id: string, data: UpdateAuthData): Promise<AuthEntity | null> {
+    const doc = await this.authModel.findByIdAndUpdate(id, data, { new: true });
+    return doc ? AuthMapper.toDomain(doc) : null;
   }
 }

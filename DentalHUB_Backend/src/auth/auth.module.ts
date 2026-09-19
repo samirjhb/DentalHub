@@ -18,6 +18,7 @@ import { LoginUseCase } from './application/use-cases/login.use-case';
 import { RefreshTokenUseCase } from './application/use-cases/refresh-token.use-case';
 import { LogoutUseCase } from './application/use-cases/logout.use-case';
 import { CreateStaffUseCase } from './application/use-cases/create-staff.use-case';
+import { UpdateStaffUseCase } from './application/use-cases/update-staff.use-case';
 import { FindStaffByRoleUseCase } from './application/use-cases/find-staff-by-role.use-case';
 import { jwtConstanst } from '../shared/security/jwt.constants';
 
@@ -42,6 +43,7 @@ import { jwtConstanst } from '../shared/security/jwt.constants';
     RefreshTokenUseCase,
     LogoutUseCase,
     CreateStaffUseCase,
+    UpdateStaffUseCase,
     FindStaffByRoleUseCase,
     AuthSeedService,
   ],
