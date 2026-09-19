@@ -24,6 +24,7 @@ import {
 import {
   ToothDialogComponent,
   ToothDialogData,
+  TOOTH_STATUS_OPTIONS,
 } from '../dialogs/tooth-dialog/tooth-dialog.component';
 
 interface DentalPieceOption {
@@ -124,7 +125,11 @@ export class OdontogramaComponent implements OnInit {
 
   readonly legendEntries = (
     Object.keys(STATUS_COLORS) as ToothStatus[]
-  ).map((status) => ({ status, color: STATUS_COLORS[status] }));
+  ).map((status) => ({
+    status,
+    color: STATUS_COLORS[status],
+    label: TOOTH_STATUS_OPTIONS.find((o) => o.value === status)?.label ?? status,
+  }));
 
   private toothLabels = new Map<string, string>();
 

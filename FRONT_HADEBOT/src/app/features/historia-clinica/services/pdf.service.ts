@@ -34,12 +34,13 @@ export class PdfService {
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(img, 0, 0);
           const dataUrl = canvas.toDataURL('image/png');
-          
-          // Añadir la imagen al PDF en la parte superior izquierda con tamaño reducido
-          const logoWidth = 25;
-          const logoHeight = 25;
+
+          // Añadir la imagen al PDF en la parte superior izquierda, respetando su
+          // proporción original (el logo es un lockup horizontal, no cuadrado).
+          const logoWidth = 32;
+          const logoHeight = logoWidth * (img.height / img.width);
           doc.addImage(dataUrl, 'PNG', 15, 15, logoWidth, logoHeight);
-          
+
           // Continuar con la generación del PDF
           this.completePdfGeneration(doc, ficha, pageWidth, pageHeight);
         } catch (error) {
@@ -184,8 +185,8 @@ export class PdfService {
           ctx?.drawImage(img, 0, 0);
           const dataUrl = canvas.toDataURL('image/png');
 
-          const logoWidth = 25;
-          const logoHeight = 25;
+          const logoWidth = 32;
+          const logoHeight = logoWidth * (img.height / img.width);
           doc.addImage(dataUrl, 'PNG', 15, 15, logoWidth, logoHeight);
 
           this.completePrescriptionPdf(doc, prescription, patientName, dentistName, pageWidth, pageHeight);

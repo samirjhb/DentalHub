@@ -192,7 +192,7 @@ export class PrescripcionesComponent implements OnInit {
   }
 
   generatePdf(prescription: Prescription): void {
-    const logoUrl = 'assets/images/logos/logoHadebot.png';
+    const logoUrl = 'assets/images/logos/logoHadebotPdf.svg';
     this.pdfService.generatePrescriptionPdf(
       prescription,
       this.getPatientName(prescription.patient),
