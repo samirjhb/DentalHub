@@ -25,6 +25,7 @@ import { AddDepositDto } from '../../application/dto/add-deposit.dto';
 import { UpdateAppointmentDateDto } from '../../application/dto/update-appointment-date.dto';
 import { AddTreatmentDto } from '../../application/dto/add-treatment.dto';
 import { FilterClinicalRecordDto } from '../../application/dto/filter-clinical-record.dto';
+import { FindAllClinicalRecordsQueryDto } from '../../application/dto/find-all-clinical-records-query.dto';
 import { JwtAuthGuard } from 'src/shared/security/jwt-auth.guard';
 import { RolesGuard } from 'src/shared/guards/roles.guard';
 import { Roles } from 'src/shared/decorators/roles.decorator';
@@ -96,8 +97,8 @@ export class ClinicalRecordController {
     status: 200,
     description: 'Lista de fichas clínicas obtenida correctamente',
   })
-  findAll() {
-    return this.findAllClinicalRecordsUseCase.execute();
+  findAll(@Query() query: FindAllClinicalRecordsQueryDto) {
+    return this.findAllClinicalRecordsUseCase.execute(query);
   }
 
   @Get('filter')

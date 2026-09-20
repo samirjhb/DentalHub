@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { PaymentMethod } from 'src/app/shared/components/dialogs/payment-dialog/payment-dialog.component';
+import { PaginatedResponse } from 'src/app/core/models/pagination.model';
 
 export interface Payment {
   _id: string;
@@ -104,6 +105,23 @@ export class BillingService {
       ),
     );
     return response.payments;
+  }
+
+  async getPaymentsPage(
+    filter: PaymentFilter,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedResponse<Payment>> {
+    const params: Record<string, string | number> = { page, limit };
+    Object.entries(filter).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+    return await firstValueFrom(
+      this.http.get<PaginatedResponse<Payment>>(
+        `${environment.apiUrl}/billing/payments`,
+        { params },
+      ),
+    );
   }
 
   async getPatientBalance(patientId: string): Promise<Balance> {

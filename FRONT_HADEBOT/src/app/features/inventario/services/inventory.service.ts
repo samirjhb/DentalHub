@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { PaginatedResponse } from 'src/app/core/models/pagination.model';
 
 export type StockMovementType = 'ENTRADA' | 'SALIDA';
 
@@ -64,6 +65,18 @@ export class InventoryService {
   async getItems(): Promise<InventoryItem[]> {
     return await firstValueFrom(
       this.http.get<InventoryItem[]>(`${environment.apiUrl}/inventory/items`),
+    );
+  }
+
+  async getItemsPage(
+    page: number,
+    limit: number,
+  ): Promise<PaginatedResponse<InventoryItem>> {
+    return await firstValueFrom(
+      this.http.get<PaginatedResponse<InventoryItem>>(
+        `${environment.apiUrl}/inventory/items`,
+        { params: { page, limit } },
+      ),
     );
   }
 

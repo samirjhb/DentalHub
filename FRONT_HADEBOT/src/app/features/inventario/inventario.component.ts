@@ -7,6 +7,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { SessionManagerService } from 'src/app/core/auth/services/session-manager.service';
 import { InventoryService, InventoryItem, UpdateInventoryItemDto } from './services/inventory.service';
@@ -33,6 +34,7 @@ import {
     MatSnackBarModule,
     MatDialogModule,
     MatTooltipModule,
+    MatPaginatorModule,
     TablerIconsModule,
   ],
 })
@@ -40,6 +42,10 @@ export class InventarioComponent implements OnInit {
   items: InventoryItem[] = [];
   isLoading = false;
   displayedColumns = ['name', 'unit', 'currentStock', 'minStock', 'status', 'actions'];
+
+  pageIndex = 0;
+  pageSize = 10;
+  totalItems = 0;
 
   // Gestionar insumos es administrativo (mismo molde que patient's
   // WRITE_ROLES), no clínico — el backend sigue siendo la autoridad real,
@@ -63,9 +69,10 @@ export class InventarioComponent implements OnInit {
   loadItems(): void {
     this.isLoading = true;
     this.inventoryService
-      .getItems()
-      .then((items) => {
-        this.items = items;
+      .getItemsPage(this.pageIndex + 1, this.pageSize)
+      .then((response) => {
+        this.items = response.data;
+        this.totalItems = response.total;
       })
       .catch(() => {
         this.snackBar.open('Error al cargar el inventario', 'Cerrar', { duration: 3000 });
@@ -73,6 +80,12 @@ export class InventarioComponent implements OnInit {
       .finally(() => {
         this.isLoading = false;
       });
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadItems();
   }
 
   isLowStock(item: InventoryItem): boolean {

@@ -39,8 +39,31 @@ export class InMemoryAuthRepository extends AuthRepository {
     return user;
   }
 
-  async findByRole(role?: Role): Promise<Auth[]> {
-    return role ? this.users.filter((u) => u.role === role) : this.users;
+  private matchesRole(u: Auth, role?: Role, excludeRole?: Role): boolean {
+    if (role) return u.role === role;
+    if (excludeRole) return u.role !== excludeRole;
+    return true;
+  }
+
+  async findByRole(
+    role?: Role,
+    excludeRole?: Role,
+    skip?: number,
+    limit?: number,
+  ): Promise<Auth[]> {
+    const matches = this.users.filter((u) =>
+      this.matchesRole(u, role, excludeRole),
+    );
+    if (skip === undefined && limit === undefined) return matches;
+    const start = skip ?? 0;
+    return limit === undefined
+      ? matches.slice(start)
+      : matches.slice(start, start + limit);
+  }
+
+  async countStaff(role?: Role, excludeRole?: Role): Promise<number> {
+    return this.users.filter((u) => this.matchesRole(u, role, excludeRole))
+      .length;
   }
 
   async update(id: string, data: UpdateAuthData): Promise<Auth | null> {

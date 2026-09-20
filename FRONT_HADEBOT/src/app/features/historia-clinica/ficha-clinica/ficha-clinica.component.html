@@ -153,7 +153,12 @@
           </table>
 
           <!-- Paginador -->
-          <mat-paginator class="w-100" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
+          <mat-paginator class="w-100"
+            [length]="totalItems"
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
+            (page)="onPageChange($event)"
             aria-label="Seleccionar página de fichas clínicas">
           </mat-paginator>
 

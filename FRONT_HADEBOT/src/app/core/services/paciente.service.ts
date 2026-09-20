@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { PaginatedResponse } from 'src/app/core/models/pagination.model';
 
 @Injectable({
   providedIn: 'root'
@@ -39,6 +40,20 @@ export class PacienteService {
         'Authorization': `Bearer ${token}`
       }
     }));
+  }
+
+  // Paginación server-side real, para la tabla de Pacientes — a diferencia
+  // de getPacientes() (usado por los selectores de paciente en otras
+  // pantallas), acá SÍ mandamos page/limit y el backend responde el sobre
+  // { data, total, page, limit, totalPages } en vez del { message, patients }.
+  async getPacientesPage(page: number, limit: number) {
+    const token = sessionStorage.getItem('token');
+    return await firstValueFrom(
+      this.http.get<PaginatedResponse<any>>(`${environment.apiUrl}/patient`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { page, limit },
+      }),
+    );
   }
 
   async deletePaciente(id: string) {

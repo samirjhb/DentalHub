@@ -11,10 +11,12 @@ export abstract class ClinicalRecordRepository {
   abstract verifyPatientExists(patientId: string): Promise<boolean>;
 
   abstract create(dto: CreateClinicalRecordDto): Promise<ClinicalRecord>;
-  abstract findAll(): Promise<ClinicalRecord[]>;
   abstract findWithFilters(
     filter: FilterClinicalRecordDto,
+    skip?: number,
+    limit?: number,
   ): Promise<ClinicalRecord[]>;
+  abstract count(filter: FilterClinicalRecordDto): Promise<number>;
   abstract findByPatient(patientId: string): Promise<ClinicalRecord[]>; // sin uso en ningún controller, se preserva igual
   abstract findById(id: string): Promise<ClinicalRecord | null>; // sin poblar
   abstract findByIdWithPatient(id: string): Promise<ClinicalRecord | null>; // poblado, solo lo usa findOne

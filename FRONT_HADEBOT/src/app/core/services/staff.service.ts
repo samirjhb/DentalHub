@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { PaginatedResponse } from 'src/app/core/models/pagination.model';
 
 export interface StaffMember {
   _id: string;
@@ -41,13 +42,19 @@ export class StaffService {
     return response.staff;
   }
 
-  // Sin filtro de rol: /auth/staff devuelve TODAS las cuentas (incluye
-  // PATIENT), el llamador filtra qué mostrar como "personal".
-  async getAllStaff(): Promise<StaffMember[]> {
-    const response = await firstValueFrom(
-      this.http.get<{ staff: StaffMember[] }>(`${environment.apiUrl}/auth/staff`),
+  // Paginado, excluyendo PATIENT del lado del servidor (antes se filtraba
+  // en el cliente después de traer todas las cuentas — con paginación real
+  // eso dejaría páginas incompletas).
+  async getAllStaff(
+    page: number,
+    limit: number,
+  ): Promise<PaginatedResponse<StaffMember>> {
+    return await firstValueFrom(
+      this.http.get<PaginatedResponse<StaffMember>>(
+        `${environment.apiUrl}/auth/staff`,
+        { params: { page, limit, excludeRole: 'PATIENT' } },
+      ),
     );
-    return response.staff;
   }
 
   async createStaff(data: CreateStaffData): Promise<StaffMember> {

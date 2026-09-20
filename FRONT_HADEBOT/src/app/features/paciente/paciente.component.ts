@@ -18,7 +18,7 @@ import { Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../shared/components/dialogs/confirm-dialog/confirm-dialog.component';
 import {
@@ -89,6 +89,13 @@ export class PacienteComponent implements OnInit {
   pacientes: PacienteData[] = [];
   isLoading: boolean = false;
 
+  // Paginación server-side: el paginador ya no se asocia al dataSource (eso
+  // paginaría en memoria), es solo el control visual — cada cambio de
+  // página vuelve a pedir esa página al backend.
+  pageIndex = 0;
+  pageSize = 10;
+  totalItems = 0;
+
   // Referencia al paginador
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -114,47 +121,39 @@ export class PacienteComponent implements OnInit {
     this.loadPacientes();
   }
 
-  // Método para cargar la lista de pacientes
+  // Método para cargar la página actual de pacientes desde el backend
   loadPacientes() {
     this.isLoading = true;
-
-    // Simulamos una carga de datos
-    setTimeout(() => {
-      try {
-        // Intentamos obtener los datos de la API
-        this.pacienteService.getPacientes()
-          .then((data: any) => {
-            this.pacientes = data.patients;
-            this.initializeDataSource();
-            this.isLoading = false;
-          })
-          .catch((error: any) => {
-            // Si hay un error, usamos los datos de ejemplo
-            console.error('Error al cargar pacientes desde la API:', error);
-            this.pacientes = PACIENTES_EJEMPLO;
-            this.initializeDataSource();
-            this.isLoading = false;
-          });
-      } catch (error) {
-        // Si hay un error en la llamada, usamos los datos de ejemplo
-        console.error('Error al intentar cargar pacientes:', error);
-        this.pacientes = PACIENTES_EJEMPLO;
+    this.pacienteService.getPacientesPage(this.pageIndex + 1, this.pageSize)
+      .then((response) => {
+        this.pacientes = response.data;
+        this.totalItems = response.total;
         this.initializeDataSource();
         this.isLoading = false;
-      }
-    }, 1000); // Simulamos un retraso de 1 segundo para mostrar el indicador de carga
+      })
+      .catch((error: any) => {
+        // Si hay un error, usamos los datos de ejemplo
+        console.error('Error al cargar pacientes desde la API:', error);
+        this.pacientes = PACIENTES_EJEMPLO;
+        this.totalItems = this.pacientes.length;
+        this.initializeDataSource();
+        this.isLoading = false;
+      });
   }
 
-  // Inicializar el dataSource con los datos y configurar el paginador
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadPacientes();
+  }
+
+  // Inicializar el dataSource con los datos de la página actual — sin
+  // asociar el paginador (eso paginaría en memoria sobre una sola página).
   initializeDataSource() {
     this.dataSource = new MatTableDataSource<PacienteData>(this.pacientes);
 
-    // Configurar opciones de paginación después de que Angular termine de renderizar la vista
     setTimeout(() => {
       if (this.paginator) {
-        this.dataSource.paginator = this.paginator;
-
-        // Traducir textos del paginador
         this.paginator._intl.itemsPerPageLabel = 'Pacientes por página:';
         this.paginator._intl.nextPageLabel = 'Página siguiente';
         this.paginator._intl.previousPageLabel = 'Página anterior';

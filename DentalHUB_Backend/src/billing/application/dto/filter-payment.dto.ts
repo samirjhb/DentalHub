@@ -1,7 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDateString, IsMongoId, IsOptional } from 'class-validator';
+import { PaginationQueryDto } from '../../../shared/dto/pagination-query.dto';
 
-export class FilterPaymentDto {
+export class FilterPaymentDto extends PaginationQueryDto {
   @ApiPropertyOptional({ description: 'ID del paciente' })
   @IsOptional()
   @IsMongoId()

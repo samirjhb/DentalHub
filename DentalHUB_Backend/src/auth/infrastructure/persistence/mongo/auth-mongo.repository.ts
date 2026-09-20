@@ -43,9 +43,43 @@ export class AuthMongoRepository extends AuthRepository {
     return AuthMapper.toDomain(doc);
   }
 
-  async findByRole(role?: Role): Promise<AuthEntity[]> {
-    const docs = await this.authModel.find(role ? { role } : {});
+  private buildRoleQuery(role?: Role, excludeRole?: Role): Record<string, unknown> {
+    if (role) {
+      // Mismo quirk que abajo: un documento sin `role` hidrata como
+      // Role.PATIENT (default del schema) aunque el valor crudo esté ausente.
+      return role === Role.PATIENT
+        ? { $or: [{ role }, { role: { $exists: false } }] }
+        : { role };
+    }
+    if (excludeRole) {
+      // El schema tiene default: Role.PATIENT — un documento sin `role`
+      // hidrata como PATIENT al leerlo, pero $ne compara el valor crudo
+      // almacenado y no lo detecta. Si se excluye PATIENT, se exige además
+      // que `role` exista, para no dejar colar esos documentos sin rol.
+      return excludeRole === Role.PATIENT
+        ? { role: { $exists: true, $ne: excludeRole } }
+        : { role: { $ne: excludeRole } };
+    }
+    return {};
+  }
+
+  async findByRole(
+    role?: Role,
+    excludeRole?: Role,
+    skip?: number,
+    limit?: number,
+  ): Promise<AuthEntity[]> {
+    let query = this.authModel.find(this.buildRoleQuery(role, excludeRole));
+    if (skip !== undefined) query = query.skip(skip);
+    if (limit !== undefined) query = query.limit(limit);
+    const docs = await query;
     return docs.map((doc) => AuthMapper.toDomain(doc));
+  }
+
+  async countStaff(role?: Role, excludeRole?: Role): Promise<number> {
+    return this.authModel.countDocuments(
+      this.buildRoleQuery(role, excludeRole),
+    );
   }
 
   async update(id: string, data: UpdateAuthData): Promise<AuthEntity | null> {

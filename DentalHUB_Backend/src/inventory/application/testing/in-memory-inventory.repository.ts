@@ -39,8 +39,16 @@ export class InMemoryInventoryRepository extends InventoryRepository {
     return item;
   }
 
-  async findAll(): Promise<InventoryItem[]> {
-    return this.items;
+  async findAll(skip?: number, limit?: number): Promise<InventoryItem[]> {
+    if (skip === undefined && limit === undefined) return this.items;
+    const start = skip ?? 0;
+    return limit === undefined
+      ? this.items.slice(start)
+      : this.items.slice(start, start + limit);
+  }
+
+  async count(): Promise<number> {
+    return this.items.length;
   }
 
   async findById(id: string): Promise<InventoryItem | null> {

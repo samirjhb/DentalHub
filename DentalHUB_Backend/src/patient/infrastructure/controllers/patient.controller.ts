@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -20,6 +21,7 @@ import { FindAllPatientsUseCase } from '../../application/use-cases/find-all-pat
 import { FindPatientByIdUseCase } from '../../application/use-cases/find-patient-by-id.use-case';
 import { UpdatePatientUseCase } from '../../application/use-cases/update-patient.use-case';
 import { RemovePatientUseCase } from '../../application/use-cases/remove-patient.use-case';
+import { FindPatientsQueryDto } from '../../application/dto/find-patients-query.dto';
 
 const STAFF_ROLES = [
   Role.SUPER_ADMIN,
@@ -52,8 +54,8 @@ export class PatientController {
 
   @Get()
   @Roles(...STAFF_ROLES)
-  async findAll() {
-    return await this.findAllPatientsUseCase.execute();
+  async findAll(@Query() query: FindPatientsQueryDto) {
+    return await this.findAllPatientsUseCase.execute(query);
   }
 
   @Get(':id')

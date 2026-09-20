@@ -65,7 +65,12 @@ export abstract class BillingRepository {
   abstract verifyRegisteredByExists(userId: string): Promise<boolean>;
 
   abstract create(data: CreatePaymentData): Promise<Payment>;
-  abstract findAll(filter: FindPaymentsFilter): Promise<Payment[]>;
+  abstract findAll(
+    filter: FindPaymentsFilter,
+    skip?: number,
+    limit?: number,
+  ): Promise<Payment[]>;
+  abstract count(filter: FindPaymentsFilter): Promise<number>;
 
   // Saldo agregado de un paciente sumando pendingBalance de TODAS sus fichas.
   abstract findClinicalRecordsByPatient(
