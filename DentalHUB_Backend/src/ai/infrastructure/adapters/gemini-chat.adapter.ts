@@ -21,7 +21,7 @@ export class GeminiChatAdapter extends AiChatGateway {
     super();
     this.apiKey = this.configService.get<string>('GEMINI_API_KEY') || '';
     this.model =
-      this.configService.get<string>('GEMINI_MODEL') || 'gemini-3.6-flash';
+      this.configService.get<string>('GEMINI_MODEL') || 'gemini-flash-lite-latest';
 
     if (!this.apiKey) {
       this.logger.warn(
