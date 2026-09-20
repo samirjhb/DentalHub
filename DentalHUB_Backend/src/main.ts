@@ -19,6 +19,11 @@ async function bootstrap() {
   app.use(express.static(join(__dirname, '..', 'public')));
 
   // Habilitar CORS
+  const extraOrigins = (process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   app.enableCors({
     origin: [
       'http://localhost:4200',
@@ -27,6 +32,7 @@ async function bootstrap() {
       'http://frontend:80',
       'http://dental-frontend:80',
       'http://dental-frontend-prod:80',
+      ...extraOrigins,
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
