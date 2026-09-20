@@ -62,20 +62,16 @@ export class GeminiChatAdapter extends AiChatGateway {
         claudeRequestDto.model || this.model
       }:generateContent?key=${this.apiKey}`;
 
-      const response = await lastValueFrom(
-        this.httpService.post<any>(
-          url,
-          {
-            contents,
-            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-            generationConfig: {
-              maxOutputTokens: claudeRequestDto.max_tokens || 4000,
-              temperature: 0.7,
-            },
-          },
-          { headers: { 'Content-Type': 'application/json' } },
-        ),
-      );
+      const requestBody = {
+        contents,
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        generationConfig: {
+          maxOutputTokens: claudeRequestDto.max_tokens || 4000,
+          temperature: 0.7,
+        },
+      };
+
+      const response = await this.postWithRetry(url, requestBody);
 
       const text =
         response.data.candidates?.[0]?.content?.parts
@@ -101,6 +97,36 @@ export class GeminiChatAdapter extends AiChatGateway {
         },
         error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  // Google devuelve 503 (modelo con alta demanda) o 403 SERVICE_DISABLED
+  // (propagación de activación de API) de forma intermitente en proyectos
+  // nuevos, ambos transitorios — reintentamos un par de veces antes de fallar.
+  private async postWithRetry(url: string, body: unknown, attempt = 1): Promise<any> {
+    try {
+      return await lastValueFrom(
+        this.httpService.post<any>(url, body, {
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+    } catch (error) {
+      const status = error.response?.status;
+      const reason = error.response?.data?.error?.details?.find(
+        (d: any) => d.reason,
+      )?.reason;
+      const isTransient = status === 503 || reason === 'SERVICE_DISABLED';
+
+      if (isTransient && attempt < 3) {
+        const delayMs = attempt * 800;
+        this.logger.warn(
+          `Gemini respondió ${status} (intento ${attempt}/3), reintentando en ${delayMs}ms...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        return this.postWithRetry(url, body, attempt + 1);
+      }
+
+      throw error;
     }
   }
 }
