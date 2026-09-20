@@ -30,16 +30,16 @@ describe('LoginUseCase', () => {
     });
   });
 
-  it('throws USER_NOT_FOUND for an unknown email', async () => {
+  it('throws the same generic error for an unknown email (no user enumeration)', async () => {
     await expect(
       useCase.execute({ email: 'nope@test.com', password: 'whatever' }),
-    ).rejects.toMatchObject({ message: 'USER_NOT_FOUND', status: 404 });
+    ).rejects.toMatchObject({ message: 'CREDENCIALES_INVALIDAS', status: 401 });
   });
 
-  it('throws PASSWORD_INCORRECT for a wrong password', async () => {
+  it('throws the same generic error for a wrong password (no user enumeration)', async () => {
     await expect(
       useCase.execute({ email: 'user@test.com', password: 'wrong-password' }),
-    ).rejects.toMatchObject({ message: 'PASSWORD_INCORRECT', status: 403 });
+    ).rejects.toMatchObject({ message: 'CREDENCIALES_INVALIDAS', status: 401 });
   });
 
   it('returns user, token and refreshToken on success, without the password', async () => {

@@ -30,7 +30,7 @@ describe('RemoveTreatmentUseCase', () => {
     expect(result.treatments[0].diagnosis).toBe('Sarro');
   });
 
-  it('deletes the whole record when removing the last treatment, and still throws (quirk preserved)', async () => {
+  it('rejects removing the last treatment and leaves the record untouched', async () => {
     const dto: CreateClinicalRecordDto = {
       patient: 'patient-1',
       dentist: 'Dr. Fase3',
@@ -42,6 +42,8 @@ describe('RemoveTreatmentUseCase', () => {
     const id = String(created._id);
 
     await expect(useCase.execute(id, 0)).rejects.toThrow(BadRequestException);
-    await expect(repository.findById(id)).resolves.toBeNull();
+    const record = await repository.findById(id);
+    expect(record).not.toBeNull();
+    expect(record!.treatments).toHaveLength(1);
   });
 });

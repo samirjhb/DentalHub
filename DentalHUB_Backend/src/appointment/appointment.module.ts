@@ -43,5 +43,6 @@ import { AppointmentOwnershipGuard } from './infrastructure/guards/appointment-o
     CancelMyAppointmentUseCase,
     AppointmentOwnershipGuard,
   ],
+  exports: [AppointmentRepository],
 })
 export class AppointmentModule {}

@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { RegisterAuthDto } from '../../application/dto/register-auth.dto';
 import { LoginAuthDto } from '../../application/dto/login-auth.dto';
 import { CreateStaffDto } from '../../application/dto/create-staff-auth.dto';
@@ -36,6 +37,7 @@ import { JwtAuthGuard } from 'src/shared/security/jwt-auth.guard';
 import { RolesGuard } from 'src/shared/guards/roles.guard';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { Role } from 'src/shared/enums/role.enum';
+import { CurrentUserRole } from 'src/shared/decorators/current-user-role.decorator';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -72,6 +74,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   handleLogin(@Body() loginBody: LoginAuthDto) {
     return this.loginUseCase.execute(loginBody);
   }
@@ -80,8 +83,11 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.CLINIC_ADMIN)
-  createStaff(@Body() createStaffDto: CreateStaffDto) {
-    return this.createStaffUseCase.execute(createStaffDto);
+  createStaff(
+    @Body() createStaffDto: CreateStaffDto,
+    @CurrentUserRole() requesterRole: Role,
+  ) {
+    return this.createStaffUseCase.execute(createStaffDto, requesterRole);
   }
 
   // PATIENT incluido a propósito: el Portal de Pacientes reutiliza este
@@ -100,8 +106,12 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.CLINIC_ADMIN)
-  updateStaff(@Param('id') id: string, @Body() updateStaffDto: UpdateStaffDto) {
-    return this.updateStaffUseCase.execute(id, updateStaffDto);
+  updateStaff(
+    @Param('id') id: string,
+    @Body() updateStaffDto: UpdateStaffDto,
+    @CurrentUserRole() requesterRole: Role,
+  ) {
+    return this.updateStaffUseCase.execute(id, updateStaffDto, requesterRole);
   }
 
   @Post('patient-access')
@@ -137,6 +147,7 @@ export class AuthController {
   // Sin guard a propósito: quien olvidó su contraseña no tiene sesión.
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     return this.forgotPasswordUseCase.execute(forgotPasswordDto);
   }
@@ -144,6 +155,7 @@ export class AuthController {
   // Sin guard por el mismo motivo: el token de reseteo del body es la credencial.
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.resetPasswordUseCase.execute(resetPasswordDto);
   }

@@ -55,27 +55,24 @@ export class ClinicalRecordMongoRepository extends ClinicalRecordRepository {
       query.dentist = { $regex: dentist, $options: 'i' };
     }
 
-    if (status) {
-      query.treatments = {
-        $elemMatch: { status: status },
-      };
-    }
+    if (status || startDate || endDate) {
+      const elemMatch: any = {};
 
-    if (startDate || endDate) {
-      query.treatments = {
-        $elemMatch: {},
-      };
-
-      if (startDate) {
-        query.treatments.$elemMatch.appointmentDate = { $gte: startDate };
+      if (status) {
+        elemMatch.status = status;
       }
 
-      if (endDate) {
-        query.treatments.$elemMatch.appointmentDate = {
-          ...query.treatments.$elemMatch.appointmentDate,
-          $lte: endDate,
-        };
+      if (startDate || endDate) {
+        elemMatch.appointmentDate = {};
+        if (startDate) {
+          elemMatch.appointmentDate.$gte = startDate;
+        }
+        if (endDate) {
+          elemMatch.appointmentDate.$lte = endDate;
+        }
       }
+
+      query.treatments = { $elemMatch: elemMatch };
     }
 
     const docs = await this.clinicalRecordModel

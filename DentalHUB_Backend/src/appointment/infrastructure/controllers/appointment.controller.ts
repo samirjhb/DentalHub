@@ -96,6 +96,7 @@ export class AppointmentController {
   }
 
   @Get()
+  @Roles(...WRITE_ROLES)
   @ApiOperation({ summary: 'Listar citas con filtros opcionales' })
   @ApiResponse({ status: 200, description: 'Listado de citas' })
   findAll(@Query() filter: FilterAppointmentDto) {
@@ -103,6 +104,7 @@ export class AppointmentController {
   }
 
   @Get(':id')
+  @Roles(...WRITE_ROLES)
   @ApiOperation({ summary: 'Obtener una cita puntual' })
   @ApiResponse({ status: 200, description: 'Cita encontrada' })
   @ApiResponse({ status: 404, description: 'Cita no encontrada' })

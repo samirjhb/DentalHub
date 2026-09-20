@@ -12,9 +12,14 @@ export class RegisterStockMovementDto {
   @IsPositive()
   quantity: number;
 
-  @ApiProperty({ description: 'ID del usuario que registra el movimiento' })
+  @ApiPropertyOptional({
+    description:
+      'Ignorado si se envía: el backend siempre usa el id del usuario ' +
+      'autenticado (derivado del JWT) para evitar que se falsee este campo de auditoría.',
+  })
+  @IsOptional()
   @IsMongoId()
-  registeredBy: string;
+  registeredBy?: string;
 
   @ApiPropertyOptional({ description: 'Motivo del movimiento' })
   @IsOptional()

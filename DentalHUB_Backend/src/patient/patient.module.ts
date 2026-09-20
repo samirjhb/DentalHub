@@ -12,6 +12,9 @@ import { FindAllPatientsUseCase } from './application/use-cases/find-all-patient
 import { FindPatientByIdUseCase } from './application/use-cases/find-patient-by-id.use-case';
 import { UpdatePatientUseCase } from './application/use-cases/update-patient.use-case';
 import { RemovePatientUseCase } from './application/use-cases/remove-patient.use-case';
+import { ClinicalRecordModule } from 'src/clinical-record/clinical-record.module';
+import { AppointmentModule } from 'src/appointment/appointment.module';
+import { OdontogramModule } from 'src/odontogram/odontogram.module';
 
 @Module({
   imports: [
@@ -23,6 +26,12 @@ import { RemovePatientUseCase } from './application/use-cases/remove-patient.use
         schema: PatientSchema,
       },
     ]),
+    // Solo para que RemovePatientUseCase pueda verificar referencias
+    // asociadas (fichas/citas/odontograma) antes de borrar un paciente —
+    // ninguno de estos módulos importa PatientModule, no hay ciclo.
+    ClinicalRecordModule,
+    AppointmentModule,
+    OdontogramModule,
   ],
   controllers: [PatientController],
   providers: [

@@ -14,6 +14,7 @@ import { RolesGuard } from 'src/shared/guards/roles.guard';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { Role } from 'src/shared/enums/role.enum';
 import { CurrentPatientId } from 'src/shared/decorators/current-patient-id.decorator';
+import { CurrentUserId } from 'src/shared/decorators/current-user-id.decorator';
 
 // Manejar dinero no es rol de HYGIENIST/DENTAL_ASSISTANT — a diferencia de
 // clinical-record, donde sí tienen lectura de datos clínicos, acá quedan
@@ -67,8 +68,11 @@ export class BillingController {
   @ApiResponse({ status: 201, description: 'Pago registrado correctamente' })
   @ApiResponse({ status: 400, description: 'Monto inválido o tratamiento no encontrado' })
   @ApiResponse({ status: 404, description: 'Ficha clínica o usuario no encontrado' })
-  registerPayment(@Body() dto: RegisterPaymentDto) {
-    return this.registerPaymentUseCase.execute(dto);
+  registerPayment(
+    @Body() dto: RegisterPaymentDto,
+    @CurrentUserId() userId: string,
+  ) {
+    return this.registerPaymentUseCase.execute({ ...dto, registeredBy: userId });
   }
 
   @Get('payments')

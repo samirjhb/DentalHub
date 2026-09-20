@@ -24,6 +24,13 @@ export class AddDepositUseCase {
 
     const treatment = record.treatments[treatmentIndex];
     const currentDeposit = treatment.deposit || 0;
+
+    if (currentDeposit + amount > treatment.price) {
+      throw new BadRequestException(
+        'El abono supera el precio del tratamiento',
+      );
+    }
+
     treatment.deposit = currentDeposit + amount;
 
     // Si el abono completa el pago, actualizar el estado (silencioso, sin

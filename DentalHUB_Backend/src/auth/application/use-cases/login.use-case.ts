@@ -14,10 +14,10 @@ export class LoginUseCase {
 
   async execute(dto: LoginAuthDto) {
     const findUser = await this.authRepository.findByEmail(dto.email);
-    if (!findUser) throw new HttpException('USER_NOT_FOUND', 404);
+    if (!findUser) throw new HttpException('CREDENCIALES_INVALIDAS', 401);
 
     const checkPassword = await compare(dto.password, findUser.password);
-    if (!checkPassword) throw new HttpException('PASSWORD_INCORRECT', 403);
+    if (!checkPassword) throw new HttpException('CREDENCIALES_INVALIDAS', 401);
 
     const { token, refreshToken } = await this.tokenIssuer.issueTokens(
       findUser,

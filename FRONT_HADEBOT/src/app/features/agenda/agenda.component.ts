@@ -143,7 +143,13 @@ export class AgendaComponent implements OnInit {
       .open(AppointmentDialogComponent, { width: '480px', data })
       .afterClosed()
       .subscribe((result: AppointmentDialogData | undefined) => {
-        if (!result || !result.patient || !result.dentist) return;
+        if (!result) return;
+        if (!result.patient || !result.dentist) {
+          this.snackBar.open('Debe seleccionar paciente y dentista', 'Cerrar', {
+            duration: 3000,
+          });
+          return;
+        }
         this.appointmentService
           .create({
             patient: result.patient,

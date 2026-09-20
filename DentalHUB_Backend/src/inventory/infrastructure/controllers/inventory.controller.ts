@@ -13,6 +13,7 @@ import { JwtAuthGuard } from 'src/shared/security/jwt-auth.guard';
 import { RolesGuard } from 'src/shared/guards/roles.guard';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { Role } from 'src/shared/enums/role.enum';
+import { CurrentUserId } from 'src/shared/decorators/current-user-id.decorator';
 
 // Inventario es logística, no encaja exactamente en "administrativo"
 // (patient) ni "clínico" (clinical-record) — se decide alinearlo con
@@ -88,8 +89,12 @@ export class InventoryController {
   registerMovement(
     @Param('id') id: string,
     @Body() dto: RegisterStockMovementDto,
+    @CurrentUserId() userId: string,
   ) {
-    return this.registerStockMovementUseCase.execute(id, dto);
+    return this.registerStockMovementUseCase.execute(id, {
+      ...dto,
+      registeredBy: userId,
+    });
   }
 
   @Get('items/:id/movements')

@@ -51,5 +51,6 @@ import { FindMyClinicalSummaryUseCase } from './application/use-cases/find-my-cl
     UpdateAppointmentDateUseCase,
     FindMyClinicalSummaryUseCase,
   ],
+  exports: [ClinicalRecordRepository],
 })
 export class ClinicalRecordModule {}
