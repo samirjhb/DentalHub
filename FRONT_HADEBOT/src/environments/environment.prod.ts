@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.yourproductionserver.com/v1'
+  apiUrl: 'https://dentalhub-mlbj.onrender.com/v1'
 };
