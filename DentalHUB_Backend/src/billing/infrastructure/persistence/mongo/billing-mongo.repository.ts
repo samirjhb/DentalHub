@@ -101,7 +101,9 @@ export class BillingMongoRepository extends BillingRepository {
     return this.toDomain(created);
   }
 
-  async findAll(filter: FindPaymentsFilter): Promise<PaymentEntity[]> {
+  private buildFindPaymentsQuery(
+    filter: FindPaymentsFilter,
+  ): Record<string, unknown> {
     const query: Record<string, unknown> = {};
     if (filter.patient) query.patient = filter.patient;
     if (filter.clinicalRecord) query.clinicalRecord = filter.clinicalRecord;
@@ -111,8 +113,26 @@ export class BillingMongoRepository extends BillingRepository {
         ...(filter.endDate ? { $lte: filter.endDate } : {}),
       };
     }
-    const docs = await this.paymentModel.find(query).sort({ paidAt: -1 });
+    return query;
+  }
+
+  async findAll(
+    filter: FindPaymentsFilter,
+    skip?: number,
+    limit?: number,
+  ): Promise<PaymentEntity[]> {
+    const query = this.buildFindPaymentsQuery(filter);
+    let mongoQuery = this.paymentModel.find(query).sort({ paidAt: -1 });
+    if (skip !== undefined) mongoQuery = mongoQuery.skip(skip);
+    if (limit !== undefined) mongoQuery = mongoQuery.limit(limit);
+    const docs = await mongoQuery;
     return docs.map((doc) => this.toDomain(doc));
+  }
+
+  async count(filter: FindPaymentsFilter): Promise<number> {
+    return this.paymentModel.countDocuments(
+      this.buildFindPaymentsQuery(filter),
+    );
   }
 
   async findClinicalRecordsByPatient(

@@ -27,7 +27,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../shared/components/dialogs/confirm-dialog/confirm-dialog.component';
 import { MatTableDataSource } from '@angular/material/table';
@@ -140,6 +140,11 @@ export class FichaClinicaComponent implements OnInit {
   dataSource!: MatTableDataSource<FichaClinicaData>;
   fichas: FichaClinicaData[] = [];
   isLoading: boolean = false;
+
+  // Paginación server-side
+  pageIndex = 0;
+  pageSize = 10;
+  totalItems = 0;
 
   // Lista de pacientes para el selector
   pacientes: any[] = [];
@@ -269,12 +274,19 @@ export class FichaClinicaComponent implements OnInit {
   loadFichasClinicas() {
     this.isLoading = true;
     try {
-      this.fichaClinicaService.getFichasClinicas()
-        .then((response: any) => {
+      this.fichaClinicaService
+        .getFichasClinicasPage(
+          this.pageIndex + 1,
+          this.pageSize,
+          undefined,
+          this.statusFilter || undefined,
+        )
+        .then((response) => {
           console.log('Respuesta del servidor (fichas clínicas):', response);
+          this.totalItems = response.total;
 
           // Procesar los datos para calcular campos adicionales para la tabla
-          this.fichas = response.map((record: any) => {
+          this.fichas = response.data.map((record: any) => {
             // Calcular el precio total y abono total sumando todos los tratamientos
             const totalPrice = record.treatments.reduce((sum: number, t: any) => sum + t.price, 0);
             const totalDeposit = record.treatments.reduce((sum: number, t: any) => sum + t.deposit, 0);
@@ -288,7 +300,7 @@ export class FichaClinicaComponent implements OnInit {
               .map((t: any) => new Date(t.appointmentDate));
             const nextAppointment = futureAppointments.length > 0
               ? new Date(Math.min(...futureAppointments.map((d: { getTime: () => any; }) => d.getTime())))
-              : null;
+              : undefined;
 
             // Determinar el estado general basado en los estados de los tratamientos
             let overallStatus = 'Completado';
@@ -350,6 +362,12 @@ export class FichaClinicaComponent implements OnInit {
       });
       this.isLoading = false;
     }
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadFichasClinicas();
   }
 
   // Método para filtrar fichas clínicas
@@ -465,11 +483,10 @@ export class FichaClinicaComponent implements OnInit {
   initializeDataSource() {
     this.dataSource = new MatTableDataSource<FichaClinicaData>(this.fichas);
 
-    // Configurar opciones de paginación después de que Angular termine de renderizar la vista
+    // El paginador ya no se asocia al dataSource (paginación server-side,
+    // no en memoria) — solo se usa para traducir sus textos.
     setTimeout(() => {
       if (this.paginator) {
-        this.dataSource.paginator = this.paginator;
-
         // Traducir textos del paginador
         this.paginator._intl.itemsPerPageLabel = 'Fichas por página:';
         this.paginator._intl.nextPageLabel = 'Página siguiente';
@@ -1586,18 +1603,12 @@ export class FichaClinicaComponent implements OnInit {
     this.clearRadiographyFiles();
   }
 
-  // Método para aplicar filtros a la tabla
+  // Método para aplicar filtros a la tabla — vuelve a pedir la página 1 al
+  // backend con el filtro de estado (antes filtraba en memoria solo la
+  // página ya cargada, lo que con paginación real quedaría incompleto).
   applyFilters() {
-    // Filtrar por estado si se ha seleccionado uno
-    if (this.statusFilter) {
-      this.dataSource.filter = this.statusFilter;
-      this.dataSource.filterPredicate = (data: FichaClinicaData, filter: string) => {
-        // Verificar si algún tratamiento coincide con el estado filtrado
-        return data.treatments.some(t => t.status === filter);
-      };
-    } else {
-      this.dataSource.filter = '';
-    }
+    this.pageIndex = 0;
+    this.loadFichasClinicas();
   }
 
   // Método para generar un presupuesto en PDF

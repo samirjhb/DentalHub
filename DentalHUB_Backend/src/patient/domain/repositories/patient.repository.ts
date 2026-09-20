@@ -9,7 +9,11 @@ export abstract class PatientRepository {
     excludeId: string,
   ): Promise<Patient | null>;
   abstract create(dto: CreatePatientDto): Promise<Patient>;
-  abstract findAllWithRelations(): Promise<Patient[]>;
+  abstract findAllWithRelations(
+    skip?: number,
+    limit?: number,
+  ): Promise<Patient[]>;
+  abstract count(): Promise<number>;
   abstract findById(id: string): Promise<Patient | null>;
   abstract findByIdWithRelations(id: string): Promise<Patient | null>;
   abstract updateByIdWithRelations(

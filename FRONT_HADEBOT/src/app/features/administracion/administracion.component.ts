@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -39,6 +39,10 @@ export class AdministracionComponent implements OnInit {
   displayedColumns = ['name', 'email', 'role', 'createdAt', 'actions'];
   dataSource = new MatTableDataSource<StaffMember>([]);
 
+  pageIndex = 0;
+  pageSize = 10;
+  totalItems = 0;
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
@@ -54,16 +58,14 @@ export class AdministracionComponent implements OnInit {
   loadStaff(): void {
     this.isLoading = true;
     this.staffService
-      .getAllStaff()
-      .then((staff) => {
-        // PATIENT no es "personal" — /auth/staff sin filtro de rol devuelve
-        // todas las cuentas, se excluye acá.
-        this.dataSource.data = staff.filter((member) => member.role !== 'PATIENT');
-        // El paginador se resuelve recién después de que *ngIf muestre la
-        // tabla — mismo patrón que Paciente/Ficha Clínica.
+      .getAllStaff(this.pageIndex + 1, this.pageSize)
+      .then((response) => {
+        // La exclusión de PATIENT ya la hace el servidor (excludeRole),
+        // así la paginación no queda con páginas incompletas.
+        this.dataSource.data = response.data;
+        this.totalItems = response.total;
         setTimeout(() => {
           if (this.paginator) {
-            this.dataSource.paginator = this.paginator;
             this.paginator._intl.itemsPerPageLabel = 'Personal por página:';
           }
         });
@@ -74,6 +76,12 @@ export class AdministracionComponent implements OnInit {
       .finally(() => {
         this.isLoading = false;
       });
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadStaff();
   }
 
   roleLabel(role: string): string {

@@ -7,6 +7,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { TablerIconsModule } from 'angular-tabler-icons';
@@ -37,6 +38,7 @@ import {
     MatButtonModule,
     MatProgressBarModule,
     MatTableModule,
+    MatPaginatorModule,
     MatSnackBarModule,
     MatDialogModule,
     TablerIconsModule,
@@ -50,6 +52,10 @@ export class BillingComponent implements OnInit {
   balance: Balance | null = null;
   pendingTreatments: PatientTreatmentRow[] = [];
   payments: Payment[] = [];
+
+  paymentsPageIndex = 0;
+  paymentsPageSize = 10;
+  paymentsTotal = 0;
 
   pendingColumns = ['treatment', 'toothNumber', 'price', 'deposit', 'pendingBalance', 'actions'];
   paymentColumns = ['paidAt', 'amount', 'method', 'observations'];
@@ -77,6 +83,7 @@ export class BillingComponent implements OnInit {
     this.balance = null;
     this.pendingTreatments = [];
     this.payments = [];
+    this.paymentsPageIndex = 0;
     if (this.selectedPatientId) {
       this.loadPatientData();
     }
@@ -91,12 +98,17 @@ export class BillingComponent implements OnInit {
       // Endpoint propio de Billing (no clinical-record) — RECEPTIONIST no
       // tiene acceso a clinical-record, solo a la vista de dinero.
       this.billingService.getPatientTreatments(this.selectedPatientId),
-      this.billingService.getPayments({ patient: this.selectedPatientId }),
+      this.billingService.getPaymentsPage(
+        { patient: this.selectedPatientId },
+        this.paymentsPageIndex + 1,
+        this.paymentsPageSize,
+      ),
     ])
-      .then(([balance, treatments, payments]) => {
+      .then(([balance, treatments, paymentsPage]) => {
         this.balance = balance;
         this.pendingTreatments = treatments;
-        this.payments = payments;
+        this.payments = paymentsPage.data;
+        this.paymentsTotal = paymentsPage.total;
       })
       .catch((error) => {
         console.error('Error al cargar datos de cobranza:', error);
@@ -107,6 +119,12 @@ export class BillingComponent implements OnInit {
       .finally(() => {
         this.isLoading = false;
       });
+  }
+
+  onPaymentsPageChange(event: PageEvent): void {
+    this.paymentsPageIndex = event.pageIndex;
+    this.paymentsPageSize = event.pageSize;
+    this.loadPatientData();
   }
 
   openPaymentDialog(row: PatientTreatmentRow): void {

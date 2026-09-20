@@ -33,17 +33,7 @@ export class ClinicalRecordMongoRepository extends ClinicalRecordRepository {
     return ClinicalRecordMapper.toDomain(saved);
   }
 
-  async findAll(): Promise<ClinicalRecordEntity[]> {
-    const docs = await this.clinicalRecordModel
-      .find()
-      .populate('patient')
-      .exec();
-    return docs.map((doc) => ClinicalRecordMapper.toDomain(doc));
-  }
-
-  async findWithFilters(
-    filterDto: FilterClinicalRecordDto,
-  ): Promise<ClinicalRecordEntity[]> {
+  private buildFilterQuery(filterDto: FilterClinicalRecordDto): any {
     const { patientId, status, startDate, endDate, dentist } = filterDto;
     const query: any = {};
 
@@ -75,11 +65,26 @@ export class ClinicalRecordMongoRepository extends ClinicalRecordRepository {
       query.treatments = { $elemMatch: elemMatch };
     }
 
-    const docs = await this.clinicalRecordModel
-      .find(query)
-      .populate('patient')
-      .exec();
+    return query;
+  }
+
+  async findWithFilters(
+    filterDto: FilterClinicalRecordDto,
+    skip?: number,
+    limit?: number,
+  ): Promise<ClinicalRecordEntity[]> {
+    const query = this.buildFilterQuery(filterDto);
+    let mongoQuery = this.clinicalRecordModel.find(query).populate('patient');
+    if (skip !== undefined) mongoQuery = mongoQuery.skip(skip);
+    if (limit !== undefined) mongoQuery = mongoQuery.limit(limit);
+    const docs = await mongoQuery.exec();
     return docs.map((doc) => ClinicalRecordMapper.toDomain(doc));
+  }
+
+  async count(filterDto: FilterClinicalRecordDto): Promise<number> {
+    return this.clinicalRecordModel.countDocuments(
+      this.buildFilterQuery(filterDto),
+    );
   }
 
   async findByPatient(patientId: string): Promise<ClinicalRecordEntity[]> {

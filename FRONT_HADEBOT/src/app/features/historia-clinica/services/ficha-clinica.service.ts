@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { PaginatedResponse } from 'src/app/core/models/pagination.model';
 
 // Interfaces según la documentación actualizada
 
@@ -119,6 +120,33 @@ export class FichaClinicaService {
         'Authorization': `Bearer ${token}`
       }
     }));
+  }
+
+  // Paginación server-side real para la tabla de Fichas Clínicas — usa
+  // /clinical-record cuando no hay filtros, o /clinical-record/filter
+  // cuando se pide por paciente y/o estado (mismo backend que ya filtraba,
+  // solo se le agregan page/limit).
+  async getFichasClinicasPage(
+    page: number,
+    limit: number,
+    patientId?: string,
+    status?: string,
+  ) {
+    const token = this.getToken();
+    const hasFilters = !!patientId || !!status;
+    const url = hasFilters
+      ? `${environment.apiUrl}/clinical-record/filter`
+      : `${environment.apiUrl}/clinical-record`;
+    const params: Record<string, string | number> = { page, limit };
+    if (patientId) params['patientId'] = patientId;
+    if (status) params['status'] = status;
+
+    return await firstValueFrom(
+      this.http.get<PaginatedResponse<ClinicalRecord>>(url, {
+        headers: { Authorization: `Bearer ${token}` },
+        params,
+      }),
+    );
   }
 
   async deleteFichaClinica(id: string) {

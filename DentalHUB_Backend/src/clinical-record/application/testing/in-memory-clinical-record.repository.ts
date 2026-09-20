@@ -48,14 +48,22 @@ export class InMemoryClinicalRecordRepository extends ClinicalRecordRepository {
     return record;
   }
 
-  async findAll(): Promise<ClinicalRecord[]> {
-    return this.records;
-  }
-
+  // El stub nunca implementó filtrado real (ver comentario histórico en el
+  // repo Mongo) — se preserva esa fidelidad acá, solo se agrega skip/limit.
   async findWithFilters(
     _filter: FilterClinicalRecordDto,
+    skip?: number,
+    limit?: number,
   ): Promise<ClinicalRecord[]> {
-    return this.records;
+    if (skip === undefined && limit === undefined) return this.records;
+    const start = skip ?? 0;
+    return limit === undefined
+      ? this.records.slice(start)
+      : this.records.slice(start, start + limit);
+  }
+
+  async count(_filter: FilterClinicalRecordDto): Promise<number> {
+    return this.records.length;
   }
 
   async findByPatient(patientId: string): Promise<ClinicalRecord[]> {

@@ -99,7 +99,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.CLINIC_ADMIN, Role.RECEPTIONIST, Role.DENTIST, Role.PATIENT)
   findStaff(@Query() query: FindStaffQueryDto) {
-    return this.findStaffByRoleUseCase.execute(query.role);
+    return this.findStaffByRoleUseCase.execute(query);
   }
 
   @Patch('staff/:id')

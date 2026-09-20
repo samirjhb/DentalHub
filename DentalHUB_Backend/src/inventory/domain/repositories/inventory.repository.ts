@@ -29,7 +29,8 @@ export abstract class InventoryRepository {
     id: string,
     data: UpdateInventoryItemData,
   ): Promise<InventoryItem | null>;
-  abstract findAll(): Promise<InventoryItem[]>;
+  abstract findAll(skip?: number, limit?: number): Promise<InventoryItem[]>;
+  abstract count(): Promise<number>;
   abstract findById(id: string): Promise<InventoryItem | null>;
   abstract findLowStock(): Promise<InventoryItem[]>;
 

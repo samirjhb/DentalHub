@@ -38,8 +38,19 @@ export class InMemoryPatientRepository extends PatientRepository {
     return patient;
   }
 
-  async findAllWithRelations(): Promise<Patient[]> {
-    return this.patients;
+  async findAllWithRelations(
+    skip?: number,
+    limit?: number,
+  ): Promise<Patient[]> {
+    if (skip === undefined && limit === undefined) return this.patients;
+    const start = skip ?? 0;
+    return limit === undefined
+      ? this.patients.slice(start)
+      : this.patients.slice(start, start + limit);
+  }
+
+  async count(): Promise<number> {
+    return this.patients.length;
   }
 
   async findById(id: string): Promise<Patient | null> {

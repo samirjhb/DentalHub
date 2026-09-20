@@ -38,13 +38,22 @@ export class PatientMongoRepository extends PatientRepository {
     return PatientMapper.toDomain(created);
   }
 
-  async findAllWithRelations(): Promise<PatientEntity[]> {
-    const docs = await this.patientModel
+  async findAllWithRelations(
+    skip?: number,
+    limit?: number,
+  ): Promise<PatientEntity[]> {
+    let query = this.patientModel
       .find()
       .populate('evaluations')
-      .populate('clinicalRecords')
-      .exec();
+      .populate('clinicalRecords');
+    if (skip !== undefined) query = query.skip(skip);
+    if (limit !== undefined) query = query.limit(limit);
+    const docs = await query.exec();
     return docs.map((doc) => PatientMapper.toDomain(doc));
+  }
+
+  async count(): Promise<number> {
+    return this.patientModel.countDocuments();
   }
 
   async findById(id: string): Promise<PatientEntity | null> {

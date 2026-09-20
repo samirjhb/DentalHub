@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CreateInventoryItemDto } from '../../application/dto/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../../application/dto/update-inventory-item.dto';
@@ -14,6 +14,7 @@ import { RolesGuard } from 'src/shared/guards/roles.guard';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { Role } from 'src/shared/enums/role.enum';
 import { CurrentUserId } from 'src/shared/decorators/current-user-id.decorator';
+import { FindInventoryItemsQueryDto } from '../../application/dto/find-inventory-items-query.dto';
 
 // Inventario es logística, no encaja exactamente en "administrativo"
 // (patient) ni "clínico" (clinical-record) — se decide alinearlo con
@@ -57,8 +58,8 @@ export class InventoryController {
   @Roles(...READ_ROLES)
   @ApiOperation({ summary: 'Listar todos los insumos' })
   @ApiResponse({ status: 200, description: 'Listado de insumos' })
-  findItems() {
-    return this.findInventoryItemsUseCase.execute();
+  findItems(@Query() query: FindInventoryItemsQueryDto) {
+    return this.findInventoryItemsUseCase.execute(query);
   }
 
   @Get('low-stock')

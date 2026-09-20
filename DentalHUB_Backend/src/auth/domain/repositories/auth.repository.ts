@@ -19,7 +19,16 @@ export abstract class AuthRepository {
   abstract countByRole(role: Role): Promise<number>;
   abstract create(data: CreateAuthData): Promise<Auth>;
   // Usado por el selector de personal de la Agenda de Citas (ej. listar odontólogos).
-  abstract findByRole(role?: Role): Promise<Auth[]>;
+  abstract findByRole(
+    role?: Role,
+    excludeRole?: Role,
+    skip?: number,
+    limit?: number,
+  ): Promise<Auth[]>;
+  // Conteo para paginación de /auth/staff — nombre distinto de countByRole
+  // (arriba) a propósito: esa es una cuenta exacta por rol usada por
+  // auth-seed.service.ts, con otra firma/semántica.
+  abstract countStaff(role?: Role, excludeRole?: Role): Promise<number>;
   // Solo nombre/rol — el email no se edita acá (identidad de login) y la
   // contraseña tiene su propio flujo (no cubierto por esta pantalla).
   abstract update(id: string, data: UpdateAuthData): Promise<Auth | null>;

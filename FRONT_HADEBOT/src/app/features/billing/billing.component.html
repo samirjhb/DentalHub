@@ -118,6 +118,18 @@
         <tr mat-header-row *matHeaderRowDef="paymentColumns"></tr>
         <tr mat-row *matRowDef="let payment; columns: paymentColumns;"></tr>
       </table>
+
+      <mat-paginator
+        *ngIf="payments.length > 0"
+        class="w-100"
+        [length]="paymentsTotal"
+        [pageIndex]="paymentsPageIndex"
+        [pageSize]="paymentsPageSize"
+        [pageSizeOptions]="[5, 10, 20]"
+        showFirstLastButtons
+        (page)="onPaymentsPageChange($event)"
+        aria-label="Seleccionar página de pagos">
+      </mat-paginator>
     </div>
     <div *ngIf="payments.length === 0" class="empty-state">
       Este paciente aún no tiene pagos registrados.

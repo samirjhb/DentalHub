@@ -40,9 +40,19 @@ export class InventoryMongoRepository extends InventoryRepository {
     return doc ? InventoryItemMapper.toDomain(doc) : null;
   }
 
-  async findAll(): Promise<InventoryItemEntity[]> {
-    const docs = await this.inventoryItemModel.find().sort({ name: 1 });
+  async findAll(
+    skip?: number,
+    limit?: number,
+  ): Promise<InventoryItemEntity[]> {
+    let query = this.inventoryItemModel.find().sort({ name: 1 });
+    if (skip !== undefined) query = query.skip(skip);
+    if (limit !== undefined) query = query.limit(limit);
+    const docs = await query;
     return docs.map((doc) => InventoryItemMapper.toDomain(doc));
+  }
+
+  async count(): Promise<number> {
+    return this.inventoryItemModel.countDocuments();
   }
 
   async findById(id: string): Promise<InventoryItemEntity | null> {

@@ -7,8 +7,9 @@ import {
   IsString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { PaginationQueryDto } from '../../../shared/dto/pagination-query.dto';
 
-export class FilterClinicalRecordDto {
+export class FilterClinicalRecordDto extends PaginationQueryDto {
   @ApiProperty({
     description: 'ID del paciente',
     example: '6579f236c25e43b9b9e0c123',

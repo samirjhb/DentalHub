@@ -63,8 +63,12 @@
 
     <mat-paginator
       class="w-100"
+      [length]="totalItems"
+      [pageIndex]="pageIndex"
+      [pageSize]="pageSize"
       [pageSizeOptions]="[5, 10, 20]"
       showFirstLastButtons
+      (page)="onPageChange($event)"
       aria-label="Seleccionar página de personal">
     </mat-paginator>
   </div>

@@ -63,15 +63,30 @@ export class InMemoryBillingRepository extends BillingRepository {
     return payment;
   }
 
-  async findAll(filter: FindPaymentsFilter): Promise<Payment[]> {
-    return this.payments.filter((p) => {
-      if (filter.patient && p.patient !== filter.patient) return false;
-      if (filter.clinicalRecord && p.clinicalRecord !== filter.clinicalRecord)
-        return false;
-      if (filter.startDate && p.paidAt < filter.startDate) return false;
-      if (filter.endDate && p.paidAt > filter.endDate) return false;
-      return true;
-    });
+  private matchesFilter(p: Payment, filter: FindPaymentsFilter): boolean {
+    if (filter.patient && p.patient !== filter.patient) return false;
+    if (filter.clinicalRecord && p.clinicalRecord !== filter.clinicalRecord)
+      return false;
+    if (filter.startDate && p.paidAt < filter.startDate) return false;
+    if (filter.endDate && p.paidAt > filter.endDate) return false;
+    return true;
+  }
+
+  async findAll(
+    filter: FindPaymentsFilter,
+    skip?: number,
+    limit?: number,
+  ): Promise<Payment[]> {
+    const matches = this.payments.filter((p) => this.matchesFilter(p, filter));
+    if (skip === undefined && limit === undefined) return matches;
+    const start = skip ?? 0;
+    return limit === undefined
+      ? matches.slice(start)
+      : matches.slice(start, start + limit);
+  }
+
+  async count(filter: FindPaymentsFilter): Promise<number> {
+    return this.payments.filter((p) => this.matchesFilter(p, filter)).length;
   }
 
   async findClinicalRecordsByPatient(
