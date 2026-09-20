@@ -53,7 +53,7 @@ export class OllamaChatAdapter extends AiChatGateway {
 
       const response = await lastValueFrom(
         this.httpService.post<any>(
-          `${this.ollamaApiUrl}/api/chat`,
+          this.ollamaApiUrl,
           requestBody,
           {
             headers: {
