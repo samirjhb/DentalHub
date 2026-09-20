@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const apiUrl = process.env.API_URL || 'http://localhost:3001/v1';
+const apiUrl = process.env.API_URL || 'https://dentalhub-mlbj.onrender.com/v1';
 const filePath = path.join(__dirname, '..', 'src', 'environments', 'environment.prod.ts');
 
 fs.writeFileSync(
