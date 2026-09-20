@@ -100,7 +100,7 @@ Las variables de entorno se pueden configurar directamente en el archivo `docker
 - `PASSWORD_RESET_EXPIRES_IN_MINUTES`: minutos de validez del link de recuperación (por defecto 30)
 - `AI_PROVIDER`: proveedor del chat con IA — `gemini` (por defecto, tiene capa gratuita), `anthropic` o `ollama`
 - `GEMINI_API_KEY`: API key de [Google AI Studio](https://aistudio.google.com/apikey) (gratis, sin tarjeta) — requerida si `AI_PROVIDER=gemini`
-- `GEMINI_MODEL`: modelo de Gemini a usar (por defecto `gemini-3.6-flash`)
+- `GEMINI_MODEL`: modelo de Gemini a usar (por defecto `gemini-flash-lite-latest` — cuota gratuita mucho más alta que los modelos flagship, que en el tier free están limitados a ~20 solicitudes/día)
 - `ANTHROPIC_API_KEY`: API key de [Anthropic](https://console.anthropic.com/settings/keys) — requerida si `AI_PROVIDER=anthropic` (de pago, sin créditos gratis)
 - `ANTHROPIC_MODEL`: modelo de Claude a usar (por defecto `claude-sonnet-5`)
 - Sin la API key del proveedor activo configurada, el chat responde con error 503
