@@ -98,6 +98,12 @@ Las variables de entorno se pueden configurar directamente en el archivo `docker
 - `RESEND_FROM`: remitente del email de recuperación (por defecto `DentalHub <onboarding@resend.dev>`)
 - `FRONTEND_URL`: URL pública del frontend, usada para armar el link de "recuperar contraseña" (por defecto `http://localhost:4200`)
 - `PASSWORD_RESET_EXPIRES_IN_MINUTES`: minutos de validez del link de recuperación (por defecto 30)
+- `AI_PROVIDER`: proveedor del chat con IA — `gemini` (por defecto, tiene capa gratuita), `anthropic` o `ollama`
+- `GEMINI_API_KEY`: API key de [Google AI Studio](https://aistudio.google.com/apikey) (gratis, sin tarjeta) — requerida si `AI_PROVIDER=gemini`
+- `GEMINI_MODEL`: modelo de Gemini a usar (por defecto `gemini-3.6-flash`)
+- `ANTHROPIC_API_KEY`: API key de [Anthropic](https://console.anthropic.com/settings/keys) — requerida si `AI_PROVIDER=anthropic` (de pago, sin créditos gratis)
+- `ANTHROPIC_MODEL`: modelo de Claude a usar (por defecto `claude-sonnet-5`)
+- Sin la API key del proveedor activo configurada, el chat responde con error 503
 
 ## Desarrollo
 
