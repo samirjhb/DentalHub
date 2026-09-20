@@ -9,7 +9,7 @@ import { environment } from 'src/environments/environment';
 export interface DentalTreatment {
   diagnosis: string;
   radiography?: string;
-  toothNumber: number;
+  toothNumber: string;
   treatment: string;
   price: number;
   status: 'Pendiente' | 'En proceso' | 'Completado' | 'Cancelado';
@@ -35,7 +35,7 @@ export interface CreateClinicalRecordDto {
   treatments: {
     diagnosis: string;
     radiography?: string;
-    toothNumber: number;
+    toothNumber: string;
     treatment: string;
     price: number;
     status?: string;
@@ -50,7 +50,7 @@ export interface CreateClinicalRecordDto {
 export interface AddTreatmentDto {
   diagnosis: string;
   radiography?: string;
-  toothNumber: number;
+  toothNumber: string;
   treatment: string;
   price: number;
   status?: string;
@@ -161,7 +161,7 @@ export class FichaClinicaService {
     let url = `${environment.apiUrl}/clinical-record/filter?`;
     const params = new URLSearchParams();
     
-    if (filterData.patient) params.append('patient', filterData.patient);
+    if (filterData.patient) params.append('patientId', filterData.patient);
     if (filterData.dentist) params.append('dentist', filterData.dentist);
     if (filterData.status) params.append('status', filterData.status);
     if (filterData.startDate) params.append('startDate', filterData.startDate.toISOString());

@@ -9,7 +9,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { SessionManagerService } from 'src/app/core/auth/services/session-manager.service';
-import { InventoryService, InventoryItem } from './services/inventory.service';
+import { InventoryService, InventoryItem, UpdateInventoryItemDto } from './services/inventory.service';
 import {
   ItemDialogComponent,
   ItemDialogResult,
@@ -82,7 +82,7 @@ export class InventarioComponent implements OnInit {
   openItemDialog(): void {
     const dialogRef = this.dialog.open(ItemDialogComponent, {
       width: '400px',
-      data: { name: '', unit: '', currentStock: 0, minStock: 0 },
+      data: { mode: 'create', name: '', unit: '', currentStock: 0, minStock: 0 },
     });
 
     dialogRef.afterClosed().subscribe((result: ItemDialogResult | undefined) => {
@@ -95,6 +95,38 @@ export class InventarioComponent implements OnInit {
         })
         .catch((error) => {
           const message = error?.error?.message ?? 'Error al crear el insumo';
+          this.snackBar.open(message, 'Cerrar', { duration: 3000 });
+        });
+    });
+  }
+
+  openEditDialog(item: InventoryItem): void {
+    const dialogRef = this.dialog.open(ItemDialogComponent, {
+      width: '400px',
+      data: {
+        mode: 'edit',
+        name: item.name,
+        unit: item.unit,
+        currentStock: item.currentStock,
+        minStock: item.minStock,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result: ItemDialogResult | undefined) => {
+      if (!result) return;
+      const dto: UpdateInventoryItemDto = {
+        name: result.name,
+        unit: result.unit,
+        minStock: result.minStock,
+      };
+      this.inventoryService
+        .updateItem(item._id, dto)
+        .then(() => {
+          this.snackBar.open('Insumo actualizado correctamente', 'Cerrar', { duration: 2000 });
+          this.loadItems();
+        })
+        .catch((error) => {
+          const message = error?.error?.message ?? 'Error al actualizar el insumo';
           this.snackBar.open(message, 'Cerrar', { duration: 3000 });
         });
     });

@@ -23,6 +23,14 @@ export class RegisterPaymentUseCase {
       );
     }
 
+    const treatment = record.treatments[dto.treatmentIndex];
+    const currentDeposit = treatment.deposit || 0;
+    if (currentDeposit + dto.amount > treatment.price) {
+      throw new BadRequestException(
+        'El pago supera el precio del tratamiento',
+      );
+    }
+
     const registeredByExists = await this.repository.verifyRegisteredByExists(
       dto.registeredBy,
     );

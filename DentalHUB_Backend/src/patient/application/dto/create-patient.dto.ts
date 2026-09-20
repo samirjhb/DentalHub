@@ -7,6 +7,7 @@ import {
   IsArray,
   IsOptional,
 } from 'class-validator';
+import { IsValidRut } from 'src/shared/validators/is-valid-rut.validator';
 
 export class CreatePatientDto {
   @ApiProperty({
@@ -23,6 +24,7 @@ export class CreatePatientDto {
     required: true,
   })
   @IsString()
+  @IsValidRut()
   rut: string;
 
   @ApiProperty({

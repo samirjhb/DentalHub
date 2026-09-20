@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
 export interface ItemDialogData {
+  mode: 'create' | 'edit';
   name: string;
   unit: string;
   currentStock: number;

@@ -5,8 +5,7 @@ import { environment } from '../../../../environments/environment';
 import { SessionManagerService } from './session-manager.service';
 
 const LOGIN_ERROR_MESSAGES: Record<string, string> = {
-  USER_NOT_FOUND: 'Usuario no encontrado',
-  PASSWORD_INCORRECT: 'Contraseña incorrecta',
+  CREDENCIALES_INVALIDAS: 'Email o contraseña incorrectos',
 };
 
 @Injectable({

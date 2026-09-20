@@ -1,5 +1,5 @@
 <div class="item-dialog-container">
-  <h2 mat-dialog-title>Nuevo insumo</h2>
+  <h2 mat-dialog-title>{{ data.mode === 'edit' ? 'Editar insumo' : 'Nuevo insumo' }}</h2>
 
   <mat-dialog-content>
     <mat-form-field appearance="outline" class="w-100">
@@ -12,7 +12,7 @@
       <input matInput [(ngModel)]="data.unit" placeholder="ej. unidades, ml, cajas" required />
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="w-100 mt-3">
+    <mat-form-field *ngIf="data.mode !== 'edit'" appearance="outline" class="w-100 mt-3">
       <mat-label>Stock inicial</mat-label>
       <input matInput type="number" [(ngModel)]="data.currentStock" min="0" required />
     </mat-form-field>
@@ -31,7 +31,7 @@
       (click)="onConfirm()"
       [disabled]="!data.name || !data.unit || data.currentStock < 0 || data.minStock < 0"
     >
-      Crear
+      {{ data.mode === 'edit' ? 'Guardar' : 'Crear' }}
     </button>
   </mat-dialog-actions>
 </div>

@@ -4,57 +4,64 @@
     <h2 mat-dialog-title>{{ data.mode === 'create' ? 'Nueva cita' : 'Editar cita' }}</h2>
   </div>
 
-  <mat-dialog-content>
-    <mat-form-field appearance="outline" class="w-100 mt-3">
-      <mat-label>Paciente</mat-label>
-      <mat-select [(ngModel)]="data.patient">
-        <mat-option *ngFor="let paciente of pacientes" [value]="paciente._id">
-          {{ paciente.name }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+  <form #appointmentForm="ngForm">
+    <mat-dialog-content>
+      <mat-form-field appearance="outline" class="w-100 mt-3">
+        <mat-label>Paciente</mat-label>
+        <mat-select name="patient" [(ngModel)]="data.patient" required #patientCtrl="ngModel">
+          <mat-option *ngFor="let paciente of pacientes" [value]="paciente._id">
+            {{ paciente.name }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="patientCtrl.invalid">Debe seleccionar un paciente</mat-error>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline" class="w-100 mt-3">
-      <mat-label>Odontólogo</mat-label>
-      <mat-select [(ngModel)]="data.dentist">
-        <mat-option *ngFor="let dentista of dentistas" [value]="dentista._id">
-          {{ dentista.name }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+      <mat-form-field appearance="outline" class="w-100 mt-3">
+        <mat-label>Odontólogo</mat-label>
+        <mat-select name="dentist" [(ngModel)]="data.dentist" required #dentistCtrl="ngModel">
+          <mat-option *ngFor="let dentista of dentistas" [value]="dentista._id">
+            {{ dentista.name }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="dentistCtrl.invalid">Debe seleccionar un odontólogo</mat-error>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline" class="w-100 mt-3">
-      <mat-label>Fecha y hora</mat-label>
-      <input matInput type="datetime-local" [(ngModel)]="data.startAt" />
-    </mat-form-field>
+      <mat-form-field appearance="outline" class="w-100 mt-3">
+        <mat-label>Fecha y hora</mat-label>
+        <input matInput type="datetime-local" name="startAt" [(ngModel)]="data.startAt" required #startAtCtrl="ngModel" />
+        <mat-error *ngIf="startAtCtrl.invalid">Debe indicar la fecha y hora</mat-error>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline" class="w-100 mt-3">
-      <mat-label>Duración (minutos)</mat-label>
-      <input matInput type="number" min="1" [(ngModel)]="data.durationMinutes" />
-    </mat-form-field>
+      <mat-form-field appearance="outline" class="w-100 mt-3">
+        <mat-label>Duración (minutos)</mat-label>
+        <input matInput type="number" name="durationMinutes" min="1" [(ngModel)]="data.durationMinutes" required #durationCtrl="ngModel" />
+        <mat-error *ngIf="durationCtrl.invalid">La duración debe ser de al menos 1 minuto</mat-error>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline" class="w-100 mt-3">
-      <mat-label>Motivo de consulta</mat-label>
-      <input matInput [(ngModel)]="data.reason" />
-    </mat-form-field>
+      <mat-form-field appearance="outline" class="w-100 mt-3">
+        <mat-label>Motivo de consulta</mat-label>
+        <input matInput name="reason" [(ngModel)]="data.reason" required #reasonCtrl="ngModel" />
+        <mat-error *ngIf="reasonCtrl.invalid">Debe indicar el motivo de consulta</mat-error>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline" class="w-100 mt-3">
-      <mat-label>Observaciones</mat-label>
-      <textarea matInput [(ngModel)]="data.observations" rows="2"></textarea>
-    </mat-form-field>
+      <mat-form-field appearance="outline" class="w-100 mt-3">
+        <mat-label>Observaciones</mat-label>
+        <textarea matInput name="observations" [(ngModel)]="data.observations" rows="2"></textarea>
+      </mat-form-field>
 
-    <mat-form-field *ngIf="data.mode === 'edit'" appearance="outline" class="w-100 mt-3">
-      <mat-label>Estado</mat-label>
-      <mat-select [(ngModel)]="data.status">
-        <mat-option *ngFor="let status of statusOptions" [value]="status">
-          {{ status }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-  </mat-dialog-content>
+      <mat-form-field *ngIf="data.mode === 'edit'" appearance="outline" class="w-100 mt-3">
+        <mat-label>Estado</mat-label>
+        <mat-select name="status" [(ngModel)]="data.status">
+          <mat-option *ngFor="let status of statusOptions" [value]="status">
+            {{ status }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </mat-dialog-content>
 
-  <mat-dialog-actions align="end">
-    <button mat-stroked-button (click)="onCancel()">Cancelar</button>
-    <button mat-flat-button color="primary" (click)="onConfirm()">Guardar</button>
-  </mat-dialog-actions>
+    <mat-dialog-actions align="end">
+      <button mat-stroked-button type="button" (click)="onCancel()">Cancelar</button>
+      <button mat-flat-button type="button" color="primary" [disabled]="appointmentForm.invalid" (click)="onConfirm()">Guardar</button>
+    </mat-dialog-actions>
+  </form>
 </div>

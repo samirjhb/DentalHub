@@ -30,13 +30,14 @@ export class RegisterPaymentDto {
   @IsEnum(PaymentMethod)
   method: PaymentMethod;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
-      'ID del usuario (staff) que registra el pago — ningún controller del ' +
-      'proyecto lee req.user hoy, mismo patrón que "dentist" en CreateAppointmentDto',
+      'Ignorado si se envía: el backend siempre usa el id del usuario ' +
+      'autenticado (derivado del JWT) para evitar que se falsee este campo de auditoría.',
   })
+  @IsOptional()
   @IsMongoId()
-  registeredBy: string;
+  registeredBy?: string;
 
   @ApiPropertyOptional({ description: 'Observaciones adicionales' })
   @IsOptional()

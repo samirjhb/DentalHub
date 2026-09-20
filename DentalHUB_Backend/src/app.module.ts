@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PatientModule } from './patient/patient.module';
 import { DiagnosticEvaluationModule } from './diagnostic-evaluation/diagnostic-evaluation.module';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -18,6 +20,12 @@ import { ReportsModule } from './reports/reports.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     MongooseModule.forRoot(process.env.MONGO_CONNECTION_TEST),
     PatientModule,
     DiagnosticEvaluationModule,
@@ -33,6 +41,9 @@ import { ReportsModule } from './reports/reports.module';
     ReportsModule,
   ],
   controllers: [],
-  providers: [JwtStrategy],
+  providers: [
+    JwtStrategy,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

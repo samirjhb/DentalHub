@@ -491,6 +491,14 @@ export class FichaClinicaComponent implements OnInit {
 
   async onSubmit() {
     if (this.fichaClinicaForm.valid) {
+      if (!this.sessionManager.getUserId()) {
+        this.snackBar.open('No se pudo identificar al usuario logueado', 'Cerrar', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+        return;
+      }
+
       this.isSubmitting = true;
       console.log('Estado de edición:', { isEditMode: this.isEditMode, currentFichaId: this.currentFichaId });
 
@@ -661,7 +669,7 @@ export class FichaClinicaComponent implements OnInit {
         };
       }),
       attachments: formData.attachments || [],
-      dentist: 'current-user-id' // En una implementación real, esto vendría del servicio de autenticación
+      dentist: this.sessionManager.getUserId() ?? ''
     };
 
     return clinicalRecordDto;
@@ -1300,47 +1308,25 @@ export class FichaClinicaComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         // Si el usuario confirmó la eliminación
-        try {
-          this.fichaClinicaService.deleteFichaClinica(id)
-            .then(() => {
-              this.snackBar.open('Ficha clínica eliminada exitosamente', 'Cerrar', {
-                duration: 5000,
-                panelClass: ['success-snackbar']
-              });
-              this.loadFichasClinicas();
-            })
-            .catch((error: any) => {
-              console.error('Error al eliminar ficha clínica:', error);
-              
-              // Si hay error en la API, simulamos la eliminación en el frontend
-              this.fichas = this.fichas.filter(f => f._id !== id);
-              this.initializeDataSource();
-              
-              this.snackBar.open(
-                'Ficha clínica eliminada (simulado)', 
-                'Cerrar', 
-                {
-                  duration: 5000,
-                  panelClass: ['success-snackbar']
-                }
-              );
-            });
-        } catch (error) {
-          console.error('Error al intentar eliminar ficha clínica:', error);
-          
-          // Simulamos la eliminación en el frontend
-          this.fichas = this.fichas.filter(f => f._id !== id);
-          this.initializeDataSource();
-          
-          this.snackBar.open(
-            'Ficha clínica eliminada (simulado)', 
-            'Cerrar', 
-            {
+        this.fichaClinicaService.deleteFichaClinica(id)
+          .then(() => {
+            this.snackBar.open('Ficha clínica eliminada exitosamente', 'Cerrar', {
               duration: 5000,
               panelClass: ['success-snackbar']
-            }
-          );
-        }
+            });
+            this.loadFichasClinicas();
+          })
+          .catch((error: any) => {
+            console.error('Error al eliminar ficha clínica:', error);
+            this.snackBar.open(
+              error.error?.message || 'Error al eliminar la ficha clínica. Intente nuevamente.',
+              'Cerrar',
+              {
+                duration: 5000,
+                panelClass: ['error-snackbar']
+              }
+            );
+          });
       }
     });
   }

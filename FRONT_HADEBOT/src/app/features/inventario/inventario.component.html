@@ -66,6 +66,14 @@
           <button
             *ngIf="canWrite"
             mat-icon-button
+            matTooltip="Editar insumo"
+            (click)="openEditDialog(item)"
+          >
+            <i-tabler name="pencil" class="icon-18"></i-tabler>
+          </button>
+          <button
+            *ngIf="canWrite"
+            mat-icon-button
             matTooltip="Registrar movimiento"
             (click)="openMovementDialog(item)"
           >

@@ -65,6 +65,20 @@ describe('RegisterPaymentUseCase', () => {
     expect(result.clinicalRecord.treatments[0].status).toBe('Pendiente');
   });
 
+  it('throws BadRequestException when the payment exceeds the treatment price', async () => {
+    repository.seedClinicalRecord('record-1', {
+      _id: 'record-1',
+      patient: 'patient-1',
+      dentist: 'Dr. Test',
+      treatments: [{ diagnosis: 'x', toothNumber: '11', treatment: 'x', price: 100000, status: 'Pendiente', deposit: 80000 }],
+    });
+    repository.seedUser('user-1');
+
+    await expect(
+      useCase.execute({ ...baseDto, amount: 50000 }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
   it('marks the treatment as Completado when the deposit reaches the price', async () => {
     repository.seedClinicalRecord('record-1', {
       _id: 'record-1',

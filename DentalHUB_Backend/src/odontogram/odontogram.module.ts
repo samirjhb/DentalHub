@@ -30,5 +30,6 @@ import { UpdateGeneralObservationsUseCase } from './application/use-cases/update
     UpdateToothUseCase,
     UpdateGeneralObservationsUseCase,
   ],
+  exports: [OdontogramRepository],
 })
 export class OdontogramModule {}

@@ -18,16 +18,13 @@ export class RemoveTreatmentUseCase {
       );
     }
 
-    record.treatments.splice(treatmentIndex, 1);
-
-    if (record.treatments.length === 0) {
-      // Quirk preservado a propósito: la ficha se elimina de verdad, pero el
-      // cliente igual ve un error 400 — no se "arregla" en esta migración.
-      await this.repository.deleteById(id);
+    if (record.treatments.length === 1) {
       throw new BadRequestException(
-        `La ficha clínica ha sido eliminada porque no contiene tratamientos`,
+        'No se puede eliminar el último tratamiento de una ficha clínica. Elimine la ficha completa si ya no es necesaria.',
       );
     }
+
+    record.treatments.splice(treatmentIndex, 1);
 
     const updated = await this.repository.updateTreatments(
       id,
