@@ -43,8 +43,10 @@ export class AppSideLoginComponent implements OnInit {
     console.log(this.form.value);
     if (this.form.valid) {
       try {
-        const response: any = await this.authService.loginService(this.form.value);
-        
+        const response: any = await this.authService.loginService(this.form.value, () => {
+          this.showRetryingAlert();
+        });
+
         // If login was successful and we have a token, navigate to the
         // right home for this role — un PATIENT no tiene acceso al dashboard
         // clínico (ver RoleGuard/app.routes.ts).
@@ -71,6 +73,19 @@ export class AppSideLoginComponent implements OnInit {
       horizontalPosition: 'center',
       verticalPosition: 'top',
       panelClass: ['error-snackbar']
+    });
+  }
+
+  /**
+   * Se dispara cuando el primer intento de login falla por status 0 (el
+   * backend gratuito de Render aún está despertando) y el AuthService va a
+   * reintentar automáticamente una vez.
+   */
+  showRetryingAlert() {
+    this.snackBar.open('El servidor está iniciando, reintentando...', undefined, {
+      duration: 8000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
     });
   }
 }
