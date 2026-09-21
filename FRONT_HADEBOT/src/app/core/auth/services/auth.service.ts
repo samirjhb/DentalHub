@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -7,6 +7,12 @@ import { SessionManagerService } from './session-manager.service';
 const LOGIN_ERROR_MESSAGES: Record<string, string> = {
   CREDENCIALES_INVALIDAS: 'Email o contraseña incorrectos',
 };
+
+// El backend gratuito de Render se duerme tras inactividad; el primer request
+// tras eso puede fallar a nivel de red (status 0) porque el proxy corta la
+// conexión antes de que el servicio termine de despertar. Un solo reintento
+// tras una breve espera suele alcanzar.
+const COLD_START_RETRY_DELAY_MS = 8000;
 
 @Injectable({
   providedIn: 'root'
@@ -48,34 +54,50 @@ async registerService(data: any) {
   }
 }
 
-async loginService(data: any) {
+async loginService(data: any, onColdStartRetry?: () => void) {
   try {
-    const response: any = await firstValueFrom(this.http.post(`${environment.apiUrl}/auth/login`, data));
-    console.log(response);
-    
-    // Store the tokens in session storage
-    if (response && response.token) {
-      this.sessionManager.setToken(response.token);
-    }
-    if (response && response.refreshToken) {
-      this.sessionManager.setRefreshToken(response.refreshToken);
-    }
-
-    return response;
+    return await this.attemptLogin(data);
   } catch (error: any) {
-    console.error('Login error:', error);
-    
-    // Extract error message from the response
-    let errorMessage = 'Error en el inicio de sesión';
-    if (error.error && error.error.message) {
-      errorMessage = LOGIN_ERROR_MESSAGES[error.error.message] || error.error.message;
-    } else if (error.message) {
-      errorMessage = error.message;
+    if (error instanceof HttpErrorResponse && error.status === 0) {
+      onColdStartRetry?.();
+      await new Promise((resolve) => setTimeout(resolve, COLD_START_RETRY_DELAY_MS));
+      try {
+        return await this.attemptLogin(data);
+      } catch (retryError: any) {
+        throw this.buildLoginError(retryError);
+      }
     }
-
-    // Throw the error with the message so it can be caught by the component
-    throw { message: errorMessage, originalError: error };
+    throw this.buildLoginError(error);
   }
+}
+
+private async attemptLogin(data: any) {
+  const response: any = await firstValueFrom(this.http.post(`${environment.apiUrl}/auth/login`, data));
+  console.log(response);
+
+  // Store the tokens in session storage
+  if (response && response.token) {
+    this.sessionManager.setToken(response.token);
+  }
+  if (response && response.refreshToken) {
+    this.sessionManager.setRefreshToken(response.refreshToken);
+  }
+
+  return response;
+}
+
+private buildLoginError(error: any) {
+  console.error('Login error:', error);
+
+  // Extract error message from the response
+  let errorMessage = 'Error en el inicio de sesión';
+  if (error.error && error.error.message) {
+    errorMessage = LOGIN_ERROR_MESSAGES[error.error.message] || error.error.message;
+  } else if (error.message) {
+    errorMessage = error.message;
+  }
+
+  return { message: errorMessage, originalError: error };
 }
 
 async forgotPasswordService(email: string) {
