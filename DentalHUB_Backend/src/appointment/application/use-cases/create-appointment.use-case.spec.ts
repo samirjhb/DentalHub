@@ -1,14 +1,26 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateAppointmentUseCase } from './create-appointment.use-case';
 import { InMemoryAppointmentRepository } from '../testing/in-memory-appointment.repository';
+import { InMemoryAvailabilityRepository } from '../../../availability/application/testing/in-memory-availability.repository';
+import { SlotCalculatorService } from '../../../availability/application/services/slot-calculator.service';
+import { VerifyDentistAvailabilityUseCase } from '../../../availability/application/use-cases/verify-dentist-availability.use-case';
 
 describe('CreateAppointmentUseCase', () => {
   let repository: InMemoryAppointmentRepository;
+  let availabilityRepository: InMemoryAvailabilityRepository;
   let useCase: CreateAppointmentUseCase;
 
   beforeEach(() => {
     repository = new InMemoryAppointmentRepository();
-    useCase = new CreateAppointmentUseCase(repository);
+    availabilityRepository = new InMemoryAvailabilityRepository();
+    const verifyDentistAvailability = new VerifyDentistAvailabilityUseCase(
+      availabilityRepository,
+      new SlotCalculatorService(),
+    );
+    // Sin horario configurado, VerifyDentistAvailabilityUseCase es permisivo
+    // por defecto (ver A.5 del plan) — no afecta a los tests existentes que no
+    // siembran horario.
+    useCase = new CreateAppointmentUseCase(repository, verifyDentistAvailability);
   });
 
   const baseDto = {
@@ -60,6 +72,37 @@ describe('CreateAppointmentUseCase', () => {
     const result = await useCase.execute({
       ...baseDto,
       startAt: '2026-01-10T11:00:00.000Z',
+    });
+    expect(result.status).toBe('Pendiente');
+  });
+
+  it('rejects an appointment outside the dentist working hours', async () => {
+    repository.seedPatient('patient-1');
+    repository.seedDentist('dentist-1');
+    availabilityRepository.seedDentist('dentist-1');
+    // 2026-01-10 es sábado (dayOfWeek 6); el horario solo cubre 09:00-13:00
+    // hora Santiago (12:00-16:00 UTC en enero, GMT-3).
+    availabilityRepository.seedSchedule('dentist-1', [
+      { dayOfWeek: 6, startTime: '09:00', endTime: '13:00' },
+    ]);
+
+    await expect(
+      useCase.execute({ ...baseDto, startAt: '2026-01-10T18:00:00.000Z' }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('allows an appointment inside the configured working hours', async () => {
+    repository.seedPatient('patient-1');
+    repository.seedDentist('dentist-1');
+    availabilityRepository.seedDentist('dentist-1');
+    availabilityRepository.seedSchedule('dentist-1', [
+      { dayOfWeek: 6, startTime: '09:00', endTime: '13:00' },
+    ]);
+
+    // 12:00 UTC = 09:00 hora Santiago, dentro del bloque.
+    const result = await useCase.execute({
+      ...baseDto,
+      startAt: '2026-01-10T12:00:00.000Z',
     });
     expect(result.status).toBe('Pendiente');
   });

@@ -57,6 +57,7 @@ export class InMemoryAppointmentRepository extends AppointmentRepository {
       data.reason,
       data.observations,
       undefined,
+      null,
       new Date(),
       new Date(),
     );
@@ -103,5 +104,20 @@ export class InMemoryAppointmentRepository extends AppointmentRepository {
     appointment.endAt = endAt;
     appointment.durationMinutes = durationMinutes;
     return appointment;
+  }
+
+  async findDueForReminder(windowStart: Date, windowEnd: Date): Promise<Appointment[]> {
+    return this.appointments.filter(
+      (a) =>
+        a.status !== AppointmentStatus.CANCELADA &&
+        !a.reminderSentAt &&
+        a.startAt >= windowStart &&
+        a.startAt < windowEnd,
+    );
+  }
+
+  async markReminderSent(id: string): Promise<void> {
+    const appointment = await this.findById(id);
+    if (appointment) appointment.reminderSentAt = new Date();
   }
 }

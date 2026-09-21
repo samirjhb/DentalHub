@@ -114,4 +114,22 @@ export class AppointmentMongoRepository extends AppointmentRepository {
     );
     return doc ? AppointmentMapper.toDomain(doc) : null;
   }
+
+  async findDueForReminder(
+    windowStart: Date,
+    windowEnd: Date,
+  ): Promise<AppointmentEntity[]> {
+    const docs = await this.appointmentModel.find({
+      status: { $ne: AppointmentStatus.CANCELADA },
+      reminderSentAt: null,
+      startAt: { $gte: windowStart, $lt: windowEnd },
+    });
+    return docs.map((doc) => AppointmentMapper.toDomain(doc));
+  }
+
+  async markReminderSent(id: string): Promise<void> {
+    await this.appointmentModel.findByIdAndUpdate(id, {
+      reminderSentAt: new Date(),
+    });
+  }
 }

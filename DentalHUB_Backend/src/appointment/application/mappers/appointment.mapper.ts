@@ -15,6 +15,7 @@ export class AppointmentMapper {
       doc.reason,
       doc.observations,
       doc.clinicalRecord,
+      doc.reminderSentAt,
       (doc as unknown as { createdAt?: Date }).createdAt,
       (doc as unknown as { updatedAt?: Date }).updatedAt,
     );
@@ -32,6 +33,7 @@ export class AppointmentMapper {
       reason: entity.reason,
       observations: entity.observations,
       clinicalRecord: entity.clinicalRecord,
+      reminderSentAt: entity.reminderSentAt,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     };

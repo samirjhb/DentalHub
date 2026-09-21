@@ -1,0 +1,42 @@
+<div class="slots-picker">
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Fecha</mat-label>
+    <input
+      matInput
+      type="date"
+      [(ngModel)]="selectedDate"
+      (ngModelChange)="onDateChange()"
+      [disabled]="!dentistId"
+    />
+  </mat-form-field>
+
+  <div *ngIf="!dentistId" class="slots-picker__hint">
+    Selecciona un odontólogo primero
+  </div>
+
+  <div *ngIf="dentistId && loading" class="slots-picker__hint">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+
+  <div *ngIf="dentistId && !loading && errorMessage" class="slots-picker__hint slots-picker__hint--error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="dentistId && !loading && !errorMessage && slots.length === 0" class="slots-picker__hint">
+    No hay horarios disponibles para esta fecha
+  </div>
+
+  <mat-chip-listbox
+    *ngIf="dentistId && !loading && !errorMessage && slots.length > 0"
+    class="slots-picker__chips"
+    [value]="selectedSlot"
+  >
+    <mat-chip-option
+      *ngFor="let slot of slots"
+      [value]="slot"
+      (click)="selectSlot(slot)"
+    >
+      {{ formatTime(slot) }}
+    </mat-chip-option>
+  </mat-chip-listbox>
+</div>

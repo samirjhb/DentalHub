@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PatientModule } from './patient/patient.module';
 import { DiagnosticEvaluationModule } from './diagnostic-evaluation/diagnostic-evaluation.module';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -16,10 +17,13 @@ import { BillingModule } from './billing/billing.module';
 import { PrescriptionModule } from './prescription/prescription.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { ReportsModule } from './reports/reports.module';
+import { AvailabilityModule } from './availability/availability.module';
+import { AppointmentReminderModule } from './appointment-reminder/appointment-reminder.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
@@ -34,11 +38,13 @@ import { ReportsModule } from './reports/reports.module';
     ClinicalRecordModule,
     AiModule,
     OdontogramModule,
+    AvailabilityModule,
     AppointmentModule,
     BillingModule,
     PrescriptionModule,
     InventoryModule,
     ReportsModule,
+    AppointmentReminderModule,
   ],
   controllers: [],
   providers: [

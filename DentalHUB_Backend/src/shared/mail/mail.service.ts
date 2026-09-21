@@ -58,4 +58,25 @@ export class MailService {
       `,
     });
   }
+
+  async sendAppointmentReminderEmail(
+    to: string,
+    data: { patientName: string; dentistName: string; startAt: Date },
+  ): Promise<void> {
+    const formattedDate = new Intl.DateTimeFormat('es-CL', {
+      dateStyle: 'full',
+      timeStyle: 'short',
+      timeZone: 'America/Santiago',
+    }).format(data.startAt);
+
+    await this.sendMail({
+      to,
+      subject: 'Recordatorio de tu cita — DentalHub',
+      html: `
+        <p>Hola ${data.patientName},</p>
+        <p>Te recordamos tu cita con ${data.dentistName} el <strong>${formattedDate}</strong>.</p>
+        <p>Si necesitas reprogramar o cancelar, contáctanos con anticipación.</p>
+      `,
+    });
+  }
 }

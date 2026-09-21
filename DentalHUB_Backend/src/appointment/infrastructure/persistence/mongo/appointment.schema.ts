@@ -36,6 +36,11 @@ export class Appointment {
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'ClinicalRecord', required: false })
   clinicalRecord?: string;
+
+  // Marca cuándo se envió el recordatorio por email — evita reenviarlo en
+  // corridas posteriores del cron (ver appointment-reminder module).
+  @Prop({ required: false, default: null })
+  reminderSentAt?: Date | null;
 }
 
 export const AppointmentSchema = SchemaFactory.createForClass(Appointment);

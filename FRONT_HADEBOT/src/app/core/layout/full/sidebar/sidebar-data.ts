@@ -35,6 +35,9 @@ const REPORTS_ROLES: Role[] = [Role.SUPER_ADMIN, Role.CLINIC_ADMIN];
 // @Roles(SUPER_ADMIN, CLINIC_ADMIN) de POST /auth/staff).
 const ADMIN_ROLES: Role[] = [Role.SUPER_ADMIN, Role.CLINIC_ADMIN];
 
+// Mismo criterio que SCHEDULE_MANAGE_ROLES en tools.routes.ts.
+const SCHEDULE_MANAGE_ROLES: Role[] = [Role.SUPER_ADMIN, Role.CLINIC_ADMIN, Role.DENTIST];
+
 export const navItems: NavItem[] = [
   {
     navCap: 'Inicio',
@@ -59,6 +62,12 @@ export const navItems: NavItem[] = [
     iconName: 'calendar',
     route: '/herramientas-de-trabajo/agenda',
     roles: STAFF_ROLES,
+  },
+  {
+    displayName: 'Mi Horario',
+    iconName: 'clock',
+    route: '/herramientas-de-trabajo/mi-horario',
+    roles: SCHEDULE_MANAGE_ROLES,
   },
   {
     displayName: 'Historia Clínica',

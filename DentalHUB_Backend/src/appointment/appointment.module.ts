@@ -18,6 +18,7 @@ import { FindMyAppointmentsUseCase } from './application/use-cases/find-my-appoi
 import { RequestAppointmentUseCase } from './application/use-cases/request-appointment.use-case';
 import { CancelMyAppointmentUseCase } from './application/use-cases/cancel-my-appointment.use-case';
 import { AppointmentOwnershipGuard } from './infrastructure/guards/appointment-ownership.guard';
+import { AvailabilityModule } from 'src/availability/availability.module';
 
 @Module({
   imports: [
@@ -29,6 +30,11 @@ import { AppointmentOwnershipGuard } from './infrastructure/guards/appointment-o
       { name: 'Patient', schema: PatientSchema },
       { name: 'Auth', schema: AuthSchema },
     ]),
+    // Para validar que la cita caiga dentro del horario del odontólogo — el
+    // sentido de la dependencia es único (Appointment -> Availability),
+    // AvailabilityModule no importa este módulo (registra su propio
+    // 'Appointment' de forma independiente, ver availability.module.ts).
+    AvailabilityModule,
   ],
   controllers: [AppointmentController],
   providers: [

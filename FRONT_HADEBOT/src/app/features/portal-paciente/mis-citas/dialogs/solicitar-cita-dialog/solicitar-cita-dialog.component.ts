@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { StaffService, StaffMember } from 'src/app/core/services/staff.service';
 import { RequestAppointmentDto } from 'src/app/core/services/appointment.service';
+import { AvailableSlotsPickerComponent } from 'src/app/shared/components/available-slots-picker/available-slots-picker.component';
 
 export interface SolicitarCitaDialogResult extends RequestAppointmentDto {}
 
@@ -26,6 +27,7 @@ export interface SolicitarCitaDialogResult extends RequestAppointmentDto {}
     MatInputModule,
     MatSelectModule,
     TablerIconsModule,
+    AvailableSlotsPickerComponent,
   ],
 })
 export class SolicitarCitaDialogComponent implements OnInit {
@@ -33,8 +35,8 @@ export class SolicitarCitaDialogComponent implements OnInit {
 
   data = {
     dentist: '',
-    // Formato compatible con <input type="datetime-local">, igual que
-    // AppointmentDialogComponent (Agenda, vista de staff).
+    // ISO completo, seteado por AvailableSlotsPickerComponent al elegir un
+    // horario — new Date(...).toISOString() en onConfirm() es idempotente.
     startAt: '',
     durationMinutes: 60,
     reason: '',
@@ -54,6 +56,10 @@ export class SolicitarCitaDialogComponent implements OnInit {
       .catch((error) => {
         console.error('Error al cargar odontólogos:', error);
       });
+  }
+
+  onSlotSelected(startAt: string): void {
+    this.data.startAt = startAt;
   }
 
   get isValid(): boolean {
