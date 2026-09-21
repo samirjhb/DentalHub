@@ -2,12 +2,16 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { AppointmentRepository } from '../../domain/repositories/appointment.repository';
 import { CreateAppointmentDto } from '../dto/create-appointment.dto';
 import { AppointmentMapper } from '../mappers/appointment.mapper';
+import { VerifyDentistAvailabilityUseCase } from '../../../availability/application/use-cases/verify-dentist-availability.use-case';
 
 const DEFAULT_DURATION_MINUTES = 60;
 
 @Injectable()
 export class CreateAppointmentUseCase {
-  constructor(private readonly repository: AppointmentRepository) {}
+  constructor(
+    private readonly repository: AppointmentRepository,
+    private readonly verifyDentistAvailability: VerifyDentistAvailabilityUseCase,
+  ) {}
 
   async execute(dto: CreateAppointmentDto) {
     const patientExists = await this.repository.verifyPatientExists(
@@ -40,6 +44,17 @@ export class CreateAppointmentUseCase {
     if (overlaps) {
       throw new BadRequestException(
         'El odontólogo ya tiene una cita agendada en ese horario',
+      );
+    }
+
+    const isAvailable = await this.verifyDentistAvailability.execute(
+      dto.dentist,
+      startAt,
+      endAt,
+    );
+    if (!isAvailable) {
+      throw new BadRequestException(
+        'El horario seleccionado está fuera del horario de atención del odontólogo o corresponde a un día bloqueado',
       );
     }
 

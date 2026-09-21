@@ -8,6 +8,7 @@ import { BillingComponent } from './billing/billing.component';
 import { InventarioComponent } from './inventario/inventario.component';
 import { ReportesComponent } from './reportes/reportes.component';
 import { AdministracionComponent } from './administracion/administracion.component';
+import { MiHorarioComponent } from './mi-horario/mi-horario.component';
 import { RoleGuard } from '../core/auth/guards/role.guard';
 import { Role } from '../core/auth/enums/role.enum';
 
@@ -47,6 +48,10 @@ const REPORTS_ROLES = [Role.SUPER_ADMIN, Role.CLINIC_ADMIN];
 // (backend en auth.controller.ts).
 const ADMIN_ROLES = [Role.SUPER_ADMIN, Role.CLINIC_ADMIN];
 
+// El propio odontólogo gestiona su horario; RECEPTIONIST solo lo consume
+// indirectamente vía el selector de horarios al agendar, no lo edita acá.
+const SCHEDULE_MANAGE_ROLES = [Role.SUPER_ADMIN, Role.CLINIC_ADMIN, Role.DENTIST];
+
 // Archivo de composición de rutas (no una feature única): agrupa bajo
 // /herramientas-de-trabajo/* las pantallas de varias features, preservando
 // el mismo lazy-chunk/prefijo de URL que tenía ui-components.routes.ts.
@@ -65,6 +70,12 @@ export const ToolsRoutes: Routes = [
         component: AgendaComponent,
         canActivate: [RoleGuard],
         data: { roles: STAFF_ROLES },
+      },
+      {
+        path: 'mi-horario',
+        component: MiHorarioComponent,
+        canActivate: [RoleGuard],
+        data: { roles: SCHEDULE_MANAGE_ROLES },
       },
       {
         path: 'paciente',

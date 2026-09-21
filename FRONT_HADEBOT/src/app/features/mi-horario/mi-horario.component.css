@@ -1,0 +1,76 @@
+.mi-horario-card {
+  padding: 24px;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.page-subtitle {
+  margin: 4px 0 0;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dentist-select {
+  max-width: 360px;
+}
+
+.empty-state {
+  padding: 16px 0;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.day-row {
+  display: flex;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.day-label {
+  width: 100px;
+  flex-shrink: 0;
+  font-weight: 500;
+  padding-top: 8px;
+}
+
+.day-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.block-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-input {
+  border: 1px solid rgba(0, 0, 0, 0.23);
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+.exception-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}

@@ -1,0 +1,17 @@
+.slots-picker {
+  margin-top: 12px;
+}
+
+.slots-picker__hint {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+  margin: 8px 0 16px;
+}
+
+.slots-picker__hint--error {
+  color: #dc3545;
+}
+
+.slots-picker__chips {
+  margin-bottom: 16px;
+}

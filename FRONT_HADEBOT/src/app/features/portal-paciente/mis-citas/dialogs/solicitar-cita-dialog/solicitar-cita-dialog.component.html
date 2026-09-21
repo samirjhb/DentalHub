@@ -14,10 +14,11 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="w-100 mt-3">
-      <mat-label>Fecha y hora</mat-label>
-      <input matInput type="datetime-local" [(ngModel)]="data.startAt" />
-    </mat-form-field>
+    <app-available-slots-picker
+      [dentistId]="data.dentist"
+      [durationMinutes]="data.durationMinutes"
+      (slotSelected)="onSlotSelected($event)"
+    ></app-available-slots-picker>
 
     <mat-form-field appearance="outline" class="w-100 mt-3">
       <mat-label>Motivo de consulta</mat-label>

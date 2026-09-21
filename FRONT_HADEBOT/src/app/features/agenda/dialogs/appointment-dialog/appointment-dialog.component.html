@@ -27,16 +27,18 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="w-100 mt-3">
-        <mat-label>Fecha y hora</mat-label>
-        <input matInput type="datetime-local" name="startAt" [(ngModel)]="data.startAt" required #startAtCtrl="ngModel" />
-        <mat-error *ngIf="startAtCtrl.invalid">Debe indicar la fecha y hora</mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="w-100 mt-3">
         <mat-label>Duración (minutos)</mat-label>
         <input matInput type="number" name="durationMinutes" min="1" [(ngModel)]="data.durationMinutes" required #durationCtrl="ngModel" />
         <mat-error *ngIf="durationCtrl.invalid">La duración debe ser de al menos 1 minuto</mat-error>
       </mat-form-field>
+
+      <app-available-slots-picker
+        [dentistId]="data.dentist"
+        [durationMinutes]="data.durationMinutes"
+        [initialDate]="initialDate"
+        (slotSelected)="onSlotSelected($event)"
+      ></app-available-slots-picker>
+      <div *ngIf="!data.startAt" class="text-danger f-s-12 m-b-12">Debes elegir un horario disponible</div>
 
       <mat-form-field appearance="outline" class="w-100 mt-3">
         <mat-label>Motivo de consulta</mat-label>
@@ -61,7 +63,7 @@
 
     <mat-dialog-actions align="end">
       <button mat-stroked-button type="button" (click)="onCancel()">Cancelar</button>
-      <button mat-flat-button type="button" color="primary" [disabled]="appointmentForm.invalid" (click)="onConfirm()">Guardar</button>
+      <button mat-flat-button type="button" color="primary" [disabled]="appointmentForm.invalid || !data.startAt" (click)="onConfirm()">Guardar</button>
     </mat-dialog-actions>
   </form>
 </div>

@@ -46,4 +46,12 @@ export abstract class AppointmentRepository {
     endAt: Date,
     durationMinutes: number,
   ): Promise<Appointment | null>;
+
+  // Citas próximas a las que aún no se les envió el recordatorio por email
+  // (ver appointment-reminder module) — startAt dentro de [windowStart, windowEnd).
+  abstract findDueForReminder(
+    windowStart: Date,
+    windowEnd: Date,
+  ): Promise<Appointment[]>;
+  abstract markReminderSent(id: string): Promise<void>;
 }
