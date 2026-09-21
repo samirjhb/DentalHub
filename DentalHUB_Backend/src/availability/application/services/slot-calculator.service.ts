@@ -18,6 +18,11 @@ export interface ComputeFreeSlotsParams {
   partialBlockedRanges: PartialBlockedRange[];
   busyRanges: BusyRange[];
   durationMinutes: number;
+  // Instante a partir del cual un slot cuenta como "futuro" — inyectable para
+  // tests deterministas, default `new Date()`. Sin este filtro, consultar la
+  // disponibilidad de HOY seguía ofreciendo horarios ya pasados (solo se
+  // chequeaba contra el horario configurado, nunca contra la hora actual).
+  now?: Date;
 }
 
 @Injectable()
@@ -31,6 +36,7 @@ export class SlotCalculatorService {
 
     const durationMs = params.durationMinutes * 60_000;
     const granularityMs = SlotCalculatorService.SLOT_GRANULARITY_MINUTES * 60_000;
+    const nowMs = (params.now ?? new Date()).getTime();
     const slots: Date[] = [];
 
     for (const block of params.workingBlocks) {
@@ -42,6 +48,8 @@ export class SlotCalculatorService {
         tickStart + durationMs <= blockEnd.getTime();
         tickStart += granularityMs
       ) {
+        if (tickStart <= nowMs) continue;
+
         const tickEnd = tickStart + durationMs;
         const blockedByException = params.partialBlockedRanges.some((range) => {
           const rangeStart = this.toDateTime(params.date, range.startTime).getTime();
