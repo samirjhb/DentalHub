@@ -91,7 +91,11 @@ private buildLoginError(error: any) {
 
   // Extract error message from the response
   let errorMessage = 'Error en el inicio de sesión';
-  if (error.error && error.error.message) {
+  if (error instanceof HttpErrorResponse && error.status === 0) {
+    // error.message trae el texto crudo de Angular ("Http failure response
+    // for <url>: 0 Unknown Error"), que expone la URL del backend al usuario.
+    errorMessage = 'No se pudo conectar con el servidor. Verificá tu conexión e intentá nuevamente.';
+  } else if (error.error && error.error.message) {
     errorMessage = LOGIN_ERROR_MESSAGES[error.error.message] || error.error.message;
   } else if (error.message) {
     errorMessage = error.message;
