@@ -3,6 +3,11 @@ import { GetAvailableSlotsUseCase } from './get-available-slots.use-case';
 import { InMemoryAvailabilityRepository } from '../testing/in-memory-availability.repository';
 import { SlotCalculatorService } from '../services/slot-calculator.service';
 
+// Anterior a todas las fechas de prueba (2026-01-10) — el use-case ahora
+// descarta slots que ya empezaron respecto a `now`, así que los tests deben
+// fijarlo explícitamente en vez de depender del reloj real.
+const FIXED_NOW = new Date('2026-01-01T00:00:00.000Z');
+
 describe('GetAvailableSlotsUseCase', () => {
   let repository: InMemoryAvailabilityRepository;
   let useCase: GetAvailableSlotsUseCase;
@@ -15,12 +20,12 @@ describe('GetAvailableSlotsUseCase', () => {
 
   it('throws NotFoundException when the dentist does not exist', async () => {
     await expect(
-      useCase.execute({ dentistId: 'ghost', date: '2026-01-10' }),
+      useCase.execute({ dentistId: 'ghost', date: '2026-01-10' }, FIXED_NOW),
     ).rejects.toThrow(NotFoundException);
   });
 
   it('returns an empty list when the dentist has no schedule for that day', async () => {
-    const result = await useCase.execute({ dentistId: 'dentist-1', date: '2026-01-10' });
+    const result = await useCase.execute({ dentistId: 'dentist-1', date: '2026-01-10' }, FIXED_NOW);
     expect(result.slots).toEqual([]);
   });
 
@@ -35,7 +40,7 @@ describe('GetAvailableSlotsUseCase', () => {
       dentistId: 'dentist-1',
       date: '2026-01-10',
       durationMinutes: 60,
-    });
+    }, FIXED_NOW);
 
     expect(result.slots).toEqual([
       '2026-01-10T12:00:00.000Z',
@@ -55,7 +60,7 @@ describe('GetAvailableSlotsUseCase', () => {
       dentistId: 'dentist-1',
       date: '2026-01-10',
       durationMinutes: 60,
-    });
+    }, FIXED_NOW);
 
     expect(result.slots).toEqual([
       '2026-01-10T12:00:00.000Z',
@@ -72,7 +77,7 @@ describe('GetAvailableSlotsUseCase', () => {
       allDay: true,
     });
 
-    const result = await useCase.execute({ dentistId: 'dentist-1', date: '2026-01-10' });
+    const result = await useCase.execute({ dentistId: 'dentist-1', date: '2026-01-10' }, FIXED_NOW);
     expect(result.slots).toEqual([]);
   });
 
@@ -91,7 +96,7 @@ describe('GetAvailableSlotsUseCase', () => {
       dentistId: 'dentist-1',
       date: '2026-01-10',
       durationMinutes: 60,
-    });
+    }, FIXED_NOW);
 
     expect(result.slots).toEqual(['2026-01-10T13:00:00.000Z']);
   });
@@ -113,7 +118,7 @@ describe('GetAvailableSlotsUseCase', () => {
       dentistId: 'dentist-1',
       date: '2026-01-10',
       durationMinutes: 60,
-    });
+    }, FIXED_NOW);
 
     expect(result.slots).toEqual(['2026-01-10T13:00:00.000Z']);
   });

@@ -13,7 +13,11 @@ export class GetAvailableSlotsUseCase {
     private readonly slotCalculator: SlotCalculatorService,
   ) {}
 
-  async execute(query: AvailableSlotsQueryDto): Promise<{ slots: string[] }> {
+  // `now` inyectable para tests deterministas — default `new Date()` en uso real.
+  async execute(
+    query: AvailableSlotsQueryDto,
+    now: Date = new Date(),
+  ): Promise<{ slots: string[] }> {
     const dentistExists = await this.repository.verifyDentistExists(query.dentistId);
     if (!dentistExists) {
       throw new NotFoundException(`Odontólogo con ID ${query.dentistId} no encontrado`);
@@ -55,6 +59,7 @@ export class GetAvailableSlotsUseCase {
       partialBlockedRanges,
       busyRanges,
       durationMinutes,
+      now,
     });
 
     return { slots: slots.map((slot) => slot.toISOString()) };
