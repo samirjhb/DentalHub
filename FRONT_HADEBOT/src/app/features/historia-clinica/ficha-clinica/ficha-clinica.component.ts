@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { CommonModule, NgIf, NgFor } from '@angular/common';
-import { FichaClinicaService, ClinicalRecord, CreateClinicalRecordDto, DentalTreatment, AddTreatmentDto, UpdateStatusDto, UpdateAppointmentDateDto, FilterClinicalRecordDto } from 'src/app/features/historia-clinica/services/ficha-clinica.service';
+import { FichaClinicaService, ClinicalRecord, CreateClinicalRecordDto, DentalTreatment, AddTreatmentDto, UpdateStatusDto, UpdateAppointmentDateDto, FilterClinicalRecordDto, Attachment } from 'src/app/features/historia-clinica/services/ficha-clinica.service';
 import { PacienteService } from 'src/app/core/services/paciente.service';
 import { MatIconModule } from '@angular/material/icon';
 import { TablerIconsModule } from 'angular-tabler-icons';
@@ -49,7 +49,7 @@ export interface FichaClinicaData {
   _id: string;
   patient: any; // Para mostrar en la tabla necesitamos el objeto completo
   treatments: DentalTreatment[];
-  attachments?: string[];
+  attachments?: Attachment[];
   dentist: string;
   createdAt: Date;
   updatedAt: Date;
@@ -103,10 +103,12 @@ const FICHAS_EJEMPLO: FichaClinicaData[] = [];
   ],
 })
 export class FichaClinicaComponent implements OnInit {
-  // Propiedades para manejar las imágenes de radiografía
-  radiographyFiles: File[] = [];
-  radiographyPreviews: string[] = [];
-  radiographyBase64: string[] = [];
+  // Adjuntos de la ficha que se está creando/editando (no confundir con
+  // selectedFicha.attachments, que es la vista de detalle de una ficha ya
+  // guardada) — se pueblan al entrar a editarFichaClinica() y se refrescan
+  // tras cada subida/borrado.
+  currentAttachments: Attachment[] = [];
+  isUploadingAttachment: boolean = false;
   fichaClinicaForm: FormGroup;
   treatmentForm: FormGroup;
   maxDate: Date = new Date();
@@ -199,7 +201,6 @@ export class FichaClinicaComponent implements OnInit {
     // Formulario principal para la ficha clínica
     this.fichaClinicaForm = this.fb.group({
       patient: ['', Validators.required],
-      attachments: [[]],
       treatments: this.fb.array([])
     });
 
@@ -220,7 +221,6 @@ export class FichaClinicaComponent implements OnInit {
   initTreatmentForm(treatment?: DentalTreatment) {
     this.treatmentForm = this.fb.group({
       diagnosis: [treatment?.diagnosis || '', Validators.required],
-      radiography: [treatment?.radiography || []],
       toothNumber: [treatment?.toothNumber || '', Validators.required],
       treatment: [treatment?.treatment || '', Validators.required],
       price: [treatment?.price || '', [Validators.required, Validators.min(0)]],
@@ -675,7 +675,6 @@ export class FichaClinicaComponent implements OnInit {
         const treatment = control.value;
         return {
           diagnosis: treatment.diagnosis,
-          radiography: treatment.radiography,
           toothNumber: treatment.toothNumber,
           treatment: treatment.treatment,
           price: treatment.price,
@@ -685,7 +684,6 @@ export class FichaClinicaComponent implements OnInit {
           observations: treatment.observations
         };
       }),
-      attachments: formData.attachments || [],
       dentist: this.sessionManager.getUserId() ?? ''
     };
 
@@ -748,6 +746,7 @@ export class FichaClinicaComponent implements OnInit {
     this.treatmentForm.reset();
     this.isEditMode = false;
     this.currentFichaId = null;
+    this.currentAttachments = [];
     this.formTitle = 'Registro de Ficha Clínica';
     console.log('Estado después de resetear:', { isEditMode: this.isEditMode, currentFichaId: this.currentFichaId });
     
@@ -822,15 +821,14 @@ export class FichaClinicaComponent implements OnInit {
           
           // Llenar el formulario principal
           this.fichaClinicaForm.patchValue({
-            patient: fichaActualizada.patient._id,
-            attachments: fichaActualizada.attachments || []
+            patient: fichaActualizada.patient._id
           });
-          
+          this.currentAttachments = fichaActualizada.attachments || [];
+
           // Agregar cada tratamiento al FormArray
           fichaActualizada.treatments.forEach((treatment: DentalTreatment) => {
             const treatmentGroup = this.fb.group({
               diagnosis: [treatment.diagnosis, Validators.required],
-              radiography: [treatment.radiography || []],
               toothNumber: [treatment.toothNumber, Validators.required],
               treatment: [treatment.treatment, Validators.required],
               price: [treatment.price, [Validators.required, Validators.min(0)]],
@@ -854,15 +852,14 @@ export class FichaClinicaComponent implements OnInit {
         
         // Llenar el formulario principal
         this.fichaClinicaForm.patchValue({
-          patient: ficha.patient._id,
-          attachments: ficha.attachments || []
+          patient: ficha.patient._id
         });
-        
+        this.currentAttachments = ficha.attachments || [];
+
         // Agregar cada tratamiento al FormArray
         ficha.treatments.forEach((treatment: DentalTreatment) => {
           const treatmentGroup = this.fb.group({
             diagnosis: [treatment.diagnosis, Validators.required],
-            radiography: [treatment.radiography || []],
             toothNumber: [treatment.toothNumber, Validators.required],
             treatment: [treatment.treatment, Validators.required],
             price: [treatment.price, [Validators.required, Validators.min(0)]],
@@ -925,15 +922,6 @@ export class FichaClinicaComponent implements OnInit {
   editTreatment(index: number) {
     const treatment = (this.treatments.at(index) as FormGroup).value;
     this.initTreatmentForm(treatment);
-    
-    // Cargar las imágenes de radiografía si existen
-    if (treatment.radiography && Array.isArray(treatment.radiography) && treatment.radiography.length > 0) {
-      this.loadImagesFromBase64Array(treatment.radiography);
-    } else {
-      // Limpiar las imágenes anteriores
-      this.clearRadiographyFiles();
-    }
-    
     this.showTreatmentForm = true;
     this.currentTreatmentIndex = index;
   }
@@ -950,7 +938,6 @@ export class FichaClinicaComponent implements OnInit {
         // Agregar nuevo tratamiento
         const treatmentGroup = this.fb.group({
           diagnosis: [treatmentData.diagnosis, Validators.required],
-          radiography: [treatmentData.radiography || []],
           toothNumber: [treatmentData.toothNumber, Validators.required],
           treatment: [treatmentData.treatment, Validators.required],
           price: [treatmentData.price, [Validators.required, Validators.min(0)]],
@@ -1421,54 +1408,45 @@ export class FichaClinicaComponent implements OnInit {
     return treatments.some(t => t.observations && t.observations.trim().length > 0);
   }
   
-  // Verificar si hay radiografías en alguno de los tratamientos
-  hasAnyRadiographs(treatments: DentalTreatment[]): boolean {
-    if (!treatments || treatments.length === 0) {
+  // Adjuntos (imágenes/PDFs) de un array de attachments que pertenecen a un
+  // tratamiento puntual (treatmentIndex definido) o generales de la ficha
+  // (treatmentIndex === undefined) — usado tanto en la vista de detalle
+  // (selectedFicha.attachments) como en el formulario de edición
+  // (currentAttachments).
+  attachmentsFor(attachments: Attachment[] | undefined, treatmentIndex?: number): Attachment[] {
+    return (attachments ?? []).filter(a => a.treatmentIndex === treatmentIndex);
+  }
+
+  isImageAttachment(attachment: Attachment): boolean {
+    return attachment.mimeType.startsWith('image/');
+  }
+
+  // Verificar si hay adjuntos asociados a algún tratamiento (reemplaza el
+  // antiguo chequeo de `treatment.radiography`, ahora que los adjuntos viven
+  // a nivel de ficha con un treatmentIndex asociado).
+  hasAnyRadiographs(treatments: DentalTreatment[], attachments: Attachment[] | undefined): boolean {
+    if (!treatments || treatments.length === 0 || !attachments) {
       return false;
     }
-    return treatments.some(t => t.radiography && Array.isArray(t.radiography) && t.radiography.length > 0);
+    return treatments.some((_t, i) => this.attachmentsFor(attachments, i).length > 0);
   }
-  
-  // Abrir visor de imágenes para ver la radiografía en tamaño completo
+
+  // Abrir visor de imágenes para ver el adjunto en tamaño completo
   openImageViewer(imageUrl: string): void {
-    // Crear un elemento de diálogo modal para mostrar la imagen
-    const dialogRef = this.dialog.open(ImageViewerDialogComponent, {
+    this.dialog.open(ImageViewerDialogComponent, {
       width: '80%',
       maxWidth: '1000px',
       data: { imageUrl }
     });
   }
-  
-  // Método para descargar una imagen en base64
-  downloadImage(base64Data: string, fileName: string): void {
-    try {
-      // Crear un enlace temporal para la descarga
-      const linkElement = document.createElement('a');
-      
-      // Preparar la URL de datos con el base64
-      const dataUrl = `data:image/jpeg;base64,${base64Data}`;
-      
-      // Configurar el enlace
-      linkElement.href = dataUrl;
-      linkElement.download = fileName;
-      
-      // Agregar el enlace al documento, hacer clic y luego eliminarlo
-      document.body.appendChild(linkElement);
-      linkElement.click();
-      document.body.removeChild(linkElement);
-      
-      // Mostrar notificación de éxito
-      this.snackBar.open(`Imagen ${fileName} descargada correctamente`, 'Cerrar', {
-        duration: 3000,
-        panelClass: ['success-snackbar']
-      });
-    } catch (error) {
-      console.error('Error al descargar la imagen:', error);
-      this.snackBar.open('Error al descargar la imagen', 'Cerrar', {
-        duration: 5000,
-        panelClass: ['error-snackbar']
-      });
-    }
+
+  // Fuerza la descarga en vez de abrir la imagen/PDF inline — Cloudinary
+  // soporta esto agregando el flag fl_attachment a la URL.
+  downloadAttachment(attachment: Attachment): void {
+    const url = attachment.url.includes('/upload/')
+      ? attachment.url.replace('/upload/', '/upload/fl_attachment/')
+      : attachment.url;
+    window.open(url, '_blank');
   }
 
   // Método para calcular el porcentaje pagado
@@ -1476,131 +1454,107 @@ export class FichaClinicaComponent implements OnInit {
     if (!price || price === 0 || !deposit) return 0;
     return Math.round((deposit / price) * 100);
   }
-  
-  // Métodos para manejar las imágenes de radiografía
-  onFileSelected(event: Event) {
+
+  // Sube uno o más archivos (radiografía de un tratamiento puntual si se pasa
+  // treatmentIndex, o adjunto general de la ficha si se omite) — requiere que
+  // la ficha ya exista, ya que el endpoint cuelga de su :id.
+  async onAttachmentFileSelected(
+    event: Event,
+    clinicalRecordId: string | null,
+    treatmentIndex?: number,
+  ): Promise<void> {
     const input = event.target as HTMLInputElement;
-    if (!input.files?.length) return;
+    const files = input.files ? Array.from(input.files) : [];
+    input.value = ''; // permite volver a seleccionar el mismo archivo
 
-    const files = Array.from(input.files);
-    files.forEach(file => {
-      if (!file.type.includes('image/')) {
-        this.snackBar.open('Solo se permiten archivos de imagen', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['error-snackbar']
-        });
-        return;
-      }
-
-      this.radiographyFiles.push(file);
-      
-      // Crear vista previa
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.radiographyPreviews.push(e.target.result);
-        
-        // Guardar como base64 para enviar al servidor
-        const base64 = e.target.result.split(',')[1];
-        this.radiographyBase64.push(base64);
-        
-        // Actualizar el campo de radiografía en el formulario
-        this.updateRadiographyField();
-        
-        this.cdr.detectChanges();
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  removeFile(index: number) {
-    // Guardar el nombre del archivo que estamos eliminando para informar al usuario
-    const fileName = this.radiographyFiles[index]?.name || 'la imagen';
-    
-    // Eliminar la imagen de los arrays
-    this.radiographyFiles.splice(index, 1);
-    this.radiographyPreviews.splice(index, 1);
-    this.radiographyBase64.splice(index, 1);
-    
-    // Actualizar el campo de radiografía en el formulario
-    this.updateRadiographyField();
-    
-    // Notificar al usuario que la imagen se ha eliminado
-    this.snackBar.open(`${fileName} ha sido eliminada`, 'Cerrar', {
-      duration: 3000,
-      panelClass: ['info-snackbar']
-    });
-    
-    // Resetear el input de archivo para permitir seleccionar la misma imagen nuevamente
-    const fileInput = document.getElementById('radiographyFiles') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
-    
-    this.cdr.detectChanges();
-  }
-
-  clearRadiographyFiles() {
-    this.radiographyFiles = [];
-    this.radiographyPreviews = [];
-    this.radiographyBase64 = [];
-    
-    // Actualizar el campo de radiografía en el formulario
-    this.updateRadiographyField();
-  }
-
-
-  updateRadiographyField() {
-    // Si estamos usando un campo oculto para almacenar las imágenes, actualizarlo
-    if (this.treatmentForm.get('radiography')) {
-      // Guardar el array de imágenes en base64
-      this.treatmentForm.get('radiography')!.setValue(this.radiographyBase64);
-    }
-  }
-  
-  // Método para cargar imágenes desde un array de base64
-  loadImagesFromBase64Array(base64Array: string[]) {
-    if (!base64Array || !Array.isArray(base64Array) || base64Array.length === 0) {
+    if (!clinicalRecordId) {
+      this.snackBar.open('Guarde la ficha antes de adjuntar archivos', 'Cerrar', {
+        duration: 4000,
+        panelClass: ['error-snackbar'],
+      });
       return;
     }
-    
-    // Limpiar las imágenes actuales
-    this.clearRadiographyFiles();
-    
-    // Cargar cada imagen del array
-    base64Array.forEach((base64String, index) => {
-      // Crear la URL de la imagen para la vista previa
-      const imageUrl = `data:image/jpeg;base64,${base64String}`;
-      this.radiographyPreviews.push(imageUrl);
-      
-      // Guardar el base64 en el array
-      this.radiographyBase64.push(base64String);
-      
-      // Crear un objeto File para cada imagen (opcional, solo si necesitas el objeto File)
+    if (files.length === 0) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    const maxSizeBytes = 10 * 1024 * 1024;
+
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type)) {
+        this.snackBar.open(`${file.name}: solo se permiten imágenes JPG/PNG/WEBP o PDF`, 'Cerrar', {
+          duration: 4000,
+          panelClass: ['error-snackbar'],
+        });
+        continue;
+      }
+      if (file.size > maxSizeBytes) {
+        this.snackBar.open(`${file.name}: supera el tamaño máximo de 10MB`, 'Cerrar', {
+          duration: 4000,
+          panelClass: ['error-snackbar'],
+        });
+        continue;
+      }
+
+      this.isUploadingAttachment = true;
       try {
-        // Convertir base64 a blob
-        const byteString = atob(base64String);
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-        
-        for (let i = 0; i < byteString.length; i++) {
-          ia[i] = byteString.charCodeAt(i);
-        }
-        
-        const blob = new Blob([ab], { type: 'image/jpeg' });
-        const file = new File([blob], `imagen-${index + 1}.jpg`, { type: 'image/jpeg' });
-        this.radiographyFiles.push(file);
-      } catch (error) {
-        console.error('Error al convertir base64 a File:', error);
+        const updated = await this.fichaClinicaService.uploadAttachment(clinicalRecordId, file, treatmentIndex);
+        this.applyUpdatedAttachments(clinicalRecordId, updated.attachments || []);
+        this.snackBar.open(`${file.name} subido correctamente`, 'Cerrar', { duration: 3000 });
+      } catch (error: any) {
+        console.error('Error al subir adjunto:', error);
+        this.snackBar.open(error.error?.message || `Error al subir ${file.name}`, 'Cerrar', {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        });
+      } finally {
+        this.isUploadingAttachment = false;
+      }
+    }
+    this.cdr.detectChanges();
+  }
+
+  deleteAttachment(clinicalRecordId: string, attachment: Attachment): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      disableClose: true,
+      data: {
+        title: 'Eliminar adjunto',
+        message: `¿Eliminar "${attachment.fileName}"? Esta acción no se puede deshacer.`,
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        icon: 'trash',
+        iconColor: 'text-danger',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe(async (confirmed) => {
+      if (!confirmed) return;
+      try {
+        const updated = await this.fichaClinicaService.deleteAttachment(clinicalRecordId, attachment._id);
+        this.applyUpdatedAttachments(clinicalRecordId, updated.attachments || []);
+        this.snackBar.open('Adjunto eliminado', 'Cerrar', { duration: 3000 });
+      } catch (error: any) {
+        console.error('Error al eliminar adjunto:', error);
+        this.snackBar.open(error.error?.message || 'Error al eliminar el adjunto', 'Cerrar', {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        });
       }
     });
-    
-    // Actualizar la interfaz
-    this.cdr.detectChanges();
+  }
+
+  private applyUpdatedAttachments(clinicalRecordId: string, attachments: Attachment[]): void {
+    if (this.selectedFicha && this.selectedFicha._id === clinicalRecordId) {
+      this.selectedFicha.attachments = attachments;
+    }
+    if (this.currentFichaId === clinicalRecordId) {
+      this.currentAttachments = attachments;
+    }
   }
 
   ngOnDestroy() {
-    // Limpiar recursos si es necesario
-    this.clearRadiographyFiles();
+    // Nada que limpiar — el flujo de adjuntos ya no mantiene estado local
+    // de archivos pendientes (se suben directo al backend).
   }
 
   // Método para aplicar filtros a la tabla — vuelve a pedir la página 1 al

@@ -8,9 +8,6 @@ export class DentalTreatment {
   @Prop({ required: true })
   diagnosis: string;
 
-  @Prop({ required: false, type: [String] })
-  radiography: string[];
-
   @Prop({ required: true })
   toothNumber: string;
 
@@ -47,6 +44,39 @@ export type ClinicalRecordDocument = ClinicalRecord & Document;
 // Tipo para el tratamiento dental (para uso en el servicio)
 export type DentalTreatmentDocument = DentalTreatment;
 
+// Con _id propio (a diferencia de DentalTreatment, `_id: false`) — hace falta
+// para poder borrar un adjunto puntual vía $pull. `uploadedAt` se resuelve
+// como timestamp de creación del subdocumento en vez de setearse a mano.
+@Schema({ timestamps: { createdAt: 'uploadedAt', updatedAt: false } })
+export class Attachment {
+  @Prop({ required: true })
+  url: string;
+
+  @Prop({ required: true })
+  publicId: string;
+
+  // Cloudinary exige el mismo resource_type al borrar que el usado al subir.
+  @Prop({ required: true, enum: ['image', 'raw'] })
+  resourceType: string;
+
+  @Prop({ required: true })
+  fileName: string;
+
+  @Prop({ required: true })
+  mimeType: string;
+
+  @Prop({ required: true })
+  sizeBytes: number;
+
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'Auth', required: true })
+  uploadedBy: string;
+
+  @Prop({ type: Number, required: false })
+  treatmentIndex?: number;
+}
+
+export const AttachmentSchema = SchemaFactory.createForClass(Attachment);
+
 @Schema({ timestamps: true })
 export class ClinicalRecord {
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Patient', required: true })
@@ -55,8 +85,8 @@ export class ClinicalRecord {
   @Prop({ type: [DentalTreatmentSchema], required: true })
   treatments: DentalTreatment[];
 
-  @Prop({ required: false })
-  attachments: string[];
+  @Prop({ type: [AttachmentSchema], default: [] })
+  attachments: Attachment[];
 
   @Prop({ required: true })
   dentist: string;

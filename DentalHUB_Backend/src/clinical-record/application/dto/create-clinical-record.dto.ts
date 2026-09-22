@@ -21,20 +21,6 @@ export class DentalTreatmentDto {
   diagnosis: string;
 
   @ApiProperty({
-    description: 'URLs o identificadores de las radiografías',
-    example: [
-      'https://storage.example.com/radiografia-pieza36-20250418.jpg',
-      'https://storage.example.com/radiografia-pieza36-lateral-20250418.jpg',
-    ],
-    required: false,
-    type: [String],
-  })
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  radiography?: string[];
-
-  @ApiProperty({
     description: 'Número de la pieza dental a tratar',
     example: '36',
     required: true,
@@ -119,16 +105,6 @@ export class CreateClinicalRecordDto {
   @ValidateNested({ each: true })
   @Type(() => DentalTreatmentDto)
   treatments: DentalTreatmentDto[];
-
-  @ApiProperty({
-    description: 'Archivos adjuntos (URLs o identificadores)',
-    example: ['https://storage.example.com/consentimiento-20250418.pdf'],
-    required: false,
-    type: [String],
-  })
-  @IsOptional()
-  @IsString({ each: true })
-  attachments?: string[];
 
   @ApiProperty({
     description: 'Nombre del dentista',

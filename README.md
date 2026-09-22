@@ -98,6 +98,7 @@ Las variables de entorno se pueden configurar directamente en el archivo `docker
 - `RESEND_FROM`: remitente del email de recuperación (por defecto `DentalHub <onboarding@resend.dev>`)
 - `FRONTEND_URL`: URL pública del frontend, usada para armar el link de "recuperar contraseña" (por defecto `http://localhost:4200`)
 - `PASSWORD_RESET_EXPIRES_IN_MINUTES`: minutos de validez del link de recuperación (por defecto 30)
+- `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET`: credenciales de [Cloudinary](https://cloudinary.com/) (cuenta gratis) para subir los adjuntos de la ficha clínica (radiografías, fotos, PDFs de laboratorio). Sin esto configurado, subir un adjunto responde error 500
 - `AI_PROVIDER`: proveedor del chat con IA — `gemini` (por defecto, tiene capa gratuita), `anthropic` o `ollama`
 - `GEMINI_API_KEY`: API key de [Google AI Studio](https://aistudio.google.com/apikey) (gratis, sin tarjeta) — requerida si `AI_PROVIDER=gemini`
 - `GEMINI_MODEL`: modelo de Gemini a usar (por defecto `gemini-flash-lite-latest` — cuota gratuita mucho más alta que los modelos flagship, que en el tier free están limitados a ~20 solicitudes/día)

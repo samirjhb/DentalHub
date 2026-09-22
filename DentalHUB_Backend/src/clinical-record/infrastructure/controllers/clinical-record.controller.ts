@@ -10,15 +10,22 @@ import {
   HttpStatus,
   HttpCode,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiParam,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 import { CreateClinicalRecordDto } from '../../application/dto/create-clinical-record.dto';
+import { UploadAttachmentDto } from '../../application/dto/upload-attachment.dto';
 import { UpdateClinicalRecordDto } from '../../application/dto/update-clinical-record.dto';
 import { UpdateStatusDto } from '../../application/dto/update-status.dto';
 import { AddDepositDto } from '../../application/dto/add-deposit.dto';
@@ -44,7 +51,10 @@ import { CalculatePendingBalanceUseCase } from '../../application/use-cases/calc
 import { CalculateTotalPendingBalanceUseCase } from '../../application/use-cases/calculate-total-pending-balance.use-case';
 import { UpdateAppointmentDateUseCase } from '../../application/use-cases/update-appointment-date.use-case';
 import { FindMyClinicalSummaryUseCase } from '../../application/use-cases/find-my-clinical-summary.use-case';
+import { UploadClinicalAttachmentUseCase } from '../../application/use-cases/upload-clinical-attachment.use-case';
+import { DeleteClinicalAttachmentUseCase } from '../../application/use-cases/delete-clinical-attachment.use-case';
 import { CurrentPatientId } from 'src/shared/decorators/current-patient-id.decorator';
+import { CurrentUserId } from 'src/shared/decorators/current-user-id.decorator';
 
 const READ_ROLES = [
   Role.SUPER_ADMIN,
@@ -75,6 +85,8 @@ export class ClinicalRecordController {
     private readonly calculateTotalPendingBalanceUseCase: CalculateTotalPendingBalanceUseCase,
     private readonly updateAppointmentDateUseCase: UpdateAppointmentDateUseCase,
     private readonly findMyClinicalSummaryUseCase: FindMyClinicalSummaryUseCase,
+    private readonly uploadClinicalAttachmentUseCase: UploadClinicalAttachmentUseCase,
+    private readonly deleteClinicalAttachmentUseCase: DeleteClinicalAttachmentUseCase,
   ) {}
 
   @Post()
@@ -318,5 +330,67 @@ export class ClinicalRecordController {
       updateAppointmentDateDto.date,
       treatmentIndex,
     );
+  }
+
+  @Post(':id/attachments')
+  @Roles(...WRITE_ROLES)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        treatmentIndex: { type: 'number' },
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+      fileFilter: (_req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+        cb(null, allowed.includes(file.mimetype));
+      },
+    }),
+  )
+  @ApiOperation({
+    summary: 'Subir un adjunto (radiografía, foto o PDF) a una ficha clínica',
+  })
+  @ApiResponse({ status: 201, description: 'Adjunto subido correctamente' })
+  @ApiResponse({ status: 400, description: 'Archivo faltante, tipo no permitido o tratamiento inválido' })
+  @ApiResponse({ status: 404, description: 'Ficha clínica no encontrada' })
+  @ApiParam({ name: 'id', description: 'ID de la ficha clínica' })
+  uploadAttachment(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() dto: UploadAttachmentDto,
+    @CurrentUserId() userId: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException(
+        'Debe adjuntar un archivo (imagen JPG/PNG/WEBP o PDF, máximo 10MB)',
+      );
+    }
+    return this.uploadClinicalAttachmentUseCase.execute(
+      id,
+      file,
+      dto.treatmentIndex,
+      userId,
+    );
+  }
+
+  @Delete(':id/attachments/:attachmentId')
+  @Roles(...WRITE_ROLES)
+  @ApiOperation({ summary: 'Eliminar un adjunto de una ficha clínica' })
+  @ApiResponse({ status: 200, description: 'Adjunto eliminado correctamente' })
+  @ApiResponse({ status: 400, description: 'Adjunto no encontrado' })
+  @ApiResponse({ status: 404, description: 'Ficha clínica no encontrada' })
+  @ApiParam({ name: 'id', description: 'ID de la ficha clínica' })
+  @ApiParam({ name: 'attachmentId', description: 'ID del adjunto' })
+  deleteAttachment(
+    @Param('id') id: string,
+    @Param('attachmentId') attachmentId: string,
+  ) {
+    return this.deleteClinicalAttachmentUseCase.execute(id, attachmentId);
   }
 }
