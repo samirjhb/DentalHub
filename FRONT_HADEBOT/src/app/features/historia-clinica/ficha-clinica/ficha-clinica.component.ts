@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -28,7 +28,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../shared/components/dialogs/confirm-dialog/confirm-dialog.component';
 import { MatTableDataSource } from '@angular/material/table';
 import { DirectivesModule } from 'src/app/shared/directives/directives.module';
@@ -42,7 +42,8 @@ import {
   ToothDialogData,
   TOOTH_STATUS_OPTIONS,
 } from '../dialogs/tooth-dialog/tooth-dialog.component';
-import { OdontogramaComponent } from '../odontograma/odontograma.component';
+import { OdontogramaComponent, STATUS_COLORS } from '../odontograma/odontograma.component';
+import type { ToothStatus } from '../services/odontograma.service';
 
 // Interfaz para los datos de la tabla de fichas clínicas adaptada al modelo del backend
 export interface FichaClinicaData {
@@ -99,6 +100,7 @@ const FICHAS_EJEMPLO: FichaClinicaData[] = [];
     MatTooltipModule,
     MatTabsModule,
     MatDividerModule,
+    MatDialogModule,
     OdontogramaComponent
   ],
 })
@@ -160,10 +162,12 @@ export class FichaClinicaComponent implements OnInit {
   // Referencia al paginador
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  // Referencia al panel de alta/edición de tratamiento — solo existe en el DOM
-  // cuando showTreatmentForm es true (*ngIf), se usa para el scroll automático
-  // al abrirlo desde un clic en una pieza del odontograma embebido.
-  @ViewChild('treatmentFormSection') treatmentFormSection?: ElementRef;
+  // Template del popup de alta/edición de tratamiento — se abre como
+  // mat-dialog (ver openTreatmentDialog()) en vez de un panel inline, para no
+  // alargar el formulario de ficha clínica con el odontograma + la lista de
+  // tratamientos + el alta, todo a la vez.
+  @ViewChild('treatmentDialogTpl') treatmentDialogTpl!: TemplateRef<unknown>;
+  private treatmentDialogRef?: MatDialogRef<unknown>;
 
   // Referencia al odontograma embebido — ya no tiene botón propio de guardar
   // observaciones, se persisten junto con "Guardar Ficha" (ver onSubmit).
@@ -516,6 +520,20 @@ export class FichaClinicaComponent implements OnInit {
         return;
       }
 
+      // El odontograma debe existir antes de guardar la ficha: si no,
+      // syncOdontogramaTeeth() más abajo fallaría con 404 por cada
+      // tratamiento (el paciente no tiene odontograma sobre el cual
+      // actualizar piezas). El botón ya queda deshabilitado en el HTML;
+      // esto cubre el submit del <form> (Enter) además del click.
+      if (this.odontogramaChild?.hasNoOdontogram) {
+        this.snackBar.open(
+          'Creá el odontograma del paciente antes de guardar la ficha',
+          'Cerrar',
+          { duration: 5000, panelClass: ['error-snackbar'] }
+        );
+        return;
+      }
+
       this.isSubmitting = true;
       console.log('Estado de edición:', { isEditMode: this.isEditMode, currentFichaId: this.currentFichaId });
 
@@ -659,8 +677,13 @@ export class FichaClinicaComponent implements OnInit {
         });
       }
       this.selectedPatientService.notifyOdontogramUpdated();
-    } catch {
-      this.snackBar.open('Error al actualizar el odontograma', 'Cerrar', { duration: 3000 });
+    } catch (error: any) {
+      // Crear el odontograma es opcional: si el paciente no tiene uno, no hay
+      // nada que sincronizar y no es un error real (mismo criterio que
+      // loadOdontogram() en odontograma.component.ts).
+      if (error?.status !== 404) {
+        this.snackBar.open('Error al actualizar el odontograma', 'Cerrar', { duration: 3000 });
+      }
     }
   }
 
@@ -890,50 +913,94 @@ export class FichaClinicaComponent implements OnInit {
   }
   
   // Métodos para gestionar tratamientos individuales
-  
+
+  // Color del swatch de vista previa dentro del popup — el odontograma queda
+  // detrás sin backdrop, pero la pieza clickeada suele quedar tapada por el
+  // propio popup (centrado), así que la vista previa en vivo del color va acá
+  // adentro también, no solo en el odontograma de fondo.
+  statusColorFor(status: ToothStatus | '' | null | undefined): string {
+    return status ? STATUS_COLORS[status] : 'transparent';
+  }
+
+  // Mapa pieza -> diagnóstico de los tratamientos YA agregados a la lista de
+  // esta ficha (this.treatments), aunque la ficha todavía no se haya
+  // guardado. Sin esto, el odontograma solo mostraba el color real (el que
+  // ya está persistido en el backend) hasta el "Guardar Ficha" — quedando
+  // atrasado respecto a lo que el usuario ya ve en la tabla de Tratamientos.
+  getPendingToothStatuses(): Record<string, ToothStatus> {
+    const map: Record<string, ToothStatus> = {};
+    this.treatments.controls.forEach((control) => {
+      const value = (control as FormGroup).value;
+      if (value.toothNumber && value.diagnosis) {
+        map[value.toothNumber] = value.diagnosis;
+      }
+    });
+    return map;
+  }
+
+  // Abre el popup de alta/edición de tratamiento. Único punto de entrada al
+  // mat-dialog — showAddTreatmentForm/editTreatment/onToothSelectedForTreatment
+  // solo preparan el estado (form + índice) y llaman acá.
+  private openTreatmentDialog(): void {
+    this.treatmentDialogRef = this.dialog.open(this.treatmentDialogTpl, {
+      width: '700px',
+      maxWidth: '95vw',
+      autoFocus: false,
+      // Sin backdrop: el odontograma queda visible (y clickeable) detrás del
+      // popup, así se sigue viendo el color de la pieza cambiar en vivo a
+      // medida que se elige el Diagnóstico — con backdrop quedaba tapado y
+      // la vista previa en tiempo real dejaba de tener sentido.
+      hasBackdrop: false,
+    });
+    // Única fuente de verdad para el reset: cubre "Guardar", "Cancelar" y
+    // cerrar con Escape, que antes no pasaban por ningún reset.
+    this.treatmentDialogRef.afterClosed().subscribe(() => {
+      this.showTreatmentForm = false;
+      this.currentTreatmentIndex = null;
+      this.initTreatmentForm();
+      this.treatmentDialogRef = undefined;
+    });
+  }
+
   // Mostrar formulario para agregar un nuevo tratamiento
   showAddTreatmentForm() {
     this.initTreatmentForm();
     this.showTreatmentForm = true;
     this.currentTreatmentIndex = null;
+    this.openTreatmentDialog();
   }
 
   // Clic en una pieza del odontograma embebido: precarga esa pieza en el
-  // formulario de tratamiento. Si ya hay un formulario abierto (sea "nuevo"
-  // o "editar"), solo actualiza la pieza ahí — antes siempre llamaba a
+  // formulario de tratamiento. Si ya hay un popup abierto (sea "nuevo" o
+  // "editar"), solo actualiza la pieza ahí — antes siempre llamaba a
   // showAddTreatmentForm(), que reseteaba currentTreatmentIndex a null y
   // descartaba silenciosamente una edición en curso para arrancar un alta
-  // nueva. Solo abre un formulario nuevo si no había ninguno abierto.
+  // nueva. Solo abre un popup nuevo si no había ninguno abierto.
   onToothSelectedForTreatment(tooth: { toothNumber: string; toothLabel: string }): void {
     if (!this.showTreatmentForm) {
       this.showAddTreatmentForm();
     }
     this.treatmentForm.get('toothNumber')?.setValue(tooth.toothNumber);
-    this.cdr.detectChanges();
-    setTimeout(() => {
-      this.treatmentFormSection?.nativeElement?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
   }
-  
+
   // Mostrar formulario para editar un tratamiento existente
   editTreatment(index: number) {
     const treatment = (this.treatments.at(index) as FormGroup).value;
     this.initTreatmentForm(treatment);
     this.showTreatmentForm = true;
     this.currentTreatmentIndex = index;
+    this.openTreatmentDialog();
   }
-  
+
   // Guardar un tratamiento (nuevo o editado)
   saveTreatment() {
     if (this.treatmentForm.valid) {
       const treatmentData = this.treatmentForm.value;
+      const wasEditing = this.currentTreatmentIndex !== null;
 
-      if (this.currentTreatmentIndex !== null) {
+      if (wasEditing) {
         // Editar tratamiento existente
-        this.treatments.at(this.currentTreatmentIndex).patchValue(treatmentData);
+        this.treatments.at(this.currentTreatmentIndex!).patchValue(treatmentData);
       } else {
         // Agregar nuevo tratamiento
         const treatmentGroup = this.fb.group({
@@ -946,18 +1013,17 @@ export class FichaClinicaComponent implements OnInit {
           status: [treatmentData.status, Validators.required],
           observations: [treatmentData.observations || '']
         });
-        
+
         this.treatments.push(treatmentGroup);
       }
-      
-      // Ocultar formulario y resetear
-      this.showTreatmentForm = false;
-      this.currentTreatmentIndex = null;
-      this.initTreatmentForm();
-      
+
+      // Cierra el popup — el reset del form/índice lo hace afterClosed() en
+      // openTreatmentDialog().
+      this.treatmentDialogRef?.close();
+
       // Mostrar mensaje
       this.snackBar.open(
-        this.currentTreatmentIndex !== null ? 'Tratamiento actualizado' : 'Tratamiento agregado',
+        wasEditing ? 'Tratamiento actualizado' : 'Tratamiento agregado',
         'Cerrar',
         { duration: 3000 }
       );
@@ -972,11 +1038,10 @@ export class FichaClinicaComponent implements OnInit {
     }
   }
   
-  // Cancelar edición de tratamiento
+  // Cancelar edición de tratamiento — el reset lo hace afterClosed() en
+  // openTreatmentDialog().
   cancelTreatmentEdit() {
-    this.showTreatmentForm = false;
-    this.currentTreatmentIndex = null;
-    this.initTreatmentForm();
+    this.treatmentDialogRef?.close();
   }
   
   // Agregar un abono a un tratamiento existente (en vista detallada)
