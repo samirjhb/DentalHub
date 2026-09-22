@@ -144,3 +144,34 @@ mat-form-field {
 .mat-mdc-form-field {
   margin-bottom: 16px;
 }
+
+/* mat-dialog-content en flex column: los <mat-form-field> de Material
+   reservan su espacio de hint/error con posicionamiento interno que a veces
+   se sale de su propia caja de margen (queda solapado con el siguiente
+   campo si el contenedor es block normal, donde los márgenes colapsan).
+   Flex evita ese colapso entre hermanos sin tocar nada de Material. */
+mat-dialog-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.tooth-preview {
+  margin-top: 6px;
+  /* El label flotante del próximo mat-form-field (outline) se dibuja con un
+     transform que lo sube ~20px por encima de su propio borde superior —
+     eso es puramente visual, no ocupa espacio en el layout, así que ningún
+     margen "normal" evita que se superponga a lo que venga justo antes. Este
+     margin-bottom es el que le deja ese hueco. */
+  margin-bottom: 26px;
+  font-size: 13px;
+  color: var(--mat-sys-on-surface-variant, rgba(0, 0, 0, 0.6));
+}
+
+.tooth-color-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}

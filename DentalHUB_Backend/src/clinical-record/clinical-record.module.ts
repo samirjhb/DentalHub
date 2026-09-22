@@ -5,6 +5,9 @@ import {
   ClinicalRecordSchema,
 } from './infrastructure/persistence/mongo/clinical-record.schema';
 import { PatientSchema } from 'src/patient/infrastructure/persistence/mongo/patient.schema';
+import { Odontogram, OdontogramSchema } from 'src/odontogram/infrastructure/persistence/mongo/odontogram.schema';
+import { OdontogramRepository } from 'src/odontogram/domain/repositories/odontogram.repository';
+import { OdontogramMongoRepository } from 'src/odontogram/infrastructure/persistence/mongo/odontogram-mongo.repository';
 import { ClinicalRecordController } from './infrastructure/controllers/clinical-record.controller';
 import { ClinicalRecordRepository } from './domain/repositories/clinical-record.repository';
 import { ClinicalRecordMongoRepository } from './infrastructure/persistence/mongo/clinical-record-mongo.repository';
@@ -25,6 +28,7 @@ import { FindMyClinicalSummaryUseCase } from './application/use-cases/find-my-cl
 import { UploadClinicalAttachmentUseCase } from './application/use-cases/upload-clinical-attachment.use-case';
 import { DeleteClinicalAttachmentUseCase } from './application/use-cases/delete-clinical-attachment.use-case';
 import { StorageModule } from 'src/shared/storage/storage.module';
+import { OdontogramToothSyncService } from './application/services/odontogram-tooth-sync.service';
 
 @Module({
   imports: [
@@ -34,12 +38,18 @@ import { StorageModule } from 'src/shared/storage/storage.module';
       // literal que usa `patient.module.ts` — deliberado, ver comentario en
       // ese módulo.
       { name: 'Patient', schema: PatientSchema },
+      // Ídem con 'Odontogram' — OdontogramToothSyncService necesita revertir
+      // piezas huérfanas al borrar una ficha o un tratamiento, sin acoplar
+      // este módulo a OdontogramModule completo.
+      { name: Odontogram.name, schema: OdontogramSchema },
     ]),
     StorageModule,
   ],
   controllers: [ClinicalRecordController],
   providers: [
     { provide: ClinicalRecordRepository, useClass: ClinicalRecordMongoRepository },
+    { provide: OdontogramRepository, useClass: OdontogramMongoRepository },
+    OdontogramToothSyncService,
     CreateClinicalRecordUseCase,
     FindAllClinicalRecordsUseCase,
     FindClinicalRecordsWithFiltersUseCase,

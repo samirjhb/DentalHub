@@ -39,7 +39,7 @@ const UPPER_LEFT = ['21', '22', '23', '24', '25', '26', '27', '28'];
 const LOWER_RIGHT = ['48', '47', '46', '45', '44', '43', '42', '41'];
 const LOWER_LEFT = ['31', '32', '33', '34', '35', '36', '37', '38'];
 
-const STATUS_COLORS: Record<ToothStatus, string> = {
+export const STATUS_COLORS: Record<ToothStatus, string> = {
   Sano: '#4CAF50',
   Cariado: '#F44336',
   Obturado: '#2196F3',
@@ -102,6 +102,15 @@ export class OdontogramaComponent implements OnInit {
   // color vuelve solo al que tiene guardado porque este input deja de
   // pasarse (ver ficha-clinica.component.html).
   @Input() previewStatus: ToothStatus | null = null;
+
+  // Tratamientos ya agregados a la ficha que se está creando/editando pero
+  // TODAVÍA no guardados (this.treatments del componente padre) — sin esto,
+  // el odontograma solo reflejaba el diagnóstico de un tratamiento recién
+  // agregado hasta que se guardaba toda la ficha (sync real en onSubmit),
+  // dejando la grilla "atrasada" respecto a la lista de Tratamientos que el
+  // usuario ya ve completa. Prioridad más baja que previewStatus: si hay un
+  // popup abierto para esa misma pieza, gana lo que se está tipeando ahí.
+  @Input() pendingToothStatuses: Record<string, ToothStatus> = {};
 
   // false cuando se embebe dentro de Ficha Clínica: el botón propio de
   // "Guardar observaciones" se oculta, porque esas observaciones pasan a
@@ -253,6 +262,10 @@ export class OdontogramaComponent implements OnInit {
       STATUS_COLORS[this.previewStatus]
     ) {
       return STATUS_COLORS[this.previewStatus];
+    }
+    const pending = this.pendingToothStatuses[toothNumber];
+    if (pending && STATUS_COLORS[pending]) {
+      return STATUS_COLORS[pending];
     }
     const tooth = this.getTooth(toothNumber);
     return tooth ? STATUS_COLORS[tooth.status] : '#E0E0E0';

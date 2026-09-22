@@ -520,6 +520,7 @@
                 [showObservationsSaveButton]="false"
                 [selectedToothNumber]="showTreatmentForm ? treatmentForm.get('toothNumber')?.value : null"
                 [previewStatus]="showTreatmentForm ? treatmentForm.get('diagnosis')?.value : null"
+                [pendingToothStatuses]="getPendingToothStatuses()"
                 (addTreatmentForTooth)="onToothSelectedForTreatment($event)"
               ></app-odontograma>
             </div>
@@ -611,202 +612,210 @@
               </div>
             </div>
 
-            <!-- Formulario de tratamiento (visible solo cuando se está agregando/editando un tratamiento) -->
-            <div *ngIf="showTreatmentForm" class="col-lg-12 mb-4" #treatmentFormSection>
-              <mat-card class="mb-3">
-                <mat-card-content>
-                  <h4 class="mb-3">{{ currentTreatmentIndex !== null ? 'Editar Tratamiento' : 'Nuevo Tratamiento' }}
-                  </h4>
+            <!-- Formulario de tratamiento: se abre como popup (mat-dialog) al clickear
+                 una pieza del odontograma o al usar "Agregar tratamiento" — ver
+                 openTreatmentDialog() en el .ts. El <ng-template> solo se instancia
+                 cuando el diálogo está abierto, así que treatmentForm sigue siendo el
+                 mismo FormGroup del componente (el odontograma de arriba puede seguir
+                 leyendo su valor en vivo para la vista previa). -->
+            <ng-template #treatmentDialogTpl>
+              <h2 mat-dialog-title>{{ currentTreatmentIndex !== null ? 'Editar Tratamiento' : 'Nuevo Tratamiento' }}</h2>
+              <form [formGroup]="treatmentForm">
+                <!-- Columna única: el dialog es angosto (700px) y las clases col-lg-*
+                     de Bootstrap solo parten en dos columnas a partir de los 992px de
+                     VIEWPORT (no del ancho del contenedor), así que acá siempre
+                     terminaban colapsando en una sola columna igual — con el
+                     agravante de que el bloque de "Radiografías" (un <div> suelto,
+                     no un mat-form-field) rompía el alto de fila y se superponía con
+                     el campo siguiente. Precio/Abono y Fecha/Estado sí van de a par
+                     con flexbox, que no depende del viewport. -->
+                <mat-dialog-content>
+                  <!-- Diagnóstico -->
+                  <div class="mb-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Diagnóstico (estado de la pieza)</mat-label>
+                      <mat-select formControlName="diagnosis">
+                        <mat-option *ngFor="let option of toothStatusOptions" [value]="option.value">
+                          {{ option.label }}
+                        </mat-option>
+                      </mat-select>
+                      <ng-container
+                        *ngIf="treatmentForm.get('diagnosis')?.invalid && treatmentForm.get('diagnosis')?.touched">
+                        <mat-error>
+                          {{ getErrorMessage('diagnosis', treatmentForm) }}
+                        </mat-error>
+                      </ng-container>
+                    </mat-form-field>
+                    <!-- Vista previa del color: el odontograma queda sin backdrop
+                         detrás del popup, pero la pieza clickeada suele quedar
+                         tapada por el popup mismo — esto da la misma vista previa
+                         en vivo sin depender de que la pieza se vea de fondo.
+                         mat-dialog-content es flex column (ver .css) así que este
+                         margen no colapsa contra el del mat-form-field de arriba. -->
+                    <div class="tooth-preview" *ngIf="treatmentForm.get('diagnosis')?.value">
+                      <span class="tooth-color-dot" [style.background]="statusColorFor(treatmentForm.get('diagnosis')?.value)"></span>
+                      Así quedará la pieza {{ treatmentForm.get('toothNumber')?.value || 'seleccionada' }}
+                    </div>
+                  </div>
 
-                  <form [formGroup]="treatmentForm">
-                    <div class="row">
-                      <!-- Diagnóstico -->
-                      <div class="col-lg-6 mb-3">
-                        <mat-form-field appearance="outline" class="w-100">
-                          <mat-label>Diagnóstico (estado de la pieza)</mat-label>
-                          <mat-select formControlName="diagnosis">
-                            <mat-option *ngFor="let option of toothStatusOptions" [value]="option.value">
+                  <!-- Pieza Dental -->
+                  <div class="mb-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Pieza Dental</mat-label>
+                      <mat-select formControlName="toothNumber">
+                        <mat-option value="">Seleccione una pieza dental</mat-option>
+                        <ng-container *ngFor="let group of dentalPieces">
+                          <mat-optgroup [label]="group.label">
+                            <mat-option *ngFor="let option of group.options" [value]="option.value">
                               {{ option.label }}
                             </mat-option>
-                          </mat-select>
-                          <ng-container
-                            *ngIf="treatmentForm.get('diagnosis')?.invalid && treatmentForm.get('diagnosis')?.touched">
-                            <mat-error>
-                              {{ getErrorMessage('diagnosis', treatmentForm) }}
-                            </mat-error>
-                          </ng-container>
-                        </mat-form-field>
-                      </div>
+                          </mat-optgroup>
+                        </ng-container>
+                      </mat-select>
 
-                      <!-- Radiografía -->
-                      <div class="col-lg-6 mb-3">
-                        <label class="form-label">Radiografías</label>
-                        <div *ngIf="!currentFichaId || currentTreatmentIndex === null" class="text-muted f-s-14">
-                          Guarde la ficha y el tratamiento antes de adjuntar radiografías.
-                        </div>
-                        <div *ngIf="currentFichaId && currentTreatmentIndex !== null" class="custom-file-upload">
-                          <button type="button" mat-raised-button color="primary" (click)="treatmentFileInput.click()">
-                            <i-tabler name="upload" class="icon-18 me-2"></i-tabler>
-                            Cargar imágenes
-                          </button>
-                          <input #treatmentFileInput type="file" style="display: none" multiple
-                                 accept="image/jpeg,image/png,image/webp,application/pdf" class="form-control"
-                                 (change)="onAttachmentFileSelected($event, currentFichaId, currentTreatmentIndex!)">
-                          <span class="file-upload-hint">Puede seleccionar múltiples imágenes o PDFs</span>
-                        </div>
+                      <ng-container
+                        *ngIf="treatmentForm.get('toothNumber')?.invalid && treatmentForm.get('toothNumber')?.touched">
+                        <mat-error>
+                          {{ getErrorMessage('toothNumber', treatmentForm) }}
+                        </mat-error>
+                      </ng-container>
+                    </mat-form-field>
+                  </div>
 
-                        <!-- Vista previa de adjuntos ya subidos para este tratamiento -->
-                        <div class="radiography-preview mt-3"
-                             *ngIf="currentTreatmentIndex !== null && attachmentsFor(currentAttachments, currentTreatmentIndex).length > 0">
-                          <div class="d-flex flex-wrap gap-2">
-                            <div *ngFor="let attachment of attachmentsFor(currentAttachments, currentTreatmentIndex)" class="radiography-preview-item">
-                              <div class="position-relative">
-                                <img *ngIf="isImageAttachment(attachment)" [src]="attachment.url" [alt]="attachment.fileName"
-                                     class="img-thumbnail" style="height: 100px; width: 100px; object-fit: cover;"
-                                     (click)="openImageViewer(attachment.url)">
-                                <div *ngIf="!isImageAttachment(attachment)" class="img-thumbnail d-flex align-items-center justify-content-center"
-                                     style="height: 100px; width: 100px; cursor: pointer;" (click)="downloadAttachment(attachment)">
-                                  <i-tabler name="file-type-pdf" class="icon-32"></i-tabler>
-                                </div>
-                                <button type="button" mat-mini-fab color="warn" class="remove-image-btn" style="position: absolute; top: -10px; right: -10px; transform: scale(0.7);"
-                                        (click)="deleteAttachment(currentFichaId!, attachment)">
-                                  <i-tabler name="trash" class="icon-16"></i-tabler>
-                                </button>
-                              </div>
+                  <!-- Tratamiento -->
+                  <div class="mb-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Tratamiento</mat-label>
+                      <input matInput formControlName="treatment" placeholder="Ej: Endodoncia">
+                      <ng-container
+                        *ngIf="treatmentForm.get('treatment')?.invalid && treatmentForm.get('treatment')?.touched">
+                        <mat-error>
+                          {{ getErrorMessage('treatment', treatmentForm) }}
+                        </mat-error>
+                      </ng-container>
+                    </mat-form-field>
+                  </div>
+
+                  <!-- Precio / Abono -->
+                  <div class="mb-3 d-flex gap-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Precio</mat-label>
+                      <input matInput formControlName="price" placeholder="Ej: 150000" type="number">
+                      <span matPrefix>$ &nbsp;</span>
+                      <ng-container
+                        *ngIf="treatmentForm.get('price')?.invalid && treatmentForm.get('price')?.touched">
+                        <mat-error>
+                          {{ getErrorMessage('price', treatmentForm) }}
+                        </mat-error>
+                      </ng-container>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Abono</mat-label>
+                      <input matInput formControlName="deposit" placeholder="Ej: 50000" type="number">
+                      <span matPrefix>$ &nbsp;</span>
+                      <mat-hint>Opcional</mat-hint>
+                      <ng-container
+                        *ngIf="treatmentForm.get('deposit')?.invalid && treatmentForm.get('deposit')?.touched">
+                        <mat-error>
+                          {{ getErrorMessage('deposit', treatmentForm) }}
+                        </mat-error>
+                      </ng-container>
+                    </mat-form-field>
+                  </div>
+
+                  <!-- Fecha de Atención / Estado -->
+                  <div class="mb-3 d-flex gap-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Fecha de Atención</mat-label>
+                      <input matInput [matDatepicker]="treatmentPicker" formControlName="appointmentDate">
+                      <mat-datepicker-toggle matSuffix [for]="treatmentPicker"></mat-datepicker-toggle>
+                      <mat-datepicker #treatmentPicker></mat-datepicker>
+                      <ng-container
+                        *ngIf="treatmentForm.get('appointmentDate')?.invalid && treatmentForm.get('appointmentDate')?.touched">
+                        <mat-error>
+                          {{ getErrorMessage('appointmentDate', treatmentForm) }}
+                        </mat-error>
+                      </ng-container>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Estado</mat-label>
+                      <mat-select formControlName="status">
+                        <mat-option *ngFor="let estado of estados" [value]="estado">
+                          {{ estado }}
+                        </mat-option>
+                      </mat-select>
+                      <ng-container
+                        *ngIf="treatmentForm.get('status')?.invalid && treatmentForm.get('status')?.touched">
+                        <mat-error>
+                          {{ getErrorMessage('status', treatmentForm) }}
+                        </mat-error>
+                      </ng-container>
+                    </mat-form-field>
+                  </div>
+
+                  <!-- Observaciones -->
+                  <div class="mb-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Observaciones</mat-label>
+                      <textarea matInput formControlName="observations" placeholder="Observaciones adicionales"
+                        rows="3"></textarea>
+                      <mat-hint>Opcional</mat-hint>
+                    </mat-form-field>
+                  </div>
+
+                  <!-- Radiografías -->
+                  <div class="mb-3">
+                    <label class="form-label">Radiografías</label>
+                    <div *ngIf="!currentFichaId || currentTreatmentIndex === null" class="text-muted f-s-14">
+                      Guarde la ficha y el tratamiento antes de adjuntar radiografías.
+                    </div>
+                    <div *ngIf="currentFichaId && currentTreatmentIndex !== null" class="custom-file-upload">
+                      <button type="button" mat-raised-button color="primary" (click)="treatmentFileInput.click()">
+                        <i-tabler name="upload" class="icon-18 me-2"></i-tabler>
+                        Cargar imágenes
+                      </button>
+                      <input #treatmentFileInput type="file" style="display: none" multiple
+                             accept="image/jpeg,image/png,image/webp,application/pdf" class="form-control"
+                             (change)="onAttachmentFileSelected($event, currentFichaId, currentTreatmentIndex!)">
+                      <span class="file-upload-hint">Puede seleccionar múltiples imágenes o PDFs</span>
+                    </div>
+
+                    <!-- Vista previa de adjuntos ya subidos para este tratamiento -->
+                    <div class="radiography-preview mt-3"
+                         *ngIf="currentTreatmentIndex !== null && attachmentsFor(currentAttachments, currentTreatmentIndex).length > 0">
+                      <div class="d-flex flex-wrap gap-2">
+                        <div *ngFor="let attachment of attachmentsFor(currentAttachments, currentTreatmentIndex)" class="radiography-preview-item">
+                          <div class="position-relative">
+                            <img *ngIf="isImageAttachment(attachment)" [src]="attachment.url" [alt]="attachment.fileName"
+                                 class="img-thumbnail" style="height: 100px; width: 100px; object-fit: cover;"
+                                 (click)="openImageViewer(attachment.url)">
+                            <div *ngIf="!isImageAttachment(attachment)" class="img-thumbnail d-flex align-items-center justify-content-center"
+                                 style="height: 100px; width: 100px; cursor: pointer;" (click)="downloadAttachment(attachment)">
+                              <i-tabler name="file-type-pdf" class="icon-32"></i-tabler>
                             </div>
+                            <button type="button" mat-mini-fab color="warn" class="remove-image-btn" style="position: absolute; top: -10px; right: -10px; transform: scale(0.7);"
+                                    (click)="deleteAttachment(currentFichaId!, attachment)">
+                              <i-tabler name="trash" class="icon-16"></i-tabler>
+                            </button>
                           </div>
                         </div>
                       </div>
-
-                      <!-- Pieza Dental -->
-                      <div class="col-lg-6 mb-3">
-                        <mat-form-field appearance="outline" class="w-100">
-                          <mat-label>Pieza Dental</mat-label>
-                          <mat-select formControlName="toothNumber">
-                            <mat-option value="">Seleccione una pieza dental</mat-option>
-                            <ng-container *ngFor="let group of dentalPieces">
-                              <mat-optgroup [label]="group.label">
-                                <mat-option *ngFor="let option of group.options" [value]="option.value">
-                                  {{ option.label }}
-                                </mat-option>
-                              </mat-optgroup>
-                            </ng-container>
-                          </mat-select>
-
-                          <ng-container
-                            *ngIf="treatmentForm.get('toothNumber')?.invalid && treatmentForm.get('toothNumber')?.touched">
-                            <mat-error>
-                              {{ getErrorMessage('toothNumber', treatmentForm) }}
-                            </mat-error>
-                          </ng-container>
-                        </mat-form-field>
-                      </div>
-
-
-                      <!-- Tratamiento -->
-                      <div class="col-lg-6 mb-3">
-                        <mat-form-field appearance="outline" class="w-100">
-                          <mat-label>Tratamiento</mat-label>
-                          <input matInput formControlName="treatment" placeholder="Ej: Endodoncia">
-                          <ng-container
-                            *ngIf="treatmentForm.get('treatment')?.invalid && treatmentForm.get('treatment')?.touched">
-                            <mat-error>
-                              {{ getErrorMessage('treatment', treatmentForm) }}
-                            </mat-error>
-                          </ng-container>
-                        </mat-form-field>
-                      </div>
-
-                      <!-- Precio -->
-                      <div class="col-lg-6 mb-3">
-                        <mat-form-field appearance="outline" class="w-100">
-                          <mat-label>Precio</mat-label>
-                          <input matInput formControlName="price" placeholder="Ej: 150000" type="number">
-                          <span matPrefix>$ &nbsp;</span>
-                          <ng-container
-                            *ngIf="treatmentForm.get('price')?.invalid && treatmentForm.get('price')?.touched">
-                            <mat-error>
-                              {{ getErrorMessage('price', treatmentForm) }}
-                            </mat-error>
-                          </ng-container>
-                        </mat-form-field>
-                      </div>
-
-                      <!-- Abono -->
-                      <div class="col-lg-6 mb-3">
-                        <mat-form-field appearance="outline" class="w-100">
-                          <mat-label>Abono</mat-label>
-                          <input matInput formControlName="deposit" placeholder="Ej: 50000" type="number">
-                          <span matPrefix>$ &nbsp;</span>
-                          <mat-hint>Opcional</mat-hint>
-                          <ng-container
-                            *ngIf="treatmentForm.get('deposit')?.invalid && treatmentForm.get('deposit')?.touched">
-                            <mat-error>
-                              {{ getErrorMessage('deposit', treatmentForm) }}
-                            </mat-error>
-                          </ng-container>
-                        </mat-form-field>
-                      </div>
-
-                      <!-- Fecha de Atención -->
-                      <div class="col-lg-6 mb-3">
-                        <mat-form-field appearance="outline" class="w-100">
-                          <mat-label>Fecha de Atención</mat-label>
-                          <input matInput [matDatepicker]="treatmentPicker" formControlName="appointmentDate">
-                          <mat-datepicker-toggle matSuffix [for]="treatmentPicker"></mat-datepicker-toggle>
-                          <mat-datepicker #treatmentPicker></mat-datepicker>
-                          <ng-container
-                            *ngIf="treatmentForm.get('appointmentDate')?.invalid && treatmentForm.get('appointmentDate')?.touched">
-                            <mat-error>
-                              {{ getErrorMessage('appointmentDate', treatmentForm) }}
-                            </mat-error>
-                          </ng-container>
-                        </mat-form-field>
-                      </div>
-
-                      <!-- Estado -->
-                      <div class="col-lg-6 mb-3">
-                        <mat-form-field appearance="outline" class="w-100">
-                          <mat-label>Estado</mat-label>
-                          <mat-select formControlName="status">
-                            <mat-option *ngFor="let estado of estados" [value]="estado">
-                              {{ estado }}
-                            </mat-option>
-                          </mat-select>
-                          <ng-container
-                            *ngIf="treatmentForm.get('status')?.invalid && treatmentForm.get('status')?.touched">
-                            <mat-error>
-                              {{ getErrorMessage('status', treatmentForm) }}
-                            </mat-error>
-                          </ng-container>
-                        </mat-form-field>
-                      </div>
-
-                      <!-- Observaciones -->
-                      <div class="col-lg-12 mb-3">
-                        <mat-form-field appearance="outline" class="w-100">
-                          <mat-label>Observaciones</mat-label>
-                          <textarea matInput formControlName="observations" placeholder="Observaciones adicionales"
-                            rows="3"></textarea>
-                          <mat-hint>Opcional</mat-hint>
-                        </mat-form-field>
-                      </div>
-
-                      <!-- Botones de acción del tratamiento -->
-                      <div class="col-12 d-flex justify-content-end gap-2">
-                        <button mat-stroked-button color="warn" type="button" (click)="cancelTreatmentEdit()">
-                          Cancelar
-                        </button>
-                        <button mat-flat-button color="primary" type="button" [disabled]="treatmentForm.invalid"
-                          (click)="saveTreatment()">
-                          {{ currentTreatmentIndex !== null ? 'Actualizar' : 'Agregar' }} Tratamiento
-                        </button>
-                      </div>
                     </div>
-                  </form>
-                </mat-card-content>
-              </mat-card>
-            </div>
+                  </div>
+                </mat-dialog-content>
+                <mat-dialog-actions align="end">
+                  <button mat-stroked-button color="warn" type="button" (click)="cancelTreatmentEdit()">
+                    Cancelar
+                  </button>
+                  <button mat-flat-button color="primary" type="button" [disabled]="treatmentForm.invalid"
+                    (click)="saveTreatment()">
+                    {{ currentTreatmentIndex !== null ? 'Actualizar' : 'Agregar' }} Tratamiento
+                  </button>
+                </mat-dialog-actions>
+              </form>
+            </ng-template>
 
             <!-- Archivos adjuntos -->
             <div class="col-lg-12 mb-4">
@@ -845,7 +854,8 @@
                 Cancelar
               </button>
               <button mat-flat-button color="primary" type="submit"
-                [disabled]="fichaClinicaForm.invalid || treatments.length === 0 || isSubmitting">
+                [disabled]="fichaClinicaForm.invalid || treatments.length === 0 || isSubmitting || odontogramaChild?.hasNoOdontogram"
+                [matTooltip]="odontogramaChild?.hasNoOdontogram ? 'Creá el odontograma del paciente antes de guardar la ficha' : ''">
                 <span *ngIf="!isSubmitting && !isEditMode">Guardar Ficha</span>
                 <span *ngIf="!isSubmitting && isEditMode">Actualizar Ficha</span>
                 <span *ngIf="isSubmitting" class="d-flex align-items-center">
