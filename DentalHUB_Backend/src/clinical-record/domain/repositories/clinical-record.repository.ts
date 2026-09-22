@@ -1,5 +1,6 @@
 import { ClinicalRecord } from '../entities/clinical-record.entity';
 import { ClinicalRecordTreatment } from '../entities/clinical-record-treatment.entity';
+import { ClinicalRecordAttachment } from '../entities/clinical-record-attachment.entity';
 import { CreateClinicalRecordDto } from '../../application/dto/create-clinical-record.dto';
 import { UpdateClinicalRecordDto } from '../../application/dto/update-clinical-record.dto';
 import { FilterClinicalRecordDto } from '../../application/dto/filter-clinical-record.dto';
@@ -29,4 +30,16 @@ export abstract class ClinicalRecordRepository {
     treatments: ClinicalRecordTreatment[],
   ): Promise<ClinicalRecord | null>;
   abstract deleteById(id: string): Promise<boolean>;
+
+  // $push/$pull atómicos (no el patrón "traer todo y reemplazar" que usa
+  // updateTreatments) — dos subidas en paralelo sobre la misma ficha (el
+  // usuario selecciona varias imágenes a la vez) no deben pisarse entre sí.
+  abstract addAttachment(
+    id: string,
+    attachment: Omit<ClinicalRecordAttachment, '_id'>,
+  ): Promise<ClinicalRecord | null>;
+  abstract removeAttachment(
+    id: string,
+    attachmentId: string,
+  ): Promise<ClinicalRecord | null>;
 }

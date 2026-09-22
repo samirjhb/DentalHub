@@ -9,7 +9,6 @@ import { PaginatedResponse } from 'src/app/core/models/pagination.model';
 // Subesquema de Tratamiento Dental
 export interface DentalTreatment {
   diagnosis: string;
-  radiography?: string;
   toothNumber: string;
   treatment: string;
   price: number;
@@ -19,12 +18,26 @@ export interface DentalTreatment {
   observations?: string;
 }
 
+// Adjunto real (Cloudinary) — reemplaza los antiguos arrays de string en
+// base64 (`DentalTreatment.radiography`, `ClinicalRecord.attachments`).
+// `treatmentIndex` ausente = adjunto general de la ficha, no de un tratamiento.
+export interface Attachment {
+  _id: string;
+  url: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  treatmentIndex?: number;
+  uploadedBy: string;
+  uploadedAt: Date;
+}
+
 // Esquema principal de Ficha Clínica
 export interface ClinicalRecord {
   _id: string;
   patient: any; // Objeto paciente completo
   treatments: DentalTreatment[];
-  attachments?: string[];
+  attachments?: Attachment[];
   dentist: string;
   createdAt: Date;
   updatedAt: Date;
@@ -35,7 +48,6 @@ export interface CreateClinicalRecordDto {
   patient: string;
   treatments: {
     diagnosis: string;
-    radiography?: string;
     toothNumber: string;
     treatment: string;
     price: number;
@@ -44,13 +56,11 @@ export interface CreateClinicalRecordDto {
     appointmentDate?: Date;
     observations?: string;
   }[];
-  attachments?: string[];
   dentist: string;
 }
 
 export interface AddTreatmentDto {
   diagnosis: string;
-  radiography?: string;
   toothNumber: string;
   treatment: string;
   price: number;
@@ -295,14 +305,41 @@ export class FichaClinicaService {
   // Obtener el saldo total de la ficha clínica
   async getClinicalRecordBalance(id: string) {
     const token = this.getToken();
-    
+
     return await firstValueFrom(this.http.get<{totalBalance: number, totalPercentagePaid: number}>(
-      `${environment.apiUrl}/clinical-record/${id}/balance`, 
+      `${environment.apiUrl}/clinical-record/${id}/balance`,
       {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       }
+    ));
+  }
+
+  // Sube un adjunto (radiografía, foto o PDF) a Cloudinary vía el backend.
+  // `treatmentIndex` ausente = adjunto general de la ficha. No se setea
+  // Content-Type a mano: el browser debe fijar el boundary del multipart.
+  async uploadAttachment(clinicalRecordId: string, file: File, treatmentIndex?: number) {
+    const token = this.getToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    if (treatmentIndex !== undefined) {
+      formData.append('treatmentIndex', String(treatmentIndex));
+    }
+
+    return await firstValueFrom(this.http.post<ClinicalRecord>(
+      `${environment.apiUrl}/clinical-record/${clinicalRecordId}/attachments`,
+      formData,
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    ));
+  }
+
+  async deleteAttachment(clinicalRecordId: string, attachmentId: string) {
+    const token = this.getToken();
+
+    return await firstValueFrom(this.http.delete<ClinicalRecord>(
+      `${environment.apiUrl}/clinical-record/${clinicalRecordId}/attachments/${attachmentId}`,
+      { headers: { 'Authorization': `Bearer ${token}` } }
     ));
   }
 }

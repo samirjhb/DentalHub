@@ -1,9 +1,20 @@
 import { ClinicalRecord } from '../../domain/entities/clinical-record.entity';
 import { ClinicalRecordTreatment } from '../../domain/entities/clinical-record-treatment.entity';
 import {
+  ClinicalRecordAttachment,
+  ClinicalRecordAttachmentResourceType,
+} from '../../domain/entities/clinical-record-attachment.entity';
+import {
+  Attachment,
   ClinicalRecordDocument,
   DentalTreatment,
 } from '../../infrastructure/persistence/mongo/clinical-record.schema';
+
+// Mongoose agrega `_id`/`uploadedAt` en runtime a cada subdocumento del array
+// `attachments` (vía `@Schema({ timestamps: { createdAt: 'uploadedAt' } })`),
+// pero la clase `Attachment` no los declara — mismo criterio que el resto del
+// mapper usa para createdAt/updatedAt del documento raíz.
+type AttachmentSubdocument = Attachment & { _id: unknown; uploadedAt: Date };
 
 export class ClinicalRecordMapper {
   static toDomain(doc: ClinicalRecordDocument): ClinicalRecord {
@@ -18,14 +29,27 @@ export class ClinicalRecordMapper {
             t.treatment,
             t.price,
             t.status,
-            t.radiography,
             t.deposit,
             t.appointmentDate,
             t.observations,
           ),
       ),
       doc.dentist,
-      doc.attachments,
+      (doc.attachments ?? []).map((a) => {
+        const attachment = a as AttachmentSubdocument;
+        return new ClinicalRecordAttachment(
+          attachment._id,
+          attachment.url,
+          attachment.publicId,
+          attachment.resourceType as ClinicalRecordAttachmentResourceType,
+          attachment.fileName,
+          attachment.mimeType,
+          attachment.sizeBytes,
+          attachment.uploadedBy,
+          attachment.uploadedAt,
+          attachment.treatmentIndex,
+        );
+      }),
       (doc as unknown as { createdAt?: Date }).createdAt,
       (doc as unknown as { updatedAt?: Date }).updatedAt,
       (doc as unknown as { __v?: number }).__v,
@@ -41,7 +65,6 @@ export class ClinicalRecordMapper {
       patient: entity.patient,
       treatments: entity.treatments.map((t) => ({
         diagnosis: t.diagnosis,
-        radiography: t.radiography,
         toothNumber: t.toothNumber,
         treatment: t.treatment,
         price: t.price,
@@ -50,7 +73,16 @@ export class ClinicalRecordMapper {
         appointmentDate: t.appointmentDate,
         observations: t.observations,
       })),
-      attachments: entity.attachments,
+      attachments: entity.attachments?.map((a) => ({
+        _id: a._id,
+        url: a.url,
+        fileName: a.fileName,
+        mimeType: a.mimeType,
+        sizeBytes: a.sizeBytes,
+        treatmentIndex: a.treatmentIndex,
+        uploadedBy: a.uploadedBy,
+        uploadedAt: a.uploadedAt,
+      })),
       dentist: entity.dentist,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,

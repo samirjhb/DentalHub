@@ -1,6 +1,7 @@
 import { ClinicalRecordRepository } from '../../domain/repositories/clinical-record.repository';
 import { ClinicalRecord } from '../../domain/entities/clinical-record.entity';
 import { ClinicalRecordTreatment } from '../../domain/entities/clinical-record-treatment.entity';
+import { ClinicalRecordAttachment } from '../../domain/entities/clinical-record-attachment.entity';
 import { CreateClinicalRecordDto } from '../dto/create-clinical-record.dto';
 import { UpdateClinicalRecordDto } from '../dto/update-clinical-record.dto';
 import { FilterClinicalRecordDto } from '../dto/filter-clinical-record.dto';
@@ -9,6 +10,7 @@ export class InMemoryClinicalRecordRepository extends ClinicalRecordRepository {
   private records: ClinicalRecord[] = [];
   private existingPatientIds = new Set<string>();
   private nextId = 1;
+  private nextAttachmentId = 1;
 
   // Helper de test, no forma parte del puerto real.
   seedPatient(patientId: string): void {
@@ -28,7 +30,6 @@ export class InMemoryClinicalRecordRepository extends ClinicalRecordRepository {
           t.treatment,
           t.price,
           t.status || 'Pendiente',
-          t.radiography,
           t.deposit || 0,
           t.appointmentDate,
           t.observations,
@@ -39,7 +40,7 @@ export class InMemoryClinicalRecordRepository extends ClinicalRecordRepository {
       dto.patient,
       treatments,
       dto.dentist,
-      dto.attachments,
+      [],
       new Date(),
       new Date(),
       0,
@@ -102,5 +103,39 @@ export class InMemoryClinicalRecordRepository extends ClinicalRecordRepository {
     const before = this.records.length;
     this.records = this.records.filter((r) => r._id !== id);
     return this.records.length < before;
+  }
+
+  async addAttachment(
+    id: string,
+    attachment: Omit<ClinicalRecordAttachment, '_id'>,
+  ): Promise<ClinicalRecord | null> {
+    const record = await this.findById(id);
+    if (!record) return null;
+    const created = new ClinicalRecordAttachment(
+      String(this.nextAttachmentId++),
+      attachment.url,
+      attachment.publicId,
+      attachment.resourceType,
+      attachment.fileName,
+      attachment.mimeType,
+      attachment.sizeBytes,
+      attachment.uploadedBy,
+      attachment.uploadedAt,
+      attachment.treatmentIndex,
+    );
+    record.attachments = [...(record.attachments ?? []), created];
+    return record;
+  }
+
+  async removeAttachment(
+    id: string,
+    attachmentId: string,
+  ): Promise<ClinicalRecord | null> {
+    const record = await this.findById(id);
+    if (!record) return null;
+    record.attachments = (record.attachments ?? []).filter(
+      (a) => String(a._id) !== attachmentId,
+    );
+    return record;
   }
 }

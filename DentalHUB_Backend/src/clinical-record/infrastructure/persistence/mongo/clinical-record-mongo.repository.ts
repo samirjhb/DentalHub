@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { ClinicalRecordRepository } from '../../../domain/repositories/clinical-record.repository';
 import { ClinicalRecord as ClinicalRecordEntity } from '../../../domain/entities/clinical-record.entity';
 import { ClinicalRecordTreatment } from '../../../domain/entities/clinical-record-treatment.entity';
+import { ClinicalRecordAttachment } from '../../../domain/entities/clinical-record-attachment.entity';
 import { ClinicalRecord, ClinicalRecordDocument } from './clinical-record.schema';
 import { PatientDocument } from 'src/patient/infrastructure/persistence/mongo/patient.schema';
 import { CreateClinicalRecordDto } from '../../../application/dto/create-clinical-record.dto';
@@ -130,5 +131,33 @@ export class ClinicalRecordMongoRepository extends ClinicalRecordRepository {
   async deleteById(id: string): Promise<boolean> {
     const result = await this.clinicalRecordModel.findByIdAndDelete(id).exec();
     return !!result;
+  }
+
+  async addAttachment(
+    id: string,
+    attachment: Omit<ClinicalRecordAttachment, '_id'>,
+  ): Promise<ClinicalRecordEntity | null> {
+    const doc = await this.clinicalRecordModel
+      .findByIdAndUpdate(
+        id,
+        { $push: { attachments: attachment } },
+        { new: true },
+      )
+      .exec();
+    return doc ? ClinicalRecordMapper.toDomain(doc) : null;
+  }
+
+  async removeAttachment(
+    id: string,
+    attachmentId: string,
+  ): Promise<ClinicalRecordEntity | null> {
+    const doc = await this.clinicalRecordModel
+      .findByIdAndUpdate(
+        id,
+        { $pull: { attachments: { _id: attachmentId } } },
+        { new: true },
+      )
+      .exec();
+    return doc ? ClinicalRecordMapper.toDomain(doc) : null;
   }
 }

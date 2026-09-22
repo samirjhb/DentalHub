@@ -1,4 +1,5 @@
 import { ClinicalRecordTreatment } from './clinical-record-treatment.entity';
+import { ClinicalRecordAttachment } from './clinical-record-attachment.entity';
 
 export class ClinicalRecord {
   constructor(
@@ -10,7 +11,7 @@ export class ClinicalRecord {
     public patient: unknown,
     public treatments: ClinicalRecordTreatment[],
     public dentist: string,
-    public attachments?: string[],
+    public attachments?: ClinicalRecordAttachment[],
     public readonly createdAt?: Date,
     public readonly updatedAt?: Date,
     public readonly __v?: number,

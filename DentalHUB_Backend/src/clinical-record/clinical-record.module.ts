@@ -22,6 +22,9 @@ import { CalculatePendingBalanceUseCase } from './application/use-cases/calculat
 import { CalculateTotalPendingBalanceUseCase } from './application/use-cases/calculate-total-pending-balance.use-case';
 import { UpdateAppointmentDateUseCase } from './application/use-cases/update-appointment-date.use-case';
 import { FindMyClinicalSummaryUseCase } from './application/use-cases/find-my-clinical-summary.use-case';
+import { UploadClinicalAttachmentUseCase } from './application/use-cases/upload-clinical-attachment.use-case';
+import { DeleteClinicalAttachmentUseCase } from './application/use-cases/delete-clinical-attachment.use-case';
+import { StorageModule } from 'src/shared/storage/storage.module';
 
 @Module({
   imports: [
@@ -32,6 +35,7 @@ import { FindMyClinicalSummaryUseCase } from './application/use-cases/find-my-cl
       // ese módulo.
       { name: 'Patient', schema: PatientSchema },
     ]),
+    StorageModule,
   ],
   controllers: [ClinicalRecordController],
   providers: [
@@ -50,6 +54,8 @@ import { FindMyClinicalSummaryUseCase } from './application/use-cases/find-my-cl
     CalculateTotalPendingBalanceUseCase,
     UpdateAppointmentDateUseCase,
     FindMyClinicalSummaryUseCase,
+    UploadClinicalAttachmentUseCase,
+    DeleteClinicalAttachmentUseCase,
   ],
   exports: [ClinicalRecordRepository],
 })

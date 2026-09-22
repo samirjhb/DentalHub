@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsArray,
   IsDate,
   IsNumber,
   IsOptional,
@@ -17,20 +16,6 @@ export class AddTreatmentDto {
   })
   @IsString()
   diagnosis: string;
-
-  @ApiProperty({
-    description: 'URLs o identificadores de las radiografías',
-    example: [
-      'https://storage.example.com/radiografia-pieza36-20250418.jpg',
-      'https://storage.example.com/radiografia-pieza36-lateral-20250418.jpg',
-    ],
-    required: false,
-    type: [String],
-  })
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  radiography?: string[];
 
   @ApiProperty({
     description: 'Número de la pieza dental a tratar',

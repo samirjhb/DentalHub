@@ -11,7 +11,6 @@ export interface ClinicalRecordTreatmentSummary {
   treatment: string;
   price: number;
   status: string;
-  radiography?: string[];
   deposit: number;
   appointmentDate?: Date;
   observations?: string;
@@ -22,7 +21,10 @@ export interface ClinicalRecordSummary {
   patient: unknown;
   treatments: ClinicalRecordTreatmentSummary[];
   dentist: string;
-  attachments?: string[];
+  // Sin tipar fuerte a propósito (mismo criterio que el resto de este shape,
+  // desacoplado del dominio de clinical-record) — billing nunca lee el
+  // contenido, solo lo repasa tal cual.
+  attachments?: unknown[];
   createdAt?: Date;
   updatedAt?: Date;
 }

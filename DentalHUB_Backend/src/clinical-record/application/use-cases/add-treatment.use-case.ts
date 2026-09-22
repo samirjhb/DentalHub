@@ -20,7 +20,6 @@ export class AddTreatmentUseCase {
       dto.treatment,
       dto.price,
       dto.status || 'Pendiente',
-      dto.radiography,
       dto.deposit || 0,
       dto.appointmentDate,
       dto.observations,

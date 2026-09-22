@@ -43,7 +43,6 @@ export class BillingMongoRepository extends BillingRepository {
         treatment: t.treatment,
         price: t.price,
         status: t.status,
-        radiography: t.radiography,
         deposit: t.deposit,
         appointmentDate: t.appointmentDate,
         observations: t.observations,
