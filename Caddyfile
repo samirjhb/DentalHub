@@ -1,0 +1,24 @@
+# Reverse proxy de producción. Caddy obtiene y renueva el certificado HTTPS
+# automáticamente para {$DOMAIN} (el registro DNS A debe apuntar al servidor).
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# API NestJS (versionado por URI: /v1/...) y Swagger
+	handle /v1/* {
+		reverse_proxy backend:3001
+	}
+	handle /documentation* {
+		reverse_proxy backend:3001
+	}
+
+	# Todo lo demás: SPA Angular servida por nginx
+	handle {
+		reverse_proxy frontend:80
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+}

@@ -1,24 +1,29 @@
 version: '3.8'
 
+# Producción: solo Caddy publica puertos (80/443). Mongo, backend y frontend
+# quedan en la red interna de Docker. Las imágenes se construyen en el propio
+# servidor, así funcionan tanto en amd64 como en ARM (p. ej. Oracle Ampere).
+#
+# Uso:
+#   docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+
 services:
-  # MongoDB Database
+  # MongoDB Database (sin puertos publicados)
   mongo:
     image: mongo:7.0
     container_name: dental-mongo-prod
     restart: unless-stopped
-    ports:
-      - "${MONGO_PORT:-27017}:27017"
     environment:
       MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-dentalhub}
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-admin123}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:?Define MONGO_ROOT_USERNAME en .env.production}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Define MONGO_ROOT_PASSWORD en .env.production}
     volumes:
       - mongo_data:/data/db
       - mongo_config:/data/configdb
     networks:
       - dental-network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,18 +40,21 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Backend NestJS
+  # Backend NestJS (solo accesible vía Caddy)
   backend:
-    image: samirjhb/dentalhub:backend-latest
+    build:
+      context: ./DentalHUB_Backend
     container_name: dental-backend-prod
     restart: unless-stopped
-    ports:
-      - "${BACKEND_PORT:-3001}:3001"
+    env_file:
+      - .env.production
     environment:
       - NODE_ENV=production
-      - PORT=${BACKEND_PORT:-3001}
-      - MONGO_CONNECTION_TEST=mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-admin123}@mongo:27017/${MONGO_DATABASE:-dentalhub}?authSource=admin
-      - JWT_SECRET=${JWT_SECRET:-change-this-secret-in-production}
+      - PORT=3001
+      - MONGO_CONNECTION_TEST=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongo:27017/${MONGO_DATABASE:-dentalhub}?authSource=admin
+      - JWT_SECRET=${JWT_SECRET:?Define JWT_SECRET en .env.production}
+      - FRONTEND_URL=${FRONTEND_URL:-https://${DOMAIN}}
+      - CORS_ORIGINS=https://${DOMAIN}
     depends_on:
       mongo:
         condition: service_healthy
@@ -70,13 +78,15 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Frontend Angular
+  # Frontend Angular (solo accesible vía Caddy)
   frontend:
-    image: samirjhb/dentalhub:frontend-latest
+    build:
+      context: ./FRONT_HADEBOT
+      args:
+        # Mismo dominio que el frontend: Caddy enruta /v1 al backend, sin CORS.
+        API_URL: https://${DOMAIN:?Define DOMAIN en .env.production}/v1
     container_name: dental-frontend-prod
     restart: unless-stopped
-    ports:
-      - "${FRONTEND_PORT:-4200}:80"
     depends_on:
       backend:
         condition: service_healthy
@@ -94,6 +104,70 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # Reverse proxy con HTTPS automático (Let's Encrypt). Único servicio expuesto.
+  caddy:
+    image: caddy:2-alpine
+    container_name: dental-caddy-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      - DOMAIN=${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - dental-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Respaldo automático de Mongo: mongodump comprimido cada
+  # BACKUP_INTERVAL_HOURS horas en ./backups, borrando los de más de
+  # BACKUP_RETENTION_DAYS días. Copia ./backups fuera del servidor (ver README-PRODUCTION.md).
+  mongo-backup:
+    image: mongo:7.0
+    container_name: dental-mongo-backup-prod
+    restart: unless-stopped
+    environment:
+      - MONGO_URI=mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongo:27017/${MONGO_DATABASE:-dentalhub}?authSource=admin
+      - BACKUP_INTERVAL_HOURS=${BACKUP_INTERVAL_HOURS:-24}
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-14}
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - dental-network
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        while true; do
+          file="/backups/dentalhub-$$(date +%Y%m%d-%H%M%S).archive.gz"
+          if mongodump --quiet --uri="$$MONGO_URI" --archive="$$file" --gzip; then
+            echo "[backup] OK: $$file"
+          else
+            echo "[backup] FALLÓ el respaldo" >&2
+            rm -f "$$file"
+          fi
+          find /backups -name 'dentalhub-*.archive.gz' -mtime +"$$BACKUP_RETENTION_DAYS" -delete
+          sleep $$(( BACKUP_INTERVAL_HOURS * 3600 ))
+        done
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 networks:
   dental-network:
     driver: bridge
@@ -103,4 +177,7 @@ volumes:
     driver: local
   mongo_config:
     driver: local
-
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
