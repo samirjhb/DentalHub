@@ -40,6 +40,10 @@ Completa `.env.production` con tus valores reales (dominio, contraseña de Mongo
 - `MONGO_ROOT_USERNAME`, `MONGO_ROOT_PASSWORD`, `JWT_SECRET` y `DOMAIN` son
   **obligatorias**: el compose se niega a arrancar si faltan (ya no hay
   contraseñas por defecto).
+- `ADMIN_EMAIL` y `ADMIN_PASSWORD` crean el primer usuario SUPER_ADMIN al arrancar,
+  **solo si la base no tiene ninguno**. Con una base nueva son imprescindibles: sin
+  ellas el sistema arranca pero nadie puede iniciar sesión (el backend lo avisa en
+  sus logs). Una vez creado, cambiarlas no tiene efecto.
 - Usa contraseñas fuertes (mín. 16 caracteres). Evita `@ : / ? #` en la contraseña
   de Mongo porque va dentro de la URI de conexión.
 - Sin `RESEND_API_KEY` el link de recuperación de contraseña solo queda en los logs
@@ -173,6 +177,7 @@ docker compose -f docker-compose.prod.yml --env-file .env.production up -d --bui
 ## 📝 Checklist Pre-Producción
 
 - [ ] `.env.production` completo, con contraseñas fuertes
+- [ ] `ADMIN_EMAIL`/`ADMIN_PASSWORD` definidos y primer ingreso como SUPER_ADMIN probado
 - [ ] `RESEND_API_KEY` configurada y `FRONTEND_URL` apuntando al dominio real
 - [ ] DNS del dominio apuntando al servidor; HTTPS respondiendo
 - [ ] Puerto 27017 cerrado desde internet
